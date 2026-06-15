@@ -14,7 +14,7 @@ export function PanelGuard({ children, allowedRoles }) {
   const canAccess =
     user.role === ROLES.MASTER_ADMIN ||
     allowedRoles.includes(user.role) ||
-    (env.useMockApi && env.isDev);
+    env.useMockApi;
 
   if (!canAccess) {
     const home = ROLE_HOME_ROUTE[user.role] || ROUTES.UNAUTHORIZED;
