@@ -1,0 +1,19 @@
+.text-heading-page {
+  @apply text-xl font-bold uppercase tracking-tight text-[var(--color-text-primary)] sm:text-2xl;
+}
+
+.text-heading-section {
+  @apply text-lg font-bold uppercase tracking-tight text-[var(--color-text-primary)];
+}
+
+.text-label {
+  @apply text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-secondary)];
+}
+
+.text-body {
+  @apply text-sm text-[var(--color-text-primary)] leading-relaxed;
+}
+
+.text-caption {
+  @apply text-xs text-[var(--color-text-tertiary)];
+}

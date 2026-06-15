@@ -1,0 +1,35 @@
+/** Common Indian pincodes for dealer/customer address lookup (extend as needed). */
+export const PINCODE_DIRECTORY = {
+  '560001': { city: 'Bengaluru', district: 'Bengaluru Urban', state: 'Karnataka', stateCode: '29' },
+  '560034': { city: 'Bengaluru', district: 'Bengaluru Urban', state: 'Karnataka', stateCode: '29' },
+  '400001': { city: 'Mumbai', district: 'Mumbai', state: 'Maharashtra', stateCode: '27' },
+  '400051': { city: 'Mumbai', district: 'Mumbai', state: 'Maharashtra', stateCode: '27' },
+  '110001': { city: 'New Delhi', district: 'Central Delhi', state: 'Delhi', stateCode: '07' },
+  '110020': { city: 'New Delhi', district: 'South Delhi', state: 'Delhi', stateCode: '07' },
+  '302001': { city: 'Jaipur', district: 'Jaipur', state: 'Rajasthan', stateCode: '08' },
+  '302017': { city: 'Jaipur', district: 'Jaipur', state: 'Rajasthan', stateCode: '08' },
+  '600001': { city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', stateCode: '33' },
+  '500001': { city: 'Hyderabad', district: 'Hyderabad', state: 'Telangana', stateCode: '36' },
+  '700001': { city: 'Kolkata', district: 'Kolkata', state: 'West Bengal', stateCode: '19' },
+  '411001': { city: 'Pune', district: 'Pune', state: 'Maharashtra', stateCode: '27' },
+  '380001': { city: 'Ahmedabad', district: 'Ahmedabad', state: 'Gujarat', stateCode: '24' },
+};
+
+export const INDIAN_STATES = [
+  { code: '01', name: 'Jammu & Kashmir' },
+  { code: '02', name: 'Himachal Pradesh' },
+  { code: '03', name: 'Punjab' },
+  { code: '04', name: 'Chandigarh' },
+  { code: '05', name: 'Uttarakhand' },
+  { code: '06', name: 'Haryana' },
+  { code: '07', name: 'Delhi' },
+  { code: '08', name: 'Rajasthan' },
+  { code: '09', name: 'Uttar Pradesh' },
+  { code: '10', name: 'Bihar' },
+  { code: '19', name: 'West Bengal' },
+  { code: '24', name: 'Gujarat' },
+  { code: '27', name: 'Maharashtra' },
+  { code: '29', name: 'Karnataka' },
+  { code: '33', name: 'Tamil Nadu' },
+  { code: '36', name: 'Telangana' },
+];

@@ -1,0 +1,19 @@
+import app from './app.js';
+import { connectDatabase } from './config/database.js';
+import { env } from './config/env.js';
+
+async function start() {
+  try {
+    await connectDatabase();
+    app.listen(env.port, () => {
+      console.log(`Haion ERP API listening on port ${env.port}`);
+      console.log(`Environment: ${env.nodeEnv}`);
+      console.log(`CORS origins: ${env.corsOrigins.join(', ')}${env.isDev ? ' (+ localhost auto)' : ''}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
+}
+
+start();
