@@ -37,27 +37,16 @@ const SECTION_MAP = {
   'scroll-sequence': ScrollSequence,
 };
 
+const FALLBACK_SECTIONS = Object.keys(SECTION_MAP).map((key, order) => ({
+  sectionKey: key,
+  order,
+  isVisible: true,
+}));
+
 export default function SectionRenderer({ onViewDetails }) {
-  const { visibleSections, isLoading, apiOnline } = useCMS();
+  const { visibleSections } = useCMS();
 
-  if (isLoading && !visibleSections.length) {
-    return (
-      <div className="min-h-[40vh] flex items-center justify-center text-zinc-500">
-        Loading…
-      </div>
-    );
-  }
-
-  const sections =
-    visibleSections.length > 0
-      ? visibleSections
-      : !apiOnline
-        ? Object.keys(SECTION_MAP).map((key, order) => ({
-            sectionKey: key,
-            order,
-            isVisible: true,
-          }))
-        : [];
+  const sections = visibleSections.length > 0 ? visibleSections : FALLBACK_SECTIONS;
 
   return (
     <>
