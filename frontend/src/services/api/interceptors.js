@@ -56,6 +56,12 @@ export function setupInterceptors(client) {
         url.includes('/auth/logout');
 
       if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
+        const isPublicCms =
+          url.includes('/cms/') && !url.includes('/admin/cms');
+        if (isPublicCms) {
+          return Promise.reject(error);
+        }
+
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             refreshQueue.push({ resolve, reject });

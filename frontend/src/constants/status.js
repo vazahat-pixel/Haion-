@@ -53,11 +53,35 @@ export const WARRANTY_STATUS = {
 };
 
 export const RETURN_STATUS = {
+  EXPECTED: 'EXPECTED',
+  SHIPPED: 'SHIPPED',
+  RECEIVED: 'RECEIVED',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED',
+  OVERDUE: 'OVERDUE',
   REQUESTED: 'REQUESTED',
   APPROVED: 'APPROVED',
-  RECEIVED: 'RECEIVED',
   INSPECTED: 'INSPECTED',
   CREDITED: 'CREDITED',
+};
+
+export const SERVICE_REQUEST_STATUS = {
+  NEW: 'NEW',
+  ASSIGNED: 'ASSIGNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  WAITING_PARTS: 'WAITING_PARTS',
+  PARTS_RECEIVED: 'PARTS_RECEIVED',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+  CANCELLED: 'CANCELLED',
+};
+
+export const SPARE_STATUS = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DISPATCHED: 'DISPATCHED',
+  RECEIVED: 'RECEIVED',
+  COMPLETED: 'COMPLETED',
   REJECTED: 'REJECTED',
 };
 
@@ -125,12 +149,34 @@ export const STATUS_CONFIG = {
   [WARRANTY_STATUS.VOID]: { label: 'Void', color: 'danger' },
 
   // Returns
+  [RETURN_STATUS.EXPECTED]: { label: 'Expected', color: 'info' },
+  [RETURN_STATUS.SHIPPED]: { label: 'Shipped', color: 'warning' },
+  [RETURN_STATUS.RECEIVED]: { label: 'Received', color: 'warning' },
+  [RETURN_STATUS.VERIFIED]: { label: 'Verified', color: 'success' },
+  [RETURN_STATUS.OVERDUE]: { label: 'Overdue', color: 'danger' },
   [RETURN_STATUS.REQUESTED]: { label: 'Requested', color: 'info' },
   [RETURN_STATUS.APPROVED]: { label: 'Approved', color: 'info' },
-  [RETURN_STATUS.RECEIVED]: { label: 'Received', color: 'warning' },
   [RETURN_STATUS.INSPECTED]: { label: 'Inspected', color: 'warning' },
   [RETURN_STATUS.CREDITED]: { label: 'Credited', color: 'success' },
   [RETURN_STATUS.REJECTED]: { label: 'Rejected', color: 'danger' },
+
+  // Service requests
+  [SERVICE_REQUEST_STATUS.NEW]: { label: 'New', color: 'info' },
+  [SERVICE_REQUEST_STATUS.ASSIGNED]: { label: 'Assigned', color: 'info' },
+  [SERVICE_REQUEST_STATUS.IN_PROGRESS]: { label: 'In Progress', color: 'warning' },
+  [SERVICE_REQUEST_STATUS.WAITING_PARTS]: { label: 'Waiting Parts', color: 'warning' },
+  [SERVICE_REQUEST_STATUS.PARTS_RECEIVED]: { label: 'Parts Received', color: 'success' },
+  [SERVICE_REQUEST_STATUS.RESOLVED]: { label: 'Resolved', color: 'success' },
+  [SERVICE_REQUEST_STATUS.CLOSED]: { label: 'Closed', color: 'neutral' },
+  [SERVICE_REQUEST_STATUS.CANCELLED]: { label: 'Cancelled', color: 'neutral' },
+
+  // Spares
+  [SPARE_STATUS.PENDING]: { label: 'Pending', color: 'warning' },
+  [SPARE_STATUS.APPROVED]: { label: 'Approved', color: 'info' },
+  [SPARE_STATUS.DISPATCHED]: { label: 'Dispatched', color: 'warning' },
+  [SPARE_STATUS.RECEIVED]: { label: 'Received', color: 'success' },
+  [SPARE_STATUS.COMPLETED]: { label: 'Completed', color: 'success' },
+  [SPARE_STATUS.REJECTED]: { label: 'Rejected', color: 'danger' },
 
   // Dealer
   [DEALER_STATUS.ACTIVE]: { label: 'Active', color: 'success' },
@@ -146,6 +192,10 @@ export const STATUS_CONFIG = {
   [APPROVAL_STATUS.PENDING]: { label: 'Pending', color: 'warning' },
   [APPROVAL_STATUS.APPROVED]: { label: 'Approved', color: 'success' },
   [APPROVAL_STATUS.REJECTED]: { label: 'Rejected', color: 'danger' },
+
+  // Website store orders
+  CONFIRMED: { label: 'Confirmed', color: 'info' },
+  PROCESSING: { label: 'Processing', color: 'warning' },
 
   // Priority
   [COMPLAINT_PRIORITY.LOW]: { label: 'Low', color: 'neutral' },

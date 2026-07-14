@@ -28,6 +28,12 @@ export const PERMISSION_CATALOG = [
   { key: 'categories.create', label: 'Create Categories', module: 'Catalog' },
   { key: 'brands.read', label: 'View Brands', module: 'Catalog' },
   { key: 'brands.create', label: 'Create Brands', module: 'Catalog' },
+  { key: 'parties.read', label: 'View Parties', module: 'Parties' },
+  { key: 'parties.create', label: 'Create Parties', module: 'Parties' },
+  { key: 'parties.update', label: 'Update Parties', module: 'Parties' },
+  { key: 'purchases.read', label: 'View Purchases', module: 'Purchases' },
+  { key: 'purchases.create', label: 'Create Purchases', module: 'Purchases' },
+  { key: 'purchases.receive', label: 'Receive Purchases', module: 'Purchases' },
   { key: 'pricing.read', label: 'View Pricing', module: 'Pricing' },
   { key: 'pricing.update', label: 'Update Pricing', module: 'Pricing' },
   { key: 'expenses.read', label: 'View Expenses', module: 'Expenses' },
@@ -76,6 +82,14 @@ export const PERMISSION_CATALOG = [
   { key: 'gst.config', label: 'GST Configuration', module: 'GST' },
   { key: 'rbac.read', label: 'View Roles & Permissions', module: 'RBAC' },
   { key: 'rbac.update', label: 'Manage Roles & Permissions', module: 'RBAC' },
+  { key: 'cms.read', label: 'View Website CMS', module: 'Website CMS' },
+  { key: 'cms.create', label: 'Create CMS Content', module: 'Website CMS' },
+  { key: 'cms.update', label: 'Update CMS Content', module: 'Website CMS' },
+  { key: 'cms.delete', label: 'Delete CMS Content', module: 'Website CMS' },
+  { key: 'cms.publish', label: 'Publish CMS Content', module: 'Website CMS' },
+  { key: 'store.orders.read', label: 'View Website Orders', module: 'Online Store' },
+  { key: 'store.orders.update', label: 'Manage Website Orders', module: 'Online Store' },
+  { key: 'store.analytics.read', label: 'View Store Sales Analytics', module: 'Online Store' },
 ];
 
 export const ALL_PERMISSION_KEYS = PERMISSION_CATALOG.map((p) => p.key);

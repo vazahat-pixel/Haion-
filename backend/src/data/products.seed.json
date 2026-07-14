@@ -1,0 +1,770 @@
+[
+  {
+    "collection": "products",
+    "order": 0,
+    "isVisible": true,
+    "data": {
+      "id": "x1",
+      "name": "X1",
+      "price": "₹70,000",
+      "subtitle": "Smart, Eco-Friendly EV Scooter for Urban Commuting",
+      "images": [
+        "/x1bg2.webp",
+        "/x1bg.webp",
+        "/x1bg1.webp"
+      ],
+      "colors": [
+        "Glossy Blue",
+        "Crystal White",
+        "Matt Grey"
+      ],
+      "specs": {
+        "MOTOR": "BLDC HUB MOTOR",
+        "CONTROLLER": "12 TUBE",
+        "SPEED": "ECONOMY-25 (MAX 45 KM/H)",
+        "RANGE/CHARGE": "70 KM TO 100 KM - DEPENDS ON BATTERY",
+        "WARRANTY": "3 YEARS WARRANTY",
+        "BREAK SYSTEM": "FRONT DISK, REAR DRUM BRAKE",
+        "KEY FEATURE": "CENTRAL LOCKING & ANTI-THEFT ALARM",
+        "LOADING CAPACITY": "150 K.G.",
+        "SPEEDOMETER": "DIGITAL",
+        "TYRE": "3.10 TUBELESS TYRE",
+        "BATTERY": "LITHIUM ION (48V 24Ah)"
+      },
+      "category": "evs",
+      "tag": "Sale",
+      "image": "/x1bg2.webp",
+      "link": "#product-detail-x1"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 1,
+    "isVisible": true,
+    "data": {
+      "id": "x1plus",
+      "name": "X1Plus",
+      "price": "₹78,000",
+      "subtitle": "Your Everyday Green Ride – EV Scooter",
+      "images": [
+        "/x1plusbg.webp",
+        "/x1plus2-removebg-preview.webp",
+        "/x1plusbg3.webp"
+      ],
+      "colors": [
+        "Crystal White",
+        "Glossy Blue",
+        "Matt Grey"
+      ],
+      "specs": {
+        "MOTOR": "1200W BLDC HUB MOTOR",
+        "CONTROLLER": "12 TUBE HIGH CURRENT",
+        "SPEED": "ECONOMY-25 (MAX 55 KM/H)",
+        "RANGE/CHARGE": "100 KM TO 150 KM - DEPENDS ON BATTERY",
+        "WARRANTY": "3 YEARS WARRANTY",
+        "BREAK SYSTEM": "FRONT DISK, REAR DRUM BRAKE",
+        "KEY FEATURE": "CENTRAL LOCKING & REGENERATIVE BRAKING",
+        "LOADING CAPACITY": "150 K.G.",
+        "SPEEDOMETER": "DIGITAL COLOR CONSOLE",
+        "TYRE": "3.10 TUBELESS TYRE",
+        "BATTERY": "LITHIUM ION (60V 30Ah)"
+      },
+      "category": "evs",
+      "tag": "Sale",
+      "image": "/x1plusbg.webp",
+      "link": "#product-detail-x1plus"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 2,
+    "isVisible": true,
+    "data": {
+      "id": "x2",
+      "name": "X2",
+      "price": "₹72,000",
+      "subtitle": "Reimagine Urban Travel with Our EV Scooter",
+      "images": [
+        "/x2f1.webp",
+        "/x2f.webp",
+        "/x2f2.webp",
+        "/x2f3.webp"
+      ],
+      "colors": [
+        "Matt Grey",
+        "Glossy Blue",
+        "Crystal White"
+      ],
+      "specs": {
+        "MOTOR": "1500W HIGH-TORQUE BLDC MOTOR",
+        "CONTROLLER": "15 TUBE SMART CONTROLLER",
+        "SPEED": "ECONOMY-25 (MAX 65 KM/H)",
+        "RANGE/CHARGE": "150 KM TO 200 KM - DEPENDS ON BATTERY",
+        "WARRANTY": "3 YEARS WARRANTY",
+        "BREAK SYSTEM": "DOUBLE DISC BRAKE (FRONT & REAR)",
+        "KEY FEATURE": "CENTRAL LOCKING, APP-INTEGRATED CONSOLE",
+        "LOADING CAPACITY": "180 K.G.",
+        "SPEEDOMETER": "SMART DIGITAL TACTILE",
+        "TYRE": "90/90-12 TUBELESS TYRE",
+        "BATTERY": "LITHIUM ION (72V 35Ah)"
+      },
+      "category": "evs",
+      "tag": "Sale",
+      "image": "/x2f1.webp",
+      "link": "#product-detail-x2"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 3,
+    "isVisible": true,
+    "data": {
+      "id": "x2plus",
+      "name": "X2Plus",
+      "price": "₹80,000",
+      "subtitle": "High-Performance Smart EV Scooter",
+      "images": [
+        "/x2plusbg.webp",
+        "/x2plus3-removebg-preview.webp",
+        "/x2plusbg1.webp"
+      ],
+      "colors": [
+        "Carbon Black",
+        "Neon Green",
+        "Crimson Red"
+      ],
+      "specs": {
+        "MOTOR": "1800W PEAK PERFORMANCE MOTOR",
+        "CONTROLLER": "18 TUBE SINUSOIDAL CONTROLLER",
+        "SPEED": "MAX 70 KM/H",
+        "RANGE/CHARGE": "160 KM",
+        "WARRANTY": "3 YEARS WARRANTY ON BATTERY & MOTOR",
+        "BREAK SYSTEM": "COMBINED BRAKING SYSTEM (CBS) DUAL DISC",
+        "KEY FEATURE": "GPS TRACKING, KEYLESS ENTRY, CRUISE CONTROL",
+        "LOADING CAPACITY": "180 K.G.",
+        "SPEEDOMETER": "COLOR TFT DISPLAY WITH NAVIGATION",
+        "TYRE": "12-INCH tubeless TYRES",
+        "BATTERY": "LITHIUM ION (72V 40Ah)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/x2plusbg.webp",
+      "link": "#product-detail-x2plus"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 4,
+    "isVisible": true,
+    "data": {
+      "id": "x3",
+      "name": "X3",
+      "price": "₹85,000",
+      "subtitle": "Adventure Ready Premium EV Scooter",
+      "images": [
+        "/x3bg1.webp",
+        "/x3bg.webp",
+        "/x34-removebg-preview.webp"
+      ],
+      "colors": [
+        "Desert Gold",
+        "Military Green",
+        "Carbon Fibre"
+      ],
+      "specs": {
+        "MOTOR": "2000W HIGH-POWER BLDC HUB MOTOR",
+        "CONTROLLER": "SMART VECTOR CONTROLLER",
+        "SPEED": "MAX 75 KM/H",
+        "RANGE/CHARGE": "180 KM PER CHARGE",
+        "WARRANTY": "3 YEARS HASSLE-FREE WARRANTY",
+        "BREAK SYSTEM": "VENTILATED DUAL DISC BRAKES",
+        "KEY FEATURE": "ALL-TERRAIN SUSPENSION, APP INFOTAINMENT, USB CHARGER",
+        "LOADING CAPACITY": "200 K.G.",
+        "SPEEDOMETER": "FULL HD TACTILE TOUCHSCREEN",
+        "TYRE": "OFF-ROAD TUBELESS TYRES",
+        "BATTERY": "LITHIUM ION (72V 42Ah)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/x3bg1.webp",
+      "link": "#product-detail-x3"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 5,
+    "isVisible": true,
+    "data": {
+      "id": "x4plus",
+      "name": "X4Plus",
+      "price": "₹90,000",
+      "subtitle": "Ultra Range Smart EV Scooter",
+      "images": [
+        "/x4plusbg.webp",
+        "/x4plus4-removebg-preview.webp",
+        "/x4plus5.webp"
+      ],
+      "colors": [
+        "Stellar Blue",
+        "Titanium Grey",
+        "Frost White"
+      ],
+      "specs": {
+        "MOTOR": "2200W SUPER-TORQUE MOTOR",
+        "CONTROLLER": "INTELLIGENT FOC VECTOR CONTROLLER",
+        "SPEED": "MAX 80 KM/H",
+        "RANGE/CHARGE": "220 KM EXTRA RANGE",
+        "WARRANTY": "3 YEARS COMPREHENSIVE WARRANTY",
+        "BREAK SYSTEM": "E-ABS WITH DUAL VENTILATED DISC",
+        "KEY FEATURE": "REVERSE ASSIST, MOBILE app telemetry, SIDE-STAND SENSOR",
+        "LOADING CAPACITY": "200 K.G.",
+        "SPEEDOMETER": "SMART LCD CONSOLE WITH OVER-THE-AIR UPDATES",
+        "TYRE": "90/90-12 ALL-WEATHER TUBELESS",
+        "BATTERY": "DUAL LITHIUM ION DOCKS (72V 50Ah TOTAL)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/x4plusbg.webp",
+      "link": "#product-detail-x4plus"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 6,
+    "isVisible": true,
+    "data": {
+      "id": "spro",
+      "name": "S Pro",
+      "price": "₹1,15,000",
+      "subtitle": "Elegant High-Speed Smart EV Scooter",
+      "images": [
+        "/sprobg.webp",
+        "/sprobg1.webp",
+        "/sprobg2.webp"
+      ],
+      "colors": [
+        "Classic White",
+        "Sleek Black",
+        "Metallic Rose"
+      ],
+      "specs": {
+        "MOTOR": "2500W HIGH-EFFICIENCY MID-DRIVE MOTOR",
+        "CONTROLLER": "ADVANCED MID-DRIVE VECTOR CONTROLLER",
+        "SPEED": "MAX 25 KM/H",
+        "RANGE/CHARGE": "150 KM - HIGH SPEED RANGE",
+        "WARRANTY": "5 YEARS LIMITED WARRANTY",
+        "BREAK SYSTEM": "REGENERATIVE EBS DUAL DISC BRAKES",
+        "KEY FEATURE": "CHROME FINISH BODY WORK, ADVANCED THEFT PROTECTION, SMART DIAGNOSTICS",
+        "LOADING CAPACITY": "180 K.G.",
+        "SPEEDOMETER": "RETINA AMOLED DASHBOARD",
+        "TYRE": "12-INCH ALLOY WHEEL TUBELESS TYRES",
+        "BATTERY": "LITHIUM ION (64V 40Ah)"
+      },
+      "category": "evs",
+      "tag": "Premium",
+      "image": "/sprobg.webp",
+      "link": "#product-detail-spro"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 7,
+    "isVisible": true,
+    "data": {
+      "id": "oxplus",
+      "name": "OX Plus",
+      "price": "₹90,000",
+      "subtitle": "Ultimate Power & Intelligent EV Scooter",
+      "images": [
+        "/oxplus2.webp",
+        "/oxplus1.webp",
+        "/oxplus3.webp"
+      ],
+      "colors": [
+        "Midnight Blue",
+        "Stealth Black",
+        "Carbon Red"
+      ],
+      "specs": {
+        "MOTOR": "3000W ULTRA-TORQUE BLDC MOTOR",
+        "CONTROLLER": "INTELLIGENT DUAL-CORE CONTROLLER",
+        "SPEED": "MAX 95 KM/H",
+        "RANGE/CHARGE": "200 KM TO 250 KM",
+        "WARRANTY": "5 YEARS EXTENDED WARRANTY",
+        "BREAK SYSTEM": "CBS + HYDRAULIC DOUBLE DISC BRAKE",
+        "KEY FEATURE": "INTELLIGENT GPS TRACKING, CRUISE CONTROL, BLUETOOTH SOUND SYSTEM",
+        "LOADING CAPACITY": "220 K.G.",
+        "SPEEDOMETER": "7-INCH SMART TOUCHSCREEN WITH GOOGLE MAPS",
+        "TYRE": "130/70-12 tubeless SPORT TYRES",
+        "BATTERY": "LITHIUM ION (72V 45Ah)"
+      },
+      "category": "evs",
+      "tag": "Elite",
+      "image": "/oxplus2.webp",
+      "link": "#product-detail-oxplus"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 8,
+    "isVisible": true,
+    "data": {
+      "id": "hpro",
+      "name": "H pro",
+      "price": "₹1,24,999",
+      "subtitle": "Premium Smart Commuter Scooter",
+      "images": [
+        "/Hprobg.webp",
+        "/Hprobg.webp",
+        "/Hprobg.webp"
+      ],
+      "colors": [
+        "Classic White",
+        "Sleek Black"
+      ],
+      "specs": {
+        "MOTOR": "2500W HIGH-EFFICIENCY BLDC HUB MOTOR",
+        "CONTROLLER": "SMART WAVE CONTROLLER",
+        "SPEED": "MAX 70 KM/H",
+        "RANGE/CHARGE": "120 KM PER CHARGE",
+        "WARRANTY": "3 YEARS COMPREHENSIVE WARRANTY",
+        "BREAK SYSTEM": "FRONT & REAR DISC BRAKES",
+        "KEY FEATURE": "SMART KEYLESS, MOBILE APP SYNC, REVERSE ASSIST",
+        "LOADING CAPACITY": "180 K.G.",
+        "SPEEDOMETER": "FULL DIGITAL COLOR DISPLAY",
+        "TYRE": "90/90-12 TUBELESS TYRES",
+        "BATTERY": "LITHIUM ION (60V 35Ah)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/Hprobg.webp",
+      "link": "#product-detail-hpro"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 9,
+    "isVisible": true,
+    "data": {
+      "id": "ipro",
+      "name": "I pro",
+      "price": "₹1,29,999",
+      "subtitle": "Intelligent Green Mobility Scooter",
+      "images": [
+        "/iprobg.webp",
+        "/iprobg.webp",
+        "/iprobg.webp"
+      ],
+      "colors": [
+        "Classic White",
+        "Sleek Black"
+      ],
+      "specs": {
+        "MOTOR": "2800W PEAK TORQUE BLDC MOTOR",
+        "CONTROLLER": "ADVANCED FOC VECTOR CONTROLLER",
+        "SPEED": "MAX 75 KM/H",
+        "RANGE/CHARGE": "130 KM PER CHARGE",
+        "WARRANTY": "3 YEARS EXTENDED WARRANTY",
+        "BREAK SYSTEM": "COMBINED DISC BRAKING SYSTEM (CBS)",
+        "KEY FEATURE": "GPS GEOCAPPING, REGEN BRAKING, SMART SECURITY",
+        "LOADING CAPACITY": "180 K.G.",
+        "SPEEDOMETER": "SMART RETINA AMOLED TOUCHSCREEN",
+        "TYRE": "12-INCH ALLOY TUBELESS TYRES",
+        "BATTERY": "LITHIUM ION (72V 36Ah)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/iprobg.webp",
+      "link": "#product-detail-ipro"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 10,
+    "isVisible": true,
+    "data": {
+      "id": "x4",
+      "name": "X4",
+      "price": "₹1,14,999",
+      "subtitle": "Next-Generation High-Speed Scooter",
+      "images": [
+        "/x4bg.webp",
+        "/x4bg.webp",
+        "/x4bg.webp"
+      ],
+      "colors": [
+        "Classic White",
+        "Sleek Black"
+      ],
+      "specs": {
+        "MOTOR": "2200W MID-DRIVE PERFORMANCE MOTOR",
+        "CONTROLLER": "18 TUBE SMART VECTOR",
+        "SPEED": "MAX 80 KM/H",
+        "RANGE/CHARGE": "140 KM PER CHARGE",
+        "WARRANTY": "3 YEARS HASSLE-FREE WARRANTY",
+        "BREAK SYSTEM": "DOUBLE VENTILATED DISC BRAKES",
+        "KEY FEATURE": "CRUISE CONTROL, REVERSE MODE, USB CHARGING",
+        "LOADING CAPACITY": "180 K.G.",
+        "SPEEDOMETER": "HD SMART LCD CONSOLE",
+        "TYRE": "90/90-12 ALL-WEATHER TUBELESS",
+        "BATTERY": "LITHIUM ION (72V 38Ah)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/x4bg.webp",
+      "link": "#product-detail-x4"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 11,
+    "isVisible": true,
+    "data": {
+      "id": "x3plus",
+      "name": "X3 plus",
+      "price": "₹1,09,999",
+      "subtitle": "Adventure Ready Plus Smart Scooter",
+      "images": [
+        "/bg-removebg-preview.webp",
+        "/x3plusbg.webp",
+        "/bg-removebg-preview.webp"
+      ],
+      "colors": [
+        "Classic White",
+        "Sleek Black"
+      ],
+      "specs": {
+        "MOTOR": "2000W BLDC HUB MOTOR",
+        "CONTROLLER": "SMART VECTOR CONTROLLER",
+        "SPEED": "MAX 65 KM/H",
+        "RANGE/CHARGE": "110 KM PER CHARGE",
+        "WARRANTY": "3 YEARS COMPREHENSIVE WARRANTY",
+        "BREAK SYSTEM": "VENTILATED DUAL DISC BRAKES",
+        "KEY FEATURE": "ALL-TERRAIN SUSPENSION, KEYLESS ENTRY, ANTI-THEFT",
+        "LOADING CAPACITY": "170 K.G.",
+        "SPEEDOMETER": "DIGITAL CONSOLE WITH MOBILE PARING",
+        "TYRE": "OFF-ROAD TUBELESS TYRES",
+        "BATTERY": "LITHIUM ION (60V 30Ah)"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/bg-removebg-preview.webp",
+      "link": "#product-detail-x3plus"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 12,
+    "isVisible": true,
+    "data": {
+      "id": "refri1",
+      "name": "SmartChill Pro 450L",
+      "price": "₹54,999",
+      "subtitle": "Double-Door IoT Smart Refrigerator with Auto-Defrost",
+      "images": [
+        "/refri-removebg-preview.webp",
+        "/refri-removebg-preview.webp",
+        "/refri-removebg-preview.webp"
+      ],
+      "colors": [
+        "Steel Grey",
+        "Elegant Black"
+      ],
+      "specs": {
+        "CAPACITY": "450 LITRES",
+        "COMPRESSOR": "DIGITAL INVERTER COMPRESSOR",
+        "COOLING TECH": "TRIPLE COOLING SYSTEM",
+        "ENERGY RATING": "5 STAR RATING",
+        "CONNECTIVITY": "WI-FI, SMARTTHINGS APP SUPPORT",
+        "KEY FEATURE": "IOT TEMPERATURE CONTROL, AUTO-DEFROST, DOOR ALARM",
+        "WARRANTY": "10 YEARS WARRANTY ON COMPRESSOR"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/refri-removebg-preview.webp",
+      "link": "#product-detail-refri1"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 13,
+    "isVisible": true,
+    "data": {
+      "id": "refri2",
+      "name": "FrostBreeze Duo 600L",
+      "price": "₹84,999",
+      "subtitle": "French Door Luxury Smart Refrigerator with Touch Console",
+      "images": [
+        "/refri2-removebg-preview.webp",
+        "/refri2-removebg-preview.webp",
+        "/refri2-removebg-preview.webp"
+      ],
+      "colors": [
+        "Platinum Silver",
+        "Midnight Obsidian"
+      ],
+      "specs": {
+        "CAPACITY": "600 LITRES",
+        "DOOR TYPE": "FRENCH DOOR (MULTI-DOOR)",
+        "PANEL TYPE": "INSTAVIEW GLASS PANEL",
+        "DISPENSER": "WATER & ICE DISPENSER",
+        "CONNECTIVITY": "IOT WI-FI CONTROLS & VOICE ASSISTANTS",
+        "KEY FEATURE": "DUAL FREEZER ZONES, SMART CONSOLE, HYGIENE FRESH FILTER",
+        "WARRANTY": "10 YEARS WARRANTY ON COMPRESSOR"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/refri2-removebg-preview.webp",
+      "link": "#product-detail-refri2"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 14,
+    "isVisible": true,
+    "data": {
+      "id": "mixer1",
+      "name": "PowerBlend X1",
+      "price": "₹8,999",
+      "subtitle": "1000W Heavy-Duty Smart Mixer Grinder with Auto-Clean",
+      "images": [
+        "/mixer1-removebg-preview.webp",
+        "/mixer1-removebg-preview.webp",
+        "/mixer1-removebg-preview.webp"
+      ],
+      "colors": [
+        "Stellar Silver",
+        "Classic White"
+      ],
+      "specs": {
+        "MOTOR POWER": "1000W HIGH-TORQUE COPPER MOTOR",
+        "JARS": "4 RUST-FREE STAINLESS STEEL JARS",
+        "BLADES": "AERODYNAMIC W-PROFILE BLADES",
+        "SPEED CONTROL": "SMART SPEED SENSOR CONTROL (4 SPEEDS)",
+        "KEY FEATURE": "AUTO-CLEAN TECHNOLOGY, OVERLOAD PROTECTION",
+        "WARRANTY": "2 YEARS PRODUCT & 5 YEARS MOTOR WARRANTY"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/mixer1-removebg-preview.webp",
+      "link": "#product-detail-mixer1"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 15,
+    "isVisible": true,
+    "data": {
+      "id": "mixer2",
+      "name": "TurboMix Pro",
+      "price": "₹6,499",
+      "subtitle": "High-Speed IoT Blender and Dry Grinder",
+      "images": [
+        "/mixer2-removebg-preview.webp",
+        "/mixer2-removebg-preview.webp",
+        "/mixer2-removebg-preview.webp"
+      ],
+      "colors": [
+        "Carbon Black",
+        "Cosmic Blue"
+      ],
+      "specs": {
+        "MOTOR POWER": "800W COPPER MOTOR",
+        "SPEEDS": "TOUCH CONTROL INTERFACE WITH 6 PRESETS",
+        "TECHNOLOGY": "VACUUM EXTRACTION TECHNOLOGY",
+        "CONNECTIVITY": "BLUETOOTH APP SYNCED RECIPES",
+        "KEY FEATURE": "PULSE FUNCTION, ONE-TOUCH SMOOTHIE MODE, BPA-FREE TRITAN JARS",
+        "WARRANTY": "2 YEARS COMPREHENSIVE WARRANTY"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/mixer2-removebg-preview.webp",
+      "link": "#product-detail-mixer2"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 16,
+    "isVisible": true,
+    "data": {
+      "id": "tv2",
+      "name": "CinemaMax 55",
+      "price": "₹38,999",
+      "subtitle": "55-inch Ultra HD Smart LED TV with HDR10+",
+      "images": [
+        "/tv2.webp",
+        "/tv2.webp",
+        "/tv2.webp"
+      ],
+      "colors": [
+        "Midnight Black"
+      ],
+      "specs": {
+        "SCREEN SIZE": "55 INCHES",
+        "RESOLUTION": "4K ULTRA HD (3840 X 2160)",
+        "HDR": "HDR10+, HLG SUPPORT",
+        "SOUND SYSTEM": "30W DOLBY AUDIO SPEAKERS",
+        "OPERATING SYSTEM": "ANDROID TV with Google Assistant",
+        "CONNECTIVITY": "HDMI 2.0 x 3, USB x 2",
+        "WARRANTY": "1 YEAR WARRANTY"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/tv2.webp",
+      "link": "#product-detail-tv2"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 17,
+    "isVisible": true,
+    "data": {
+      "id": "tv3",
+      "name": "VisionPro 65",
+      "price": "₹48,999",
+      "subtitle": "65-inch 4K Smart TV with Quantum Dot Display",
+      "images": [
+        "/tv3.webp",
+        "/tv3.webp",
+        "/tv3.webp"
+      ],
+      "colors": [
+        "Metallic Silver"
+      ],
+      "specs": {
+        "SCREEN SIZE": "65 INCHES",
+        "DISPLAY TYPE": "QLED QUANTUM DOT",
+        "REFRESH RATE": "120 HZ MEMC",
+        "SOUND SYSTEM": "40W DOLBY ATMOS",
+        "OPERATING SYSTEM": "GOOGLE TV OS",
+        "CONNECTIVITY": "HDMI 2.1 x 3, DUAL-BAND WI-FI",
+        "WARRANTY": "2 YEARS WARRANTY"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/tv3.webp",
+      "link": "#product-detail-tv3"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 18,
+    "isVisible": true,
+    "data": {
+      "id": "tv4",
+      "name": "OLED Q1 50",
+      "price": "₹59,999",
+      "subtitle": "50-inch Premium OLED Smart TV with Deep Blacks",
+      "images": [
+        "/tv4.webp",
+        "/tv4.webp",
+        "/tv4.webp"
+      ],
+      "colors": [
+        "Midnight Black"
+      ],
+      "specs": {
+        "SCREEN SIZE": "50 INCHES",
+        "DISPLAY TYPE": "OLED PANEL",
+        "CONTRAST": "INFINITE CONTRAST RATIO",
+        "GAMING": "HDMI 2.1, VRR & ALLM SUPPORT",
+        "SOUND": "40W DOLBY ATMOS & DTS-X",
+        "CONNECTIVITY": "WI-FI 6, BLUETOOTH 5.2",
+        "WARRANTY": "2 YEARS COMPREHENSIVE WARRANTY"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/tv4.webp",
+      "link": "#product-detail-tv4"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 19,
+    "isVisible": true,
+    "data": {
+      "id": "ac",
+      "name": "AeroBreeze AC",
+      "price": "₹36,999",
+      "subtitle": "1.5 Ton 5-Star IoT Inverter Split Air Conditioner",
+      "images": [
+        "/ac-removebg-preview.webp",
+        "/ac-removebg-preview.webp",
+        "/ac-removebg-preview.webp"
+      ],
+      "colors": [
+        "Arctic White"
+      ],
+      "specs": {
+        "CAPACITY": "1.5 TON (SUITABLE FOR 110-150 SQ FT)",
+        "ENERGY RATING": "5 STAR RATING",
+        "COMPRESSOR": "VARIABLE SPEED INVERTER COMPRESSOR",
+        "CONDENSER": "100% COPPER CONDENSER COILS",
+        "CONNECTIVITY": "WI-FI CONNECTED, HAION SMART APP CONTROL",
+        "KEY FEATURE": "PM2.5 DUST FILTER, 4-WAY AIR SWING, TURBO COOLING",
+        "WARRANTY": "1 YEAR PRODUCT, 10 YEARS COMPRESSOR WARRANTY"
+      },
+      "category": "evs",
+      "tag": "New",
+      "image": "/ac-removebg-preview.webp",
+      "link": "#product-detail-ac"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 20,
+    "isVisible": true,
+    "data": {
+      "id": "inv1",
+      "name": "Haion PowerGuard 1100",
+      "subtitle": "Smart Sine Wave Home UPS Inverter with IoT Battery Monitoring",
+      "image": "/haion_inverter.webp",
+      "price": "₹ 6,999",
+      "tag": "Best Seller",
+      "category": "inverters",
+      "features": [
+        "Pure Sine Wave Output",
+        "Smart WiFi App Tracking",
+        "Turbo Charging (Fast recovery)"
+      ]
+    }
+  },
+  {
+    "collection": "products",
+    "order": 21,
+    "isVisible": true,
+    "data": {
+      "id": "inv2",
+      "name": "Haion SuperCharge 1500",
+      "subtitle": "Heavy-Duty Smart Inverter with Eco & UPS Dual Mode Toggle",
+      "image": "/haion_inverter.webp",
+      "price": "₹ 9,499",
+      "tag": "New Launch",
+      "category": "inverters",
+      "features": [
+        "High Load Capacity",
+        "Eco & UPS Dual Mode",
+        "Short Circuit & Overload protection"
+      ]
+    }
+  },
+  {
+    "collection": "products",
+    "order": 22,
+    "isVisible": true,
+    "data": {
+      "id": "inv3",
+      "name": "Haion Solar Hybrid 2000",
+      "subtitle": "Advanced Solar Hybrid Inverter with Intelligent Grid Sharing",
+      "image": "/haion_inverter.webp",
+      "price": "₹ 14,999",
+      "tag": "Solar Tech",
+      "category": "inverters",
+      "features": [
+        "High Efficiency MPPT Charger",
+        "Solar Grid Intelligent Sharing",
+        "Digital LCD Status Display"
+      ]
+    }
+  }
+]

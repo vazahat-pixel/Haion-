@@ -14,6 +14,7 @@ const employeeAccess = requireAnyPermission(
 );
 
 router.get('/assigned-dealers', employeeAccess, ctrl.listAssignedDealers);
+router.get('/team-dealers', employeeAccess, ctrl.listTeamDealers);
 router.get('/assigned-dealers/:id', employeeAccess, ctrl.getAssignedDealer);
 router.get('/performance', employeeAccess, ctrl.getPerformance);
 router.get('/dealer-analytics', requireAnyPermission('employee.analytics.read', 'team.read'), ctrl.getDealerAnalytics);

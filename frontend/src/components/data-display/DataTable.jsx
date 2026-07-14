@@ -17,6 +17,8 @@ function renderCell(column, row) {
       return <span className="tabular-nums">{formatCurrency(value)}</span>;
     case 'number':
       return <span className="tabular-nums">{formatNumber(value)}</span>;
+    case 'percent':
+      return value != null ? <span className="tabular-nums">{value}%</span> : '—';
     case 'date':
       return formatDate(value);
     case 'relativeDate':
@@ -48,12 +50,12 @@ export function DataTable({
 
   return (
     <motion.div
-      className={cn('overflow-x-auto rounded-lg border border-surface-3 bg-surface-1 shadow-sm transition-shadow duration-200 hover:shadow-md', className)}
+      className={cn('max-w-full overflow-x-auto rounded-lg border border-surface-3 bg-surface-1 shadow-sm transition-shadow duration-200 hover:shadow-md', className)}
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
     >
-      <table className="w-full text-[12px]">
+      <table className="w-full table-fixed text-[12px]">
         <thead className="sticky top-0 z-10">
           <tr className="border-b border-surface-3 bg-surface-2/80">
             {columns.map((col) => (
@@ -64,7 +66,7 @@ export function DataTable({
                   col.align === 'right' && 'text-right',
                   col.sticky === 'right' && 'sticky right-0 bg-surface-2'
                 )}
-                style={{ width: col.width, minWidth: col.width }}
+                style={col.width ? { width: col.width } : undefined}
               >
                 {col.label}
               </th>
@@ -85,7 +87,7 @@ export function DataTable({
                   className={cn(
                     'px-3 py-1.5 text-[var(--color-text-primary)]',
                     col.align === 'right' && 'text-right',
-                    col.sticky === 'right' && 'sticky right-0 bg-surface-0'
+                    col.sticky === 'right' && 'sticky right-0 bg-surface-0 shadow-[-4px_0_8px_-4px_rgba(0,0,0,0.08)]'
                   )}
                 >
                   {renderCell(col, row)}

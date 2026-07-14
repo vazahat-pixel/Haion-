@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Poppins', system-ui, sans-serif;
+  --font-display: 'Poppins', system-ui, sans-serif;
+
+  --color-brand-dark: #f8f9fa;
+  --color-brand-glass: rgba(255, 255, 255, 0.6);
+  --color-brand-glass-border: rgba(0, 0, 0, 0.05);
+  --color-brand-glow: rgba(232, 141, 1, 0.05);
+
+  /* Re-mapping purple and indigo utility classes to the custom black/amber palette */
+  --color-purple-50: #fbf9f2;
+  --color-purple-100: #f7f3e6;
+  --color-purple-200: #eedeb9;
+  --color-purple-300: #e3c485;
+  --color-purple-400: #ffd233;
+  --color-purple-500: #e88d01;
+  --color-purple-600: #ab7e2c;
+  --color-purple-700: #7e5b1d;
+  --color-purple-800: #543b12;
+  --color-purple-900: #2b1d07;
+  --color-purple-950: #0f0c05;
+
+  --color-indigo-50: #fafafa;
+  --color-indigo-100: #f4f4f5;
+  --color-indigo-200: #e4e4e7;
+  --color-indigo-300: #d4d4d8;
+  --color-indigo-400: #a1a1aa;
+  --color-indigo-500: #71717a;
+  --color-indigo-600: #52525b;
+  --color-indigo-700: #3f3f46;
+  --color-indigo-800: #27272a;
+  --color-indigo-900: #18181b;
+  --color-indigo-950: #09090b;
+
+  /* Overriding faded zinc text colors to highly legible dark charcoal/black */
+  --color-zinc-300: #09090b;
+  --color-zinc-400: #18181b;
+  --color-zinc-500: #18181b;
+  --color-zinc-550: #18181b;
+  --color-zinc-600: #18181b;
+  --color-zinc-650: #18181b;
+  --color-zinc-655: #18181b;
+  --color-zinc-700: #18181b;
+
+  --animate-infinite-scroll: scroll 40s linear infinite;
+  --animate-gradient-shift: gradient-shift 8s ease infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+}
+
+/* Custom Utilities and Overrides */
+@layer utilities {
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);
+  }
+  
+  .glassmorphism-light {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(232, 141, 1, 0.15);
+  }
+
+  .bg-glow-radial {
+    background: radial-gradient(circle at 50% 50%, rgba(232, 141, 1, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #0f0f15 0%, #ab7e2c 50%, #e88d01 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+  }
+
+  .border-gradient {
+    border: 1px solid transparent;
+    background: linear-gradient(#ffffff, #ffffff) padding-box,
+                linear-gradient(to right, #ab7e2c, #e88d01) border-box;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Global Custom Styles */
+body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, a, span, p, div, li {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+body {
+  background-color: #f8f9fa;
+  color: #1f2937;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}

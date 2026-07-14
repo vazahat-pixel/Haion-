@@ -145,17 +145,20 @@ export const getMe = asyncHandler(async (req, res) => {
 export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email: email.toLowerCase() });
+  let devResetToken = null;
 
   if (user) {
     const resetToken = crypto.randomBytes(32).toString('hex');
     user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
     await user.save();
+    if (env.isDev) devResetToken = resetToken;
     const { sendPasswordResetEmail } = await import('../services/email.service.js');
     await sendPasswordResetEmail({ to: email, resetToken });
   }
 
   return sendSuccess(res, {
+    data: env.isDev ? { resetToken: devResetToken } : undefined,
     message: 'If an account exists with this email, a reset link has been sent.',
   });
 });

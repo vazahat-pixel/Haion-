@@ -1,31 +1,14 @@
 import client from './api/client';
 import { endpoints } from './api/endpoints';
-import { withMockFallback } from '@/utils/withMockFallback';
-import { mockService } from './mock.service';
 
 export const complaintsService = {
-  getList: (filters) => withMockFallback(
-    async () => (await client.get(endpoints.complaints.list, { params: filters })).normalized,
-    () => mockService.complaints.getList(filters)
-  ),
-  getDetail: (id) => withMockFallback(
-    async () => (await client.get(endpoints.complaints.detail(id))).normalized.data,
-    () => mockService.complaints.getDetail(id)
-  ),
-  create: (data) => withMockFallback(
-    async () => (await client.post(endpoints.complaints.list, data)).normalized.data,
-    () => mockService.complaints.create(data)
-  ),
-  getTimeline: (id) => withMockFallback(
-    async () => (await client.get(endpoints.complaints.timeline(id))).normalized.data,
-    () => mockService.complaints.getTimeline(id)
-  ),
-  escalate: (id) => withMockFallback(
-    async () => (await client.post(endpoints.complaints.escalate(id))).normalized.data,
-    () => mockService.complaints.escalate(id)
-  ),
-  resolve: (id) => withMockFallback(
-    async () => (await client.post(endpoints.complaints.resolve(id))).normalized.data,
-    () => mockService.complaints.resolve(id)
-  ),
+  getList: async (filters) => (await client.get(endpoints.complaints.list, { params: filters })).normalized,
+  getDetail: async (id) => (await client.get(endpoints.complaints.detail(id))).normalized.data,
+  create: async (data) => (await client.post(endpoints.complaints.list, data)).normalized.data,
+  getTimeline: async (id) => (await client.get(endpoints.complaints.timeline(id))).normalized.data,
+  escalate: async (id) => (await client.post(endpoints.complaints.escalate(id))).normalized.data,
+  resolve: async (id) => (await client.post(endpoints.complaints.resolve(id))).normalized.data,
+  createPublic: async (data) => (await client.post('/complaints/public', data)).normalized.data,
+  validateBill: async (params) => (await client.get('/complaints/public/validate-bill', { params })).normalized.data,
+  lookupContact: async (params) => (await client.get('/complaints/public/lookup-contact', { params })).normalized.data,
 };

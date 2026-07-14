@@ -74,3 +74,53 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
   return sendCreated(res, { data: mapOrder(doc.toObject()), message: 'Order created' });
 });
+
+const ORDER_STATUS_FLOW = {
+  CONFIRMED: ['PROCESSING', 'CANCELLED'],
+  PROCESSING: ['IN_TRANSIT', 'CANCELLED'],
+  IN_TRANSIT: ['DELIVERED'],
+};
+
+export const updateOrderStatus = asyncHandler(async (req, res) => {
+  const doc = await Order.findById(req.params.id);
+  if (!doc) return sendError(res, { message: 'Order not found', statusCode: 404 });
+
+  const { status, notes, trackingNo, eta } = req.body;
+  const allowed = ORDER_STATUS_FLOW[doc.status] || [];
+  if (!allowed.includes(status)) {
+    return sendError(res, { message: `Cannot transition from ${doc.status} to ${status}`, statusCode: 400 });
+  }
+
+  doc.status = status;
+  if (trackingNo) doc.trackingNo = trackingNo;
+  if (eta) doc.eta = eta;
+  if (status === 'DELIVERED') doc.deliveredAt = new Date();
+
+  const titleMap = {
+    PROCESSING: 'Order is being processed',
+    IN_TRANSIT: 'Order shipped — in transit',
+    DELIVERED: 'Order delivered',
+    CANCELLED: 'Order cancelled',
+  };
+  doc.timeline.push({
+    title: titleMap[status] || `Status: ${status}`,
+    description: notes,
+    variant: status === 'DELIVERED' ? 'success' : status === 'CANCELLED' ? 'danger' : 'default',
+    at: new Date(),
+    by: req.user?.email,
+  });
+  await doc.save();
+
+  if (doc.customer) {
+    const { notifyCustomerStatusChange } = await import('../services/notification.service.js');
+    await notifyCustomerStatusChange({
+      userId: doc.customer,
+      title: `Order ${doc.orderNo} updated`,
+      message: titleMap[status] || status,
+      resourceId: doc.orderNo,
+      link: `/customer/orders/${doc._id}`,
+    });
+  }
+
+  return sendSuccess(res, { data: mapOrder(doc.toObject()), message: 'Order status updated' });
+});

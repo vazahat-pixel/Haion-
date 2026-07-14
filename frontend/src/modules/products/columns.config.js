@@ -1,9 +1,9 @@
 export const productColumns = [
   { key: 'sku', label: 'SKU', width: 110 },
-  { key: 'name', label: 'Product', width: 200 },
+  { key: 'name', label: 'Item', width: 200 },
   { key: 'category', label: 'Category', width: 120 },
   { key: 'brand', label: 'Brand', width: 100 },
-  { key: 'dealerPrice', label: 'Dealer Price', width: 120, align: 'right', render: 'currency' },
+  { key: 'gstRate', label: 'GST %', width: 80, align: 'right', render: 'percent' },
   { key: 'stockTotal', label: 'Stock', width: 80, align: 'right', render: 'number' },
   { key: 'status', label: 'Status', width: 100, render: 'badge' },
   { key: 'actions', label: '', width: 60, render: 'actions', sticky: 'right', sortable: false },
@@ -11,14 +11,21 @@ export const productColumns = [
 
 export const productDetailFields = [
   { key: 'sku', label: 'SKU' },
-  { key: 'name', label: 'Product Name' },
+  { key: 'name', label: 'Item Name' },
   { key: 'category', label: 'Category' },
   { key: 'brand', label: 'Brand' },
   { key: 'hsn', label: 'HSN Code' },
+  { key: 'gstRate', label: 'GST Rate', format: 'percent' },
   { key: 'imageUrl', label: 'Image', format: 'image' },
-  { key: 'mrp', label: 'MRP', format: 'currency' },
-  { key: 'dealerPrice', label: 'Dealer Price', format: 'currency' },
   { key: 'stockTotal', label: 'Total Stock', format: 'number' },
   { key: 'status', label: 'Status', format: 'badge' },
   { key: 'updatedAt', label: 'Last Updated', format: 'datetime' },
+];
+
+export const GST_RATE_OPTIONS = [
+  { value: 0, label: '0%' },
+  { value: 5, label: '5%' },
+  { value: 12, label: '12%' },
+  { value: 18, label: '18%' },
+  { value: 28, label: '28%' },
 ];

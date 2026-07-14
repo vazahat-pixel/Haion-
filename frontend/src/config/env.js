@@ -6,4 +6,5 @@ export const env = {
   isProd: import.meta.env.PROD,
   /** Use VITE_USE_MOCK_API=true on Vercel to bypass backend */
   useMockApi: import.meta.env.VITE_USE_MOCK_API === 'true' || (import.meta.env.VITE_USE_MOCK_API !== 'false' && import.meta.env.DEV),
+  razorpayKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
 };

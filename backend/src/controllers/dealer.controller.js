@@ -8,6 +8,21 @@ import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js'
 import { mapDealer, mapDealerInventory, mapDealerTeamMember } from '../utils/docMapper.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
 
+async function ensureDealerUniqueness({ code, gstin, email, phone, excludeId }) {
+  const checks = [];
+  if (code) checks.push({ code: String(code).toUpperCase().trim() });
+  if (gstin) checks.push({ gstin: String(gstin).toUpperCase().trim() });
+  if (email) checks.push({ email: String(email).toLowerCase().trim() });
+  if (phone) checks.push({ phone: String(phone).trim() });
+  if (!checks.length) return;
+  const query = { $or: checks };
+  if (excludeId) query._id = { $ne: excludeId };
+  const duplicate = await Dealer.findOne(query).lean();
+  if (duplicate) {
+    throw Object.assign(new Error('Dealer already exists with same code/GSTIN/email/phone'), { statusCode: 409 });
+  }
+}
+
 export const listDealers = asyncHandler(async (req, res) => {
   const { page, perPage, skip, sort } = parsePagination(req.query);
   const filter = { ...buildSearchFilter(req.query.search, ['name', 'code', 'city', 'gstin']) };
@@ -28,8 +43,15 @@ export const getDealer = asyncHandler(async (req, res) => {
 
 export const createDealer = asyncHandler(async (req, res) => {
   const body = req.body;
+  const dealerCode = body.code || nextSequence('DLR');
+  await ensureDealerUniqueness({
+    code: dealerCode,
+    gstin: body.gstin,
+    email: body.email || body.contactEmail,
+    phone: body.phone || body.contactPhone,
+  });
   const dealer = await Dealer.create({
-    code: body.code || nextSequence('DLR'),
+    code: dealerCode,
     name: body.name,
     city: body.city,
     state: body.state,
@@ -38,10 +60,30 @@ export const createDealer = asyncHandler(async (req, res) => {
     phone: body.phone || body.contactPhone,
     creditLimit: body.creditLimit ?? 0,
     documentUrl: body.documentUrl || null,
+    documents: Array.isArray(body.documents) ? body.documents : (body.documentUrl ? [{ type: 'GENERAL', label: 'Primary document', url: body.documentUrl }] : []),
+    gstExpiryDate: body.gstExpiryDate || null,
     logoUrl: body.logoUrl || null,
     status: body.status || 'PENDING_ONBOARDING',
   });
   return sendCreated(res, { data: mapDealer(dealer.toObject()), message: 'Dealer created' });
+});
+
+export const updateDealer = asyncHandler(async (req, res) => {
+  const allowed = ['name', 'city', 'state', 'gstin', 'email', 'phone', 'creditLimit', 'documentUrl', 'documents', 'logoUrl', 'gstExpiryDate', 'region', 'tier'];
+  const update = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) update[key] = req.body[key];
+  }
+  await ensureDealerUniqueness({
+    code: req.body.code,
+    gstin: update.gstin,
+    email: update.email,
+    phone: update.phone,
+    excludeId: req.params.id,
+  });
+  const dealer = await Dealer.findByIdAndUpdate(req.params.id, update, { new: true }).lean();
+  if (!dealer) return sendError(res, { message: 'Dealer not found', statusCode: 404 });
+  return sendSuccess(res, { data: mapDealer(dealer), message: 'Dealer updated' });
 });
 
 export const updateDealerStatus = asyncHandler(async (req, res) => {

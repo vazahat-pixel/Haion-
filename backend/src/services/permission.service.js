@@ -28,6 +28,32 @@ export function invalidatePermissionCache() {
   cacheAt = 0;
 }
 
+/** Add permissions from ROLE_PERMISSIONS that are missing in DB (e.g. after catalog updates). */
+export async function syncMissingRolePermissions() {
+  try {
+    for (const [code, staticPermissions] of Object.entries(ROLE_PERMISSIONS)) {
+      const role = await Role.findOne({ code }).lean();
+      if (!role) {
+        await Role.create({
+          code,
+          name: code.replace(/_/g, ' '),
+          permissions: staticPermissions,
+          isSystem: true,
+        });
+        continue;
+      }
+
+      const missing = staticPermissions.filter((permission) => !role.permissions.includes(permission));
+      if (missing.length > 0) {
+        await Role.updateOne({ code }, { $addToSet: { permissions: { $each: missing } } });
+      }
+    }
+    invalidatePermissionCache();
+  } catch (err) {
+    console.warn('Role permission sync skipped:', err.message);
+  }
+}
+
 export async function getPermissionsForRole(roleCode) {
   const map = await loadPermissionCache();
   return map[roleCode] || ROLE_PERMISSIONS[roleCode] || [];

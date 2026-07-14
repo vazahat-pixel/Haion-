@@ -1,8 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Send, CheckCircle, FileText } from 'lucide-react';
+import { Send, CheckCircle, FileText, Shield } from 'lucide-react';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { billingService } from '@/services/billing.service';
+import { warrantyService } from '@/services/warranty.service';
 import { queryKeys } from '@/services/api/queryKeys';
 import { DetailView } from '@/components/data-display/DetailView';
 import { StatusBadge } from '@/components/data-display/StatusBadge';
@@ -15,9 +16,19 @@ export function BillingDetailPanel({ id }) {
   const qc = useQueryClient();
   const { data, isLoading, isError, refetch } = useEntityDetail(queryKeys.billing.detail, billingService.getDetail, id);
 
+  const { data: warrantyInfo } = useQuery({
+    queryKey: ['warranty', 'bill', data?.billNo],
+    queryFn: () => warrantyService.lookup({ billNo: data.billNo }),
+    enabled: !!data?.billNo && ['SENT', 'PAID'].includes(data?.status),
+  });
+
   const sendBill = useMutation({
     mutationFn: () => billingService.send(id),
-    onSuccess: () => { toast.success('Bill sent to customer'); qc.invalidateQueries({ queryKey: queryKeys.billing.all }); refetch(); },
+    onSuccess: () => {
+      toast.success('Bill sent — warranty certificates generated');
+      qc.invalidateQueries({ queryKey: queryKeys.billing.all });
+      refetch();
+    },
   });
 
   const markPaid = useMutation({
@@ -66,6 +77,20 @@ export function BillingDetailPanel({ id }) {
         ]}
         data={data}
       />
+
+      {['SENT', 'PAID'].includes(data.status) && warrantyInfo?.found && (
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Shield className="h-4 w-4" /> Warranty</CardTitle></CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <p>Warranty certificates were auto-generated for this bill.</p>
+            {warrantyInfo.warranty?.id && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to={`/dealer/warranty/${warrantyInfo.warranty.id}`}>View Certificate</Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {lineItems.length > 0 && (
         <Card>

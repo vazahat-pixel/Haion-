@@ -25,7 +25,7 @@ export async function sendPasswordResetEmail({ to, resetToken, resetUrl }) {
     return { mocked: true };
   }
 
-  const url = resetUrl || `${env.corsOrigin}/reset-password?token=${resetToken}`;
+  const url = resetUrl || `${env.corsOrigin}/auth/reset-password?token=${resetToken}`;
   const info = await transport.sendMail({
     from: env.smtpFrom || 'noreply@haion.com',
     to,
@@ -36,4 +36,19 @@ export async function sendPasswordResetEmail({ to, resetToken, resetUrl }) {
 
   if (env.isDev && info.message) console.log('[email]', info.message);
   return info;
+}
+
+export async function sendEmail({ to, subject, html, text }) {
+  const transport = getTransporter();
+  if (!transport) {
+    if (env.isDev) console.log(`[email] To ${to}: ${subject}`);
+    return { mocked: true };
+  }
+  return transport.sendMail({
+    from: env.smtpFrom || 'noreply@haion.com',
+    to,
+    subject,
+    html,
+    text: text || subject,
+  });
 }

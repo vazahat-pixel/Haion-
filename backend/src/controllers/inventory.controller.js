@@ -1,8 +1,11 @@
 import Inventory from '../models/Inventory.model.js';
+import StockMovement from '../models/StockMovement.model.js';
+import { transferWarehouseStock } from '../services/inventory.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { mapInventory } from '../utils/docMapper.util.js';
+
 export const listInventory = asyncHandler(async (req, res) => {
   const { page, perPage, skip, sort } = parsePagination(req.query);
   const filter = {
@@ -39,12 +42,10 @@ export const getInventory = asyncHandler(async (req, res) => {
   });
 });
 
-export const createInventory = asyncHandler(async (req, res) => {
-  const item = await Inventory.create({ ...req.body, warehouse: req.body.warehouseId || req.body.warehouse });
-  await item.populate('warehouse', 'code');
-  return sendCreated(res, {
-    data: mapInventory({ ...item.toObject(), warehouseCode: item.warehouse?.code }),
-    message: 'Inventory item created',
+export const createInventory = asyncHandler(async (_req, res) => {
+  return sendError(res, {
+    message: 'Inventory items cannot be added manually. Create a purchase and mark it as received — stock will be updated automatically.',
+    statusCode: 400,
   });
 });
 
@@ -86,3 +87,71 @@ export const inventoryCategories = asyncHandler(async (_req, res) => {
   const categories = await Inventory.distinct('category', { isDeleted: false });
   return sendSuccess(res, { data: categories.sort() });
 });
+
+export const listStockMovements = asyncHandler(async (req, res) => {
+  const { page, perPage, skip, sort } = parsePagination(req.query);
+  const filter = {};
+  if (req.query.sku) filter.sku = req.query.sku.toUpperCase();
+  if (req.query.warehouse) filter.warehouse = req.query.warehouse;
+  if (req.query.dealer) filter.dealer = req.query.dealer;
+  if (req.query.action) filter.action = req.query.action.toUpperCase();
+  if (req.query.from || req.query.to) {
+    filter.createdAt = {};
+    if (req.query.from) filter.createdAt.$gte = new Date(req.query.from);
+    if (req.query.to) filter.createdAt.$lte = new Date(req.query.to);
+  }
+  const [rows, total] = await Promise.all([
+    StockMovement.find(filter).sort(sort).skip(skip).limit(perPage).lean(),
+    StockMovement.countDocuments(filter),
+  ]);
+  return sendPaginated(res, { data: rows, total, page, perPage });
+});
+
+export const getInventoryMovements = asyncHandler(async (req, res) => {
+  const item = await Inventory.findById(req.params.id).lean();
+  if (!item) return sendError(res, { message: 'Inventory item not found', statusCode: 404 });
+  const { page, perPage, skip, sort } = parsePagination(req.query);
+  const filter = { sku: item.sku };
+  if (item.warehouse) filter.warehouse = item.warehouse;
+  const [rows, total] = await Promise.all([
+    StockMovement.find(filter).sort(sort).skip(skip).limit(perPage).lean(),
+    StockMovement.countDocuments(filter),
+  ]);
+  return sendPaginated(res, { data: rows, total, page, perPage });
+});
+
+export const transferStock = asyncHandler(async (req, res) => {
+  const { fromWarehouseId, toWarehouseId, sku, quantity, notes } = req.body;
+  if (!fromWarehouseId || !toWarehouseId || !sku) {
+    return sendError(res, { message: 'fromWarehouseId, toWarehouseId, and sku are required', statusCode: 400 });
+  }
+  if (req.user.role === 'WAREHOUSE_MANAGER' && req.user.warehouseId
+    && String(req.user.warehouseId) !== String(fromWarehouseId)) {
+    return sendError(res, { message: 'You can only transfer from your assigned warehouse', statusCode: 403 });
+  }
+
+  try {
+    const result = await transferWarehouseStock({
+      fromWarehouseId,
+      toWarehouseId,
+      sku,
+      quantity: Number(quantity),
+      performedBy: req.user?.email,
+      performedByUser: req.user?._id,
+      notes,
+    });
+    return sendSuccess(res, {
+      data: {
+        reference: result.reference,
+        sku: result.fromItem.sku,
+        quantity: Number(quantity),
+        fromQty: result.fromItem.quantity,
+        toQty: result.toItem.quantity,
+      },
+      message: 'Stock transferred successfully',
+    });
+  } catch (err) {
+    return sendError(res, { message: err.message, statusCode: err.statusCode || 400 });
+  }
+});
+

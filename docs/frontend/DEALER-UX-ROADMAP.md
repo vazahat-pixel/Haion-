@@ -56,14 +56,14 @@ flowchart LR
 | `customers.service` | ✅ Direct API | `/api/customers` |
 | `billing.service` | ✅ Direct API | `/api/billing` |
 | `invoices.service` | ✅ Direct API | `/api/invoices` (+ PDF) |
-| `warranty.service` | ⚠️ Mock fallback | `/api/warranty` |
-| `dealer-grn.service` | ❌ Mock fallback | `/api/dealer/grn` |
-| `dealer-dispatch.service` | ❌ Mock fallback | `/api/dealer/dispatches` |
-| `dealer-inventory.service` | ❌ Mock fallback | `/api/dealer/inventory` |
-| `dealer-team.service` | ❌ Mock fallback | `/api/dealer/team` |
-| `dealer-reports.service` | ❌ Mock fallback | `/api/dealer/reports` |
+| `warranty.service` | ✅ Direct API | `/api/warranty` |
+| `dealer-grn.service` | ✅ Direct API | `/api/dealer/grn` |
+| `dealer-dispatch.service` | ✅ Direct API | `/api/dealer/dispatches` |
+| `dealer-inventory.service` | ✅ Direct API | `/api/dealer/inventory` |
+| `dealer-team.service` | ✅ Direct API | `/api/dealer/team` |
+| `dealer-reports.service` | ✅ Direct API | `/api/dealer/reports` |
 
-**Priority P0:** Strip mock from the five `dealer-*` services so the inventory chain works with `VITE_USE_MOCK_API=false`.
+**P0 complete:** All dealer services now hit real backend APIs (`VITE_USE_MOCK_API=false`).
 
 ---
 

@@ -5,6 +5,7 @@ const dispatchLineSchema = new mongoose.Schema(
     sku: { type: String, required: true },
     name: { type: String, required: true },
     quantity: { type: Number, required: true, min: 1 },
+    receivedQty: { type: Number, min: 0, default: null },
   },
   { _id: false }
 );

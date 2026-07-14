@@ -7,4 +7,5 @@ export const inventoryService = {
   create: async (data) => (await client.post(endpoints.inventory.list, data)).normalized.data,
   update: async (id, data) => (await client.patch(endpoints.inventory.detail(id), data)).normalized.data,
   getLowStock: async () => (await client.get(endpoints.inventory.lowStock)).normalized.data,
+  transferStock: async (data) => (await client.post('/inventory/transfer', data)).normalized,
 };

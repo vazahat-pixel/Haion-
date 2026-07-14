@@ -1,5 +1,6 @@
 import Dispatch from '../models/Dispatch.model.js';
 import Dealer from '../models/Dealer.model.js';
+import mongoose from 'mongoose';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
@@ -80,16 +81,13 @@ export const updateDispatchStatus = asyncHandler(async (req, res) => {
   if (status === 'DISPATCHED') {
     await deductWarehouseStock({ warehouseId: dispatch.warehouse, lineItems: dispatch.lineItems });
   }
-  if (status === 'DELIVERED') {
-    for (const line of dispatch.lineItems) {
-      await upsertDealerStock({
-        dealerId: dispatch.dealer,
-        sku: line.sku,
-        name: line.name,
-        qtyDelta: line.quantity,
-      });
-    }
-    dispatch.dealerConfirmedAt = new Date();
+  // PRD: dealer stock increases only on GRN confirm, not when admin marks delivered
+  if (status === 'DELIVERED' && !dispatch.dealerConfirmedAt) {
+    dispatch.timeline.push({
+      title: 'Delivered — awaiting dealer GRN confirmation',
+      timestamp: new Date(),
+      variant: 'warning',
+    });
   }
 
   dispatch.status = status;
@@ -110,13 +108,72 @@ export const pendingDispatchCount = asyncHandler(async (_req, res) => {
 });
 
 export const confirmDealerGRN = asyncHandler(async (req, res) => {
-  const dispatch = await Dispatch.findById(req.params.id);
-  if (!dispatch) return sendError(res, { message: 'Dispatch not found', statusCode: 404 });
-  if (String(dispatch.dealer) !== String(req.user.dealerId)) {
-    return sendError(res, { message: 'Access denied', statusCode: 403 });
+  const session = await mongoose.startSession();
+  try {
+    let dispatch;
+    await session.withTransaction(async () => {
+      dispatch = await Dispatch.findById(req.params.id).session(session);
+      if (!dispatch) throw Object.assign(new Error('Dispatch not found'), { statusCode: 404 });
+      if (String(dispatch.dealer) !== String(req.user.dealerId)) {
+        throw Object.assign(new Error('Access denied'), { statusCode: 403 });
+      }
+      if (dispatch.status === 'CANCELLED') {
+        throw Object.assign(new Error('Cannot confirm GRN for a cancelled dispatch'), { statusCode: 400 });
+      }
+      if (dispatch.dealerConfirmedAt) {
+        throw Object.assign(new Error('GRN already confirmed'), { statusCode: 400 });
+      }
+
+      const receivedMap = {};
+      for (const item of req.body.receivedItems || []) {
+        if (item.sku) receivedMap[item.sku.toUpperCase()] = Number(item.receivedQty);
+      }
+
+      let hasDiscrepancy = false;
+      for (const line of dispatch.lineItems) {
+        const dispatched = line.quantity;
+        const received = receivedMap[line.sku] ?? dispatched;
+        if (Number.isNaN(received) || received < 0 || received > dispatched) {
+          throw Object.assign(new Error(`Received quantity for ${line.sku} must be between 0 and ${dispatched}`), { statusCode: 400 });
+        }
+        line.receivedQty = received;
+        if (received !== dispatched) hasDiscrepancy = true;
+        if (received > 0) {
+          await upsertDealerStock({
+            dealerId: dispatch.dealer,
+            sku: line.sku,
+            name: line.name,
+            qtyDelta: received,
+            reference: dispatch.dispatchNo,
+            referenceType: 'Dispatch',
+            referenceId: dispatch._id,
+            performedBy: req.user.email,
+            performedByUser: req.user._id,
+            session,
+          });
+        }
+      }
+
+      dispatch.dealerConfirmedAt = new Date();
+      if (dispatch.status !== 'DELIVERED') dispatch.status = 'DELIVERED';
+      dispatch.timeline.push({
+        title: hasDiscrepancy ? 'GRN confirmed with quantity discrepancy' : 'GRN confirmed by dealer — stock updated',
+        description: hasDiscrepancy ? 'Received quantities differ from dispatched' : undefined,
+        variant: hasDiscrepancy ? 'warning' : 'success',
+        timestamp: new Date(),
+      });
+      await dispatch.save({ session });
+    });
+
+    await dispatch.populate(['dealer', 'warehouse']);
+    const hasDiscrepancy = dispatch.lineItems.some((line) => Number(line.receivedQty ?? line.quantity) !== Number(line.quantity));
+    return sendSuccess(res, {
+      data: mapDispatch(dispatch.toObject()),
+      message: hasDiscrepancy ? 'GRN confirmed with discrepancies recorded' : 'GRN confirmed — dealer stock updated',
+    });
+  } catch (err) {
+    return sendError(res, { message: err.message, statusCode: err.statusCode || 400 });
+  } finally {
+    await session.endSession();
   }
-  dispatch.dealerConfirmedAt = new Date();
-  dispatch.timeline.push({ title: 'GRN confirmed by dealer', variant: 'success' });
-  await dispatch.save();
-  return sendSuccess(res, { data: mapDispatch(dispatch.toObject()), message: 'GRN confirmed' });
 });

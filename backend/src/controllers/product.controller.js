@@ -1,9 +1,30 @@
 import Product from '../models/Product.model.js';
 import ProductTier from '../models/ProductTier.model.js';
+import Inventory from '../models/Inventory.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
+
+function mapProduct(doc, stockTotal = 0) {
+  const d = toPublicDoc(doc);
+  return {
+    ...d,
+    hsn: d.hsnCode,
+    brand: d.brand || d.description?.split(' · ')?.[0] || '',
+    gstRate: d.gstRate ?? 18,
+    stockTotal,
+  };
+}
+
+async function stockTotalsBySku(skus) {
+  if (!skus.length) return {};
+  const rows = await Inventory.aggregate([
+    { $match: { sku: { $in: skus }, isDeleted: { $ne: true } } },
+    { $group: { _id: '$sku', stockTotal: { $sum: '$quantity' } } },
+  ]);
+  return Object.fromEntries(rows.map((r) => [r._id, r.stockTotal]));
+}
 
 export const listProducts = asyncHandler(async (req, res) => {
   const { page, perPage, skip, sort } = parsePagination(req.query);
@@ -16,25 +37,34 @@ export const listProducts = asyncHandler(async (req, res) => {
     Product.countDocuments(filter),
   ]);
 
-  return sendPaginated(res, { data: toPublicDoc(data), total, page, perPage });
+  const stockMap = await stockTotalsBySku(data.map((p) => p.sku));
+  return sendPaginated(res, {
+    data: data.map((p) => mapProduct(p, stockMap[p.sku] ?? 0)),
+    total,
+    page,
+    perPage,
+  });
 });
 
 export const getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id).lean();
-  if (!product) return sendError(res, { message: 'Product not found', statusCode: 404 });
+  if (!product) return sendError(res, { message: 'Item not found', statusCode: 404 });
+  const stockMap = await stockTotalsBySku([product.sku]);
   const tiers = await ProductTier.find({ product: product._id }).sort({ basePrice: 1 }).lean();
-  return sendSuccess(res, { data: { ...toPublicDoc(product), tiers: toPublicDoc(tiers) } });
+  return sendSuccess(res, {
+    data: { ...mapProduct(product, stockMap[product.sku] ?? 0), tiers: toPublicDoc(tiers) },
+  });
 });
 
 export const createProduct = asyncHandler(async (req, res) => {
   const product = await Product.create({ ...req.body, createdBy: req.user._id });
-  return sendCreated(res, { data: toPublicDoc(product.toObject()), message: 'Product created' });
+  return sendCreated(res, { data: mapProduct(product.toObject()), message: 'Item created' });
 });
 
 export const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-  if (!product) return sendError(res, { message: 'Product not found', statusCode: 404 });
-  return sendSuccess(res, { data: toPublicDoc(product.toObject()), message: 'Product updated' });
+  if (!product) return sendError(res, { message: 'Item not found', statusCode: 404 });
+  return sendSuccess(res, { data: mapProduct(product.toObject()), message: 'Item updated' });
 });
 
 export const updateProductStatus = asyncHandler(async (req, res) => {
@@ -43,8 +73,8 @@ export const updateProductStatus = asyncHandler(async (req, res) => {
     { status: req.body.status },
     { new: true }
   );
-  if (!product) return sendError(res, { message: 'Product not found', statusCode: 404 });
-  return sendSuccess(res, { data: toPublicDoc(product.toObject()) });
+  if (!product) return sendError(res, { message: 'Item not found', statusCode: 404 });
+  return sendSuccess(res, { data: mapProduct(product.toObject()) });
 });
 
 export const listAllTiers = asyncHandler(async (req, res) => {

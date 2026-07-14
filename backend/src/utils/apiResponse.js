@@ -4,8 +4,8 @@ export function sendSuccess(res, { data = null, message = 'Success', statusCode 
   return res.status(statusCode).json(body);
 }
 
-export function sendError(res, { message = 'An error occurred', statusCode = 500, errors = null }) {
-  const body = { success: false, data: null, message };
+export function sendError(res, { message = 'An error occurred', statusCode = 500, errors = null, data = null }) {
+  const body = { success: false, data, message };
   if (errors) body.errors = errors;
   return res.status(statusCode).json(body);
 }

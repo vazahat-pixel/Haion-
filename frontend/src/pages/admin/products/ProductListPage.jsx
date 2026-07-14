@@ -8,9 +8,9 @@ export default function ProductListPage() {
   const [open, setOpen] = useState(false);
   return (
     <PageShell
-      title="Products"
-      subtitle="Manage product catalog and specifications"
-      actions={<Button size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Add Product</Button>}
+      title="Items"
+      subtitle="Manage item catalog and specifications"
+      actions={<Button size="sm" onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Add Item</Button>}
     >
       <ProductTable />
       <ProductDrawer open={open} onOpenChange={setOpen} />

@@ -44,16 +44,16 @@ export function DealerAnalyticsPanel() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-base">Sales by Region</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Revenue Trend</CardTitle></CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.regionSales} barSize={36}>
+                <BarChart data={data.monthlyTrend || data.regionSales || []} barSize={36}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-surface-3)" vertical={false} />
-                  <XAxis dataKey="region" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey={data.monthlyTrend ? 'month' : 'region'} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
                   <Tooltip formatter={(v) => formatCurrency(v)} />
-                  <Bar dataKey="sales" fill="var(--color-brand-500)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey={data.monthlyTrend ? 'revenue' : 'sales'} fill="var(--color-brand-500)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -85,8 +85,15 @@ export function DealerAnalyticsPanel() {
       <div>
         <h3 className="mb-4 text-base font-semibold">Top Performing Dealers</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {data.topDealers.map((dealer) => (
-            <DealerCard key={dealer.id} dealer={dealer} />
+          {(data.topDealers || data.topPerformers || []).map((dealer, i) => (
+            <DealerCard key={dealer.id || dealer.name || i} dealer={{
+              ...dealer,
+              id: dealer.id || `tp-${i}`,
+              zone: dealer.zone || (dealer.achievement >= 100 ? 'GREEN' : dealer.achievement >= 75 ? 'YELLOW' : 'RED'),
+              achievementPct: dealer.achievementPct ?? dealer.achievement,
+              achieved: dealer.achieved ?? dealer.revenue,
+              target: dealer.target || 500000,
+            }} />
           ))}
         </div>
       </div>

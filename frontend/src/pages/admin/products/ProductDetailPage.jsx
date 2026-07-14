@@ -46,7 +46,7 @@ export default function ProductDetailPage() {
 
     onSuccess: () => {
 
-      toast.success(data?.status === 'ACTIVE' ? 'Product deactivated' : 'Product activated');
+      toast.success(data?.status === 'ACTIVE' ? 'Item deactivated' : 'Item activated');
 
       qc.invalidateQueries({ queryKey: queryKeys.products.all });
 
@@ -66,11 +66,11 @@ export default function ProductDetailPage() {
 
     <DetailPageShell
 
-      back={{ label: 'Products', href: '/admin/products' }}
+      back={{ label: 'Items', href: '/admin/products' }}
 
-      title={data?.name || 'Product Details'}
+      title={data?.name || 'Item Details'}
 
-      subtitle={data?.sku ? `SKU ${data.sku} · ${data.category || ''}` : 'Catalog product information'}
+      subtitle={data?.sku ? `SKU ${data.sku} · ${data.category || ''}` : 'Catalog item information'}
 
       actions={data ? (
 

@@ -7,6 +7,8 @@ const LINKS = [
   { label: 'General', href: '/admin/settings/general' },
   { label: 'GST', href: '/admin/settings/gst' },
   { label: 'Alert Preferences', href: '/admin/settings/notifications' },
+  { label: 'Customer Portal', href: '/admin/settings/customer-portal' },
+  { label: 'CA Reports Sharing', href: '/admin/settings/ca-reports' },
   { label: 'Roles & Permissions', href: '/admin/settings/roles' },
 ];
 

@@ -3,6 +3,7 @@ import {
   Warehouse,
   Truck,
   Package,
+  ArrowLeftRight,
   Users,
   UserCog,
   Settings,
@@ -26,6 +27,9 @@ import {
   Bell,
   ClipboardCheck,
   Target,
+  Globe,
+  Contact,
+  ShoppingCart,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/constants/permissions';
 import { ROLES } from '@/constants/roles';
@@ -40,7 +44,9 @@ export const PANELS = {
     baseRoute: '/admin',
     nav: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.ADMIN_DASHBOARD, permission: PERMISSIONS.ANALYTICS_READ },
-      { id: 'products', label: 'Products', icon: Boxes, path: ROUTES.ADMIN_PRODUCTS, permission: PERMISSIONS.PRODUCTS_READ, roles: [ROLES.MASTER_ADMIN] },
+      { id: 'items', label: 'Items', icon: Boxes, path: ROUTES.ADMIN_PRODUCTS, permission: PERMISSIONS.PRODUCTS_READ, roles: [ROLES.MASTER_ADMIN] },
+      { id: 'parties', label: 'Parties', icon: Contact, path: ROUTES.ADMIN_PARTIES, permission: PERMISSIONS.PARTIES_READ },
+      { id: 'purchases', label: 'Purchases', icon: ShoppingCart, path: ROUTES.ADMIN_PURCHASES, permission: PERMISSIONS.PURCHASES_READ },
       { id: 'categories', label: 'Categories', icon: Tags, path: ROUTES.ADMIN_CATEGORIES, permission: PERMISSIONS.CATEGORIES_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'brands', label: 'Brands', icon: Award, path: ROUTES.ADMIN_BRANDS, permission: PERMISSIONS.BRANDS_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'tiers', label: 'Product Tiers', icon: Layers, path: ROUTES.ADMIN_PRODUCT_TIERS, permission: PERMISSIONS.PRICING_READ, roles: [ROLES.MASTER_ADMIN] },
@@ -49,6 +55,7 @@ export const PANELS = {
       { id: 'grn', label: 'GRN Monitoring', icon: ClipboardCheck, path: ROUTES.ADMIN_GRN, permission: PERMISSIONS.GRN_READ, badgeKey: 'grn.pending' },
       { id: 'dispatch', label: 'Dispatch', icon: Truck, path: ROUTES.ADMIN_DISPATCH, permission: PERMISSIONS.DISPATCH_READ, badgeKey: 'dispatch.pending' },
       { id: 'inventory', label: 'Inventory', icon: Package, path: ROUTES.ADMIN_INVENTORY, permission: PERMISSIONS.INVENTORY_READ, badgeKey: 'inventory.lowStock' },
+      { id: 'stock-movements', label: 'Stock Movements', icon: ArrowLeftRight, path: ROUTES.ADMIN_STOCK_MOVEMENTS, permission: PERMISSIONS.INVENTORY_READ },
       { id: 'dealers', label: 'Dealers', icon: Users, path: ROUTES.ADMIN_DEALERS, permission: PERMISSIONS.DEALERS_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'employees', label: 'Employees', icon: UserCog, path: ROUTES.ADMIN_EMPLOYEES, permission: PERMISSIONS.EMPLOYEES_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'approvals', label: 'Approvals', icon: ClipboardList, path: ROUTES.ADMIN_APPROVALS, permission: PERMISSIONS.APPROVALS_READ, roles: [ROLES.MASTER_ADMIN], badgeKey: 'approvals.pending' },
@@ -57,6 +64,8 @@ export const PANELS = {
       { id: 'notifications', label: 'Notifications', icon: Bell, path: ROUTES.ADMIN_NOTIFICATIONS, permission: PERMISSIONS.NOTIFICATIONS_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'settings', label: 'Settings', icon: Settings, path: ROUTES.ADMIN_SETTINGS, permission: PERMISSIONS.SETTINGS_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'audit', label: 'Audit Logs', icon: ScrollText, path: ROUTES.ADMIN_AUDIT_LOGS, permission: PERMISSIONS.AUDIT_READ, roles: [ROLES.MASTER_ADMIN] },
+      { id: 'cms', label: 'Website CMS', icon: Globe, path: ROUTES.ADMIN_CMS, permission: PERMISSIONS.CMS_READ, roles: [ROLES.MASTER_ADMIN] },
+      { id: 'store-orders', label: 'Website Orders', icon: ShoppingBag, path: ROUTES.ADMIN_STORE_ORDERS, permission: PERMISSIONS.STORE_ORDERS_READ, roles: [ROLES.MASTER_ADMIN] },
     ],
   },
   dealer: {
@@ -66,6 +75,7 @@ export const PANELS = {
     baseRoute: '/dealer',
     nav: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DEALER_DASHBOARD, permission: PERMISSIONS.DEALER_DASHBOARD, roles: [ROLES.DEALER_ADMIN] },
+      { id: 'quick-sale', label: 'Quick Sale', icon: Receipt, path: ROUTES.DEALER_SALES_QUICK, permission: PERMISSIONS.BILLING_CREATE },
       { id: 'dispatches', label: 'Dispatches', icon: Truck, path: ROUTES.DEALER_DISPATCHES, permission: PERMISSIONS.DEALER_DISPATCH_READ, badgeKey: 'dispatch.pending' },
       { id: 'grn', label: 'GRN', icon: ClipboardCheck, path: ROUTES.DEALER_GRN, permission: PERMISSIONS.DEALER_GRN_READ, badgeKey: 'grn.pending' },
       { id: 'inventory', label: 'Inventory', icon: Package, path: ROUTES.DEALER_INVENTORY, permission: PERMISSIONS.DEALER_INVENTORY_READ },
@@ -99,8 +109,9 @@ export const PANELS = {
     roles: [ROLES.CUSTOMER_SUPPORT, ROLES.SERVICE_CENTER],
     baseRoute: '/service',
     nav: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.SERVICE_DASHBOARD, permission: PERMISSIONS.SERVICE_DASHBOARD, roles: [ROLES.CUSTOMER_SUPPORT] },
-      { id: 'complaints', label: 'Complaints', icon: Headphones, path: ROUTES.SERVICE_COMPLAINTS, permission: PERMISSIONS.COMPLAINTS_READ, badgeKey: 'complaints.open' },
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.SERVICE_DASHBOARD, permission: PERMISSIONS.SERVICE_DASHBOARD },
+      { id: 'tickets', label: 'Service Tickets', icon: Headphones, path: ROUTES.SERVICE_TICKETS, permission: PERMISSIONS.SERVICE_REQUESTS_READ },
+      { id: 'complaints', label: 'Complaints', icon: Headphones, path: ROUTES.SERVICE_COMPLAINTS, permission: PERMISSIONS.COMPLAINTS_READ, badgeKey: 'complaints.open', roles: [ROLES.CUSTOMER_SUPPORT] },
       { id: 'spares', label: 'Spare Parts', icon: Wrench, path: ROUTES.SERVICE_SPARE_PARTS, permission: PERMISSIONS.SPARES_READ, roles: [ROLES.SERVICE_CENTER] },
       { id: 'returns', label: 'Defective Returns', icon: RotateCcw, path: ROUTES.SERVICE_DEFECTIVE_RETURNS, permission: PERMISSIONS.RETURNS_READ, roles: [ROLES.SERVICE_CENTER] },
     ],
@@ -112,9 +123,10 @@ export const PANELS = {
     baseRoute: '/customer',
     nav: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.CUSTOMER_DASHBOARD },
-      { id: 'orders', label: 'Orders', icon: ShoppingBag, path: ROUTES.CUSTOMER_ORDERS, permission: PERMISSIONS.ORDERS_READ },
-      { id: 'warranty', label: 'Warranty', icon: Shield, path: ROUTES.CUSTOMER_WARRANTY_LOOKUP, permission: PERMISSIONS.WARRANTY_READ },
+      { id: 'products', label: 'My Products', icon: Package, path: ROUTES.CUSTOMER_PRODUCTS },
+      { id: 'warranty', label: 'Warranty', icon: Shield, path: ROUTES.CUSTOMER_WARRANTY, permission: PERMISSIONS.WARRANTY_READ },
       { id: 'service', label: 'Service Requests', icon: Headphones, path: ROUTES.CUSTOMER_SERVICE_REQUESTS, permission: PERMISSIONS.SERVICE_REQUESTS_READ },
+      { id: 'orders', label: 'Orders', icon: ShoppingBag, path: ROUTES.CUSTOMER_ORDERS, permission: PERMISSIONS.ORDERS_READ },
     ],
   },
 };

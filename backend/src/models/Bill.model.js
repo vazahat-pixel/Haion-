@@ -23,6 +23,9 @@ const billSchema = new mongoose.Schema(
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
     customerName: { type: String, required: true, trim: true },
     customerGstin: { type: String, trim: true, uppercase: true, default: '' },
+    customerPhone: { type: String, trim: true, default: '' },
+    customerAddress: { type: String, trim: true, default: '' },
+    customerState: { type: String, trim: true, default: '' },
     lineItems: { type: [lineItemSchema], default: [] },
     amount: { type: Number, required: true, min: 0 },
     tax: { type: Number, default: 0, min: 0 },
@@ -37,6 +40,7 @@ const billSchema = new mongoose.Schema(
     sentAt: { type: Date },
     paidAt: { type: Date },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    teamMember: { type: mongoose.Schema.Types.ObjectId, ref: 'DealerTeamMember' },
   },
   { timestamps: true }
 );

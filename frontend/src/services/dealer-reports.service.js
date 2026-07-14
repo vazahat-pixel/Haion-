@@ -1,10 +1,14 @@
 import client from './api/client';
-import { withMockFallback } from '@/utils/withMockFallback';
-import { mockService } from './mock.service';
 
 export const dealerReportsService = {
-  getList: (filters) => withMockFallback(
-    async () => (await client.get('/dealer/reports', { params: filters })).normalized,
-    () => mockService.dealerReports.getList(filters)
-  ),
+  getList: async (filters) => (await client.get('/dealer/reports', { params: filters })).normalized,
+  getCatalog: async () => {
+    const res = (await client.get('/dealer/reports/catalog')).normalized.data;
+    return {
+      reports: res?.reports || [],
+      categories: res?.categories || [...new Set((res?.reports || []).map((r) => r.category))],
+    };
+  },
+  run: async (data) => (await client.post('/dealer/reports/run', data)).normalized.data,
+  getDetail: async (id) => (await client.get(`/dealer/reports/${id}`)).normalized.data,
 };

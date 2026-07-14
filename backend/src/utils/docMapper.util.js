@@ -55,7 +55,14 @@ export function mapDealerInventory(doc) {
 export function mapCustomer(doc) {
   if (!doc) return doc;
   const d = toPublicDoc(doc);
-  return { ...d, dealerId: d.dealer ? String(d.dealer) : d.dealerId };
+  const member = d.assignedSalesMember;
+  const memberId = member?._id || member?.id || (typeof member === 'string' ? member : null);
+  return {
+    ...d,
+    dealerId: d.dealer ? String(d.dealer) : d.dealerId,
+    assignedSalesMember: memberId ? String(memberId) : null,
+    assignedSalesMemberName: member?.name || null,
+  };
 }
 
 export function mapBill(doc) {

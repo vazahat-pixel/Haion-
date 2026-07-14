@@ -15,6 +15,12 @@ export const PERMISSIONS = {
   CATEGORIES_CREATE: 'categories.create',
   BRANDS_READ: 'brands.read',
   BRANDS_CREATE: 'brands.create',
+  PARTIES_READ: 'parties.read',
+  PARTIES_CREATE: 'parties.create',
+  PARTIES_UPDATE: 'parties.update',
+  PURCHASES_READ: 'purchases.read',
+  PURCHASES_CREATE: 'purchases.create',
+  PURCHASES_RECEIVE: 'purchases.receive',
   PRICING_READ: 'pricing.read',
   PRICING_UPDATE: 'pricing.update',
   EXPENSES_READ: 'expenses.read',
@@ -124,4 +130,16 @@ export const PERMISSIONS = {
   // RBAC
   RBAC_READ: 'rbac.read',
   RBAC_UPDATE: 'rbac.update',
+
+  // Website CMS
+  CMS_READ: 'cms.read',
+  CMS_CREATE: 'cms.create',
+  CMS_UPDATE: 'cms.update',
+  CMS_DELETE: 'cms.delete',
+  CMS_PUBLISH: 'cms.publish',
+
+  // Online Store
+  STORE_ORDERS_READ: 'store.orders.read',
+  STORE_ORDERS_UPDATE: 'store.orders.update',
+  STORE_ANALYTICS_READ: 'store.analytics.read',
 };

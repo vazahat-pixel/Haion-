@@ -26,7 +26,7 @@ export const ROLE_HOME_ROUTE = {
   [ROLES.MASTER_ADMIN]: '/admin/dashboard',
   [ROLES.WAREHOUSE_MANAGER]: '/admin/warehouses',
   [ROLES.DEALER_ADMIN]: '/dealer/dashboard',
-  [ROLES.DEALER_SALES]: '/dealer/inventory',
+  [ROLES.DEALER_SALES]: '/dealer/sales/quick',
   [ROLES.EMPLOYEE]: '/employee/dashboard',
   [ROLES.MANAGER]: '/employee/dashboard',
   [ROLES.CUSTOMER_SUPPORT]: '/service/dashboard',

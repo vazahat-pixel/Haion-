@@ -14,6 +14,18 @@ const pricingRuleSchema = new mongoose.Schema(
     validFrom: { type: Date, default: Date.now },
     validTo: { type: Date },
     status: { type: String, enum: ['ACTIVE', 'EXPIRED', 'DRAFT'], default: 'ACTIVE' },
+    changeHistory: {
+      type: [{
+        changedAt: { type: Date, default: Date.now },
+        changedBy: { type: String, default: 'system' },
+        basePrice: { type: Number },
+        discountPct: { type: Number },
+        effectivePrice: { type: Number },
+        gst: { type: Number },
+        note: { type: String, default: '' },
+      }],
+      default: [],
+    },
   },
   { timestamps: true }
 );

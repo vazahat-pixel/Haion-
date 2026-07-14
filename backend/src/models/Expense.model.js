@@ -13,6 +13,16 @@ const expenseSchema = new mongoose.Schema(
     submittedAt: { type: Date, default: Date.now },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     reviewedAt: { type: Date },
+    dedupeKey: { type: String, trim: true, index: true },
+    auditTrail: {
+      type: [{
+        at: { type: Date, default: Date.now },
+        by: { type: String, required: true },
+        action: { type: String, required: true },
+        note: { type: String, default: '' },
+      }],
+      default: [],
+    },
   },
   { timestamps: true }
 );

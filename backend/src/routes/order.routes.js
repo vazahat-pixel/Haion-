@@ -8,6 +8,7 @@ router.use(authenticate);
 
 router.get('/', requireAnyPermission('orders.read', 'dealer.dashboard'), ctrl.listOrders);
 router.post('/', requireAnyPermission('orders.read'), ctrl.createOrder);
+router.post('/:id/status', requireAnyPermission('orders.update', 'orders.read'), ctrl.updateOrderStatus);
 router.get('/:id/tracking', requireAnyPermission('orders.read'), ctrl.getOrderTracking);
 router.get('/:id', requireAnyPermission('orders.read'), ctrl.getOrder);
 

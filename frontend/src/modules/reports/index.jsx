@@ -1,11 +1,13 @@
-import { z } from 'zod';
-import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/services/api/queryKeys';
 import { reportsService } from '@/services/reports.service';
 import { createListTable } from '../shared/createListTable';
 import { createDetailView } from '../shared/createDetailView';
 import { reportColumns, reportDetailFields } from './columns.config';
-import { DrawerForm } from '@/components/data-entry/DrawerForm';
+import { ReportHub } from './ReportHub';
+import { ReportRunDialog } from './ReportRunDialog';
+import { ReportDataView } from './ReportDataView';
+
+export { ReportHub, ReportRunDialog, ReportDataView };
 
 export const ReportTable = createListTable({
   service: reportsService,
@@ -19,13 +21,12 @@ export const AdminReportTable = createListTable({
   queryKey: queryKeys.reports.list,
   columns: reportColumns,
   basePath: '/admin/reports',
-  emptyTitle: 'No reports',
-  emptyDescription: 'Generate operational or financial reports.',
-  searchKeys: ['title', 'type', 'author'],
+  emptyTitle: 'No reports generated yet',
+  emptyDescription: 'Open Report Library, pick a report, and generate it — data comes live from the database.',
+  searchKeys: ['title', 'type', 'author', 'reportCode', 'period'],
   filterKey: 'status',
   filterOptions: [
     { value: 'COMPLETED', label: 'Completed' },
-    { value: 'IN_PROGRESS', label: 'In Progress' },
     { value: 'FAILED', label: 'Failed' },
   ],
   searchPlaceholder: 'Search reports…',
@@ -37,51 +38,6 @@ export const ReportDetail = createDetailView({
   fields: reportDetailFields,
 });
 
-const reportSchema = z.object({
-  title: z.string().min(3, 'Title required'),
-  type: z.string().min(2, 'Type required'),
-  period: z.string().min(2, 'Period required'),
-});
-
-export function ReportGenerateDrawer({ open, onOpenChange }) {
-  const qc = useQueryClient();
-  return (
-    <DrawerForm
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Generate Report"
-      schema={reportSchema}
-      defaultValues={{ title: '', type: 'Sales', period: '' }}
-      fields={[
-        { name: 'title', label: 'Report Title' },
-        {
-          name: 'type',
-          label: 'Report Type',
-          type: 'select',
-          options: [
-            { value: 'Sales', label: 'Sales' },
-            { value: 'Inventory', label: 'Inventory' },
-            { value: 'Finance', label: 'Finance' },
-            { value: 'Dealers', label: 'Dealers' },
-            { value: 'Operations', label: 'Operations' },
-          ],
-        },
-        { name: 'period', label: 'Period (e.g. May 2024, Q2 2024)' },
-      ]}
-      onSubmit={async (data) => {
-        await reportsService.create({
-          ...data,
-          status: 'COMPLETED',
-          summary: `${data.type} report for ${data.period}`,
-          data: { generatedAt: new Date().toISOString(), type: data.type, period: data.period },
-        });
-        qc.invalidateQueries({ queryKey: queryKeys.reports.all });
-      }}
-      submitLabel="Generate Report"
-    />
-  );
-}
-
 export function downloadReportJson(report) {
   const blob = new Blob([JSON.stringify(report?.data || report, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -91,3 +47,27 @@ export function downloadReportJson(report) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+const deliveryColumns = [
+  { key: 'reportType', label: 'Schedule' },
+  { key: 'recipientType', label: 'Recipient' },
+  { key: 'recipientEmail', label: 'Email' },
+  { key: 'status', label: 'Status', render: (row) => row.status },
+  { key: 'sentAt', label: 'Sent', render: (row) => row.sentAt ? new Date(row.sentAt).toLocaleString() : '—' },
+];
+
+export const ReportDeliveriesTable = createListTable({
+  service: { getList: reportsService.getDeliveries },
+  queryKey: [...queryKeys.reports.all, 'deliveries'],
+  columns: deliveryColumns,
+  emptyTitle: 'No scheduled deliveries yet',
+  emptyDescription: 'Daily/weekly/monthly emails appear here after the report scheduler runs.',
+  searchKeys: ['recipientEmail', 'recipientType', 'reportType'],
+  filterKey: 'status',
+  filterOptions: [
+    { value: 'SENT', label: 'Sent' },
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'FAILED', label: 'Failed' },
+  ],
+  searchPlaceholder: 'Search deliveries…',
+});

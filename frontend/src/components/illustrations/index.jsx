@@ -43,6 +43,18 @@ export function SearchIllustration({ className = 'h-32 w-32' }) {
   );
 }
 
+export function DispatchEmptyIllustration({ className = 'h-32 w-32' }) {
+  return (
+    <svg className={`${className} animate-float-soft`} viewBox="0 0 160 160" fill="none" aria-hidden>
+      <rect x="28" y="56" width="104" height="72" rx="10" fill="var(--color-surface-2)" stroke="var(--color-brand-500)" strokeWidth="2" strokeOpacity="0.4" />
+      <path d="M28 76h104" stroke="var(--color-brand-300)" strokeWidth="1.5" />
+      <circle cx="52" cy="100" r="10" fill="var(--color-brand-100)" stroke="var(--color-brand-500)" strokeWidth="1.5" />
+      <circle cx="108" cy="100" r="10" fill="var(--color-brand-100)" stroke="var(--color-brand-500)" strokeWidth="1.5" />
+      <path d="M80 32 L92 56 H68 Z" fill="var(--color-brand-500)" opacity="0.8" />
+    </svg>
+  );
+}
+
 export function ProductsEmptyIllustration({ className = 'h-32 w-32' }) {
   return (
     <svg className={`${className} animate-float-soft`} viewBox="0 0 160 160" fill="none" aria-hidden>

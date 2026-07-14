@@ -9,7 +9,7 @@ import { queryKeys } from '@/services/api/queryKeys';
 import { productsService } from '@/services/products.service';
 import { createListTable } from '../shared/createListTable';
 import { createDetailView } from '../shared/createDetailView';
-import { productColumns, productDetailFields } from './columns.config';
+import { productColumns, productDetailFields, GST_RATE_OPTIONS } from './columns.config';
 import { Sheet } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,8 +24,8 @@ export const ProductTable = createListTable({
   queryKey: queryKeys.products.list,
   columns: productColumns,
   basePath: '/admin/products',
-  emptyTitle: 'No products',
-  emptyDescription: 'Add your first product to the catalog.',
+  emptyTitle: 'No items',
+  emptyDescription: 'Add your first item to the catalog.',
   emptyIllustration: ProductsEmptyIllustration,
   searchKeys: ['sku', 'name', 'category', 'brand', 'hsn'],
   filterKey: 'status',
@@ -33,7 +33,7 @@ export const ProductTable = createListTable({
     { value: 'ACTIVE', label: 'Active' },
     { value: 'INACTIVE', label: 'Inactive' },
   ],
-  searchPlaceholder: 'Search products…',
+  searchPlaceholder: 'Search items…',
 });
 
 export const ProductDetail = createDetailView({
@@ -48,8 +48,7 @@ const productSchema = z.object({
   category: z.string().min(1, 'Category required'),
   brand: z.string().min(1, 'Brand required'),
   hsn: z.string().min(4, 'HSN required'),
-  mrp: z.coerce.number().min(1, 'MRP required'),
-  dealerPrice: z.coerce.number().min(1, 'Price required'),
+  gstRate: z.coerce.number().refine((v) => [0, 5, 12, 18, 28].includes(v), 'Select GST rate'),
   imageUrl: z.string().optional(),
 });
 
@@ -62,27 +61,27 @@ export function ProductDrawer({ open, onOpenChange }) {
   const brandOptions = (brandRes?.data || []).map((b) => ({ value: b.name, label: b.name }));
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(productSchema),
-    defaultValues: { sku: '', name: '', category: 'Motors', brand: 'Haion', hsn: '', mrp: '', dealerPrice: '' },
+    defaultValues: { sku: '', name: '', category: 'Motors', brand: 'Haion', hsn: '', gstRate: 18 },
   });
 
   const submit = async (data) => {
     try {
       await productsService.create({ ...data, imageUrl: imageUrl || undefined });
-      toast.success('Product created');
+      toast.success('Item created');
       qc.invalidateQueries({ queryKey: queryKeys.products.all });
       reset();
       setImageUrl('');
       onOpenChange?.(false);
     } catch {
-      toast.error('Failed to create product');
+      toast.error('Failed to create item');
     }
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} title="Add Product" description="Create a new catalog product">
+    <Sheet open={open} onOpenChange={onOpenChange} title="Add Item" description="Create a new catalog item">
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
         <div><Label>SKU</Label><Input {...register('sku')} />{errors.sku && <p className="text-xs text-[var(--color-danger)]">{errors.sku.message}</p>}</div>
-        <div><Label>Product Name</Label><Input {...register('name')} />{errors.name && <p className="text-xs text-[var(--color-danger)]">{errors.name.message}</p>}</div>
+        <div><Label>Item Name</Label><Input {...register('name')} />{errors.name && <p className="text-xs text-[var(--color-danger)]">{errors.name.message}</p>}</div>
         <div><Label>Category</Label>
           <Select {...register('category')}>
             {(categoryOptions.length ? categoryOptions : [{ value: 'Motors', label: 'Motors' }]).map((o) => (
@@ -97,12 +96,18 @@ export function ProductDrawer({ open, onOpenChange }) {
             ))}
           </Select>
         </div>
-        <div><Label>HSN Code</Label><Input {...register('hsn')} /></div>
-        <div><Label>MRP (₹)</Label><Input type="number" {...register('mrp')} /></div>
-        <div><Label>Dealer Price (₹)</Label><Input type="number" {...register('dealerPrice')} /></div>
-        <FileUploadField label="Product Image" value={imageUrl} onChange={setImageUrl} accept="image/*" />
+        <div><Label>HSN Code</Label><Input {...register('hsn')} />{errors.hsn && <p className="text-xs text-[var(--color-danger)]">{errors.hsn.message}</p>}</div>
+        <div><Label>GST Rate</Label>
+          <Select {...register('gstRate')}>
+            {GST_RATE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </Select>
+          {errors.gstRate && <p className="text-xs text-[var(--color-danger)]">{errors.gstRate.message}</p>}
+        </div>
+        <FileUploadField label="Item Image" value={imageUrl} onChange={setImageUrl} accept="image/*" />
         <div className="flex gap-2 pt-2">
-          <Button type="submit" disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Saving…' : 'Create Product'}</Button>
+          <Button type="submit" disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Saving…' : 'Create Item'}</Button>
           <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)}>Cancel</Button>
         </div>
       </form>
@@ -115,6 +120,7 @@ const editSchema = z.object({
   category: z.string().min(1, 'Category required'),
   brand: z.string().min(1, 'Brand required'),
   hsn: z.string().min(4, 'HSN required'),
+  gstRate: z.coerce.number().refine((v) => [0, 5, 12, 18, 28].includes(v), 'Select GST rate'),
   imageUrl: z.string().optional(),
 });
 
@@ -132,33 +138,38 @@ export function ProductEditDrawer({ productId, open, onOpenChange }) {
   const brandOptions = (brandRes?.data || []).map((b) => ({ value: b.name, label: b.name }));
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(editSchema),
-    defaultValues: { name: '', category: '', brand: '', hsn: '', imageUrl: '' },
+    defaultValues: { name: '', category: '', brand: '', hsn: '', gstRate: 18, imageUrl: '' },
   });
 
   useEffect(() => {
     if (!product || !open) return;
     const brand = product.brand || product.description?.split(' · ')?.[0] || '';
-    reset({ name: product.name, category: product.category, brand, hsn: product.hsn || product.hsnCode || '', imageUrl: product.imageUrl || '' });
+    reset({
+      name: product.name,
+      category: product.category,
+      brand,
+      hsn: product.hsn || product.hsnCode || '',
+      gstRate: product.gstRate ?? 18,
+      imageUrl: product.imageUrl || '',
+    });
     setImageUrl(product.imageUrl || '');
   }, [product, open, reset]);
 
   const submit = async (data) => {
     try {
-      const mrpPart = product?.description?.match(/MRP ₹[\d,]+/)?.[0];
-      const description = [data.brand, mrpPart].filter(Boolean).join(' · ');
-      await productsService.update(productId, { ...data, description, imageUrl: imageUrl || null });
-      toast.success('Product updated');
+      await productsService.update(productId, { ...data, imageUrl: imageUrl || null });
+      toast.success('Item updated');
       qc.invalidateQueries({ queryKey: queryKeys.products.all });
       onOpenChange?.(false);
     } catch {
-      toast.error('Failed to update product');
+      toast.error('Failed to update item');
     }
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} title="Edit Product" description={product?.sku ? `SKU ${product.sku}` : 'Update catalog product'}>
+    <Sheet open={open} onOpenChange={onOpenChange} title="Edit Item" description={product?.sku ? `SKU ${product.sku}` : 'Update catalog item'}>
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
-        <div><Label>Product Name</Label><Input {...register('name')} />{errors.name && <p className="text-xs text-[var(--color-danger)]">{errors.name.message}</p>}</div>
+        <div><Label>Item Name</Label><Input {...register('name')} />{errors.name && <p className="text-xs text-[var(--color-danger)]">{errors.name.message}</p>}</div>
         <div><Label>Category</Label>
           <Select {...register('category')}>
             {(categoryOptions.length ? categoryOptions : [{ value: product?.category || 'Motors', label: product?.category || 'Motors' }]).map((o) => (
@@ -174,7 +185,15 @@ export function ProductEditDrawer({ productId, open, onOpenChange }) {
           </Select>
         </div>
         <div><Label>HSN Code</Label><Input {...register('hsn')} /></div>
-        <FileUploadField label="Product Image" value={imageUrl} onChange={setImageUrl} accept="image/*" />
+        <div><Label>GST Rate</Label>
+          <Select {...register('gstRate')}>
+            {GST_RATE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </Select>
+          {errors.gstRate && <p className="text-xs text-[var(--color-danger)]">{errors.gstRate.message}</p>}
+        </div>
+        <FileUploadField label="Item Image" value={imageUrl} onChange={setImageUrl} accept="image/*" />
         <div className="flex gap-2 pt-2">
           <Button type="submit" disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Saving…' : 'Save Changes'}</Button>
           <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)}>Cancel</Button>

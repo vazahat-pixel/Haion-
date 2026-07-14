@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { evaluatePermission, evaluateAnyPermission, evaluateAllPermissions } from '@/utils/permissions';
+import {
+  evaluatePermission,
+  evaluateAnyPermission,
+  evaluateAllPermissions,
+} from '@/utils/permissions';
 
 export const usePermissionStore = create((set, get) => ({
   permissions: new Set(),

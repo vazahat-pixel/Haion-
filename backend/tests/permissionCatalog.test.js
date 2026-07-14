@@ -14,6 +14,12 @@ test('MASTER_ADMIN has rbac permissions', () => {
   assert.ok(admin.includes('rbac.update'));
 });
 
+test('MASTER_ADMIN has cms permissions', () => {
+  const admin = ROLE_PERMISSIONS.MASTER_ADMIN || [];
+  assert.ok(admin.includes('cms.read'));
+  assert.ok(admin.includes('cms.update'));
+});
+
 test('every role permission exists in catalog', () => {
   const catalogKeys = new Set(PERMISSION_CATALOG.map((p) => p.key));
   for (const [role, perms] of Object.entries(ROLE_PERMISSIONS)) {

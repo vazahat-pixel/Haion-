@@ -1,3 +1,5 @@
+/** Permission evaluation helpers (used by permission.store + guards). */
+
 export function evaluatePermission(permissions, key) {
   return permissions.has(key);
 }

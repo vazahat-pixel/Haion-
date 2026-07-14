@@ -1,8 +1,10 @@
 import Approval from '../models/Approval.model.js';
+import Expense from '../models/Expense.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { mapApproval } from '../utils/docMapper.util.js';
+import { logAudit } from '../services/audit.service.js';
 
 export const listApprovals = asyncHandler(async (req, res) => {
   const { page, perPage, skip, sort } = parsePagination(req.query);
@@ -44,6 +46,25 @@ export const updateApproval = asyncHandler(async (req, res) => {
   doc.reviewedAt = new Date();
   doc.reviewNotes = req.body.notes || req.body.reviewNotes;
   await doc.save();
+
+  // Sync the status back to the referenced resource
+  if (doc.resourceType === 'Expense' && doc.resourceId) {
+    await Expense.findByIdAndUpdate(doc.resourceId, {
+      status: status === 'APPROVED' ? 'APPROVED' : 'REJECTED',
+      reviewedBy: req.user._id,
+      reviewedAt: new Date(),
+    });
+  }
+
+  await logAudit({
+    action: `APPROVAL_${status}`,
+    user: req.user?.email,
+    userId: req.user?._id,
+    module: 'Approvals',
+    ip: req.ip,
+    resourceId: String(doc._id),
+    metadata: { type: doc.type, resourceType: doc.resourceType },
+  });
 
   return sendSuccess(res, { data: mapApproval(doc.toObject()), message: `Approval ${status.toLowerCase()}` });
 });

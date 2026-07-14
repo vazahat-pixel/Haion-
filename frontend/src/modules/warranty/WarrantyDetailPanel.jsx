@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Download, Printer } from 'lucide-react';
+import { Download, Printer, Link2 } from 'lucide-react';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { warrantyService } from '@/services/warranty.service';
 import { queryKeys } from '@/services/api/queryKeys';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatDate } from '@/utils/format';
 import { toast } from '@/utils/toast';
+import { ROUTES } from '@/constants/routes';
 
 export function WarrantyDetailPanel({ id }) {
   const printRef = useRef(null);
@@ -28,6 +29,12 @@ export function WarrantyDetailPanel({ id }) {
     toast.success('Warranty certificate downloaded');
   };
 
+  const copyShareLink = () => {
+    const url = `${window.location.origin}${ROUTES.PUBLIC_WARRANTY_CHECK}?bill=${encodeURIComponent(data.billNo)}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Public warranty link copied');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
@@ -36,6 +43,7 @@ export function WarrantyDetailPanel({ id }) {
           <StatusBadge status={data.status} />
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={copyShareLink}><Link2 className="h-3.5 w-3.5" /> Share Link</Button>
           <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="h-3.5 w-3.5" /> Print</Button>
           <Button size="sm" onClick={handleDownload}><Download className="h-3.5 w-3.5" /> Download Certificate</Button>
         </div>

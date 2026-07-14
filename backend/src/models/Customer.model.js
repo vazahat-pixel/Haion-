@@ -14,6 +14,7 @@ const customerSchema = new mongoose.Schema(
     totalPurchases: { type: Number, default: 0, min: 0 },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
     lastOrderAt: { type: Date },
+    assignedSalesMember: { type: mongoose.Schema.Types.ObjectId, ref: 'DealerTeamMember' },
   },
   { timestamps: true }
 );

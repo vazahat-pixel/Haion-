@@ -9,6 +9,7 @@ function formatValue(field, value) {
   switch (field.format) {
     case 'currency': return formatCurrency(value);
     case 'number': return formatNumber(value);
+    case 'percent': return `${value}%`;
     case 'date': return formatDate(value);
     case 'datetime': return formatDateTime(value);
     case 'badge': return <StatusBadge status={value} />;

@@ -18,6 +18,7 @@ const TaskDetailPage = lazy(() => import('@/pages/employee/tasks/TaskDetailPage'
 const ReportListPage = lazy(() => import('@/pages/employee/reports/ReportListPage'));
 const ReportDetailPage = lazy(() => import('@/pages/employee/reports/ReportDetailPage'));
 const TeamDashboardPage = lazy(() => import('@/pages/employee/team/TeamDashboardPage'));
+const EmployeeHierarchyPage = lazy(() => import('@/pages/employee/team/EmployeeHierarchyPage'));
 const ApprovalListPage = lazy(() => import('@/pages/employee/approvals/ApprovalListPage'));
 const ApprovalDetailPage = lazy(() => import('@/pages/employee/approvals/ApprovalDetailPage'));
 
@@ -41,6 +42,7 @@ export default function EmployeeRoutes() {
               <Route path="reports" element={<ReportListPage />} />
               <Route path="reports/:id" element={<ReportDetailPage />} />
               <Route path="team" element={<PermissionGuard require={PERMISSIONS.TEAM_READ} redirectTo="/unauthorized"><TeamDashboardPage /></PermissionGuard>} />
+              <Route path="team/hierarchy" element={<PermissionGuard require={PERMISSIONS.TEAM_READ} redirectTo="/unauthorized"><EmployeeHierarchyPage /></PermissionGuard>} />
               <Route path="approvals" element={<PermissionGuard require={PERMISSIONS.APPROVALS_READ} redirectTo="/unauthorized"><ApprovalListPage /></PermissionGuard>} />
               <Route path="approvals/:id" element={<PermissionGuard require={PERMISSIONS.APPROVALS_READ} redirectTo="/unauthorized"><ApprovalDetailPage /></PermissionGuard>} />
             </Route>

@@ -9,6 +9,8 @@ const approvalSchema = new mongoose.Schema(
     amount: { type: Number, default: 0, min: 0 },
     status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
     description: { type: String, trim: true },
+    resourceId: { type: mongoose.Schema.Types.ObjectId },
+    resourceType: { type: String, trim: true },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     reviewedAt: { type: Date },
     reviewNotes: { type: String, trim: true },

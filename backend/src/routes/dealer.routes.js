@@ -8,6 +8,7 @@ router.use(authenticate);
 
 router.get('/', requirePermission('dealers.read'), ctrl.listDealers);
 router.post('/', requirePermission('dealers.create'), ctrl.createDealer);
+router.patch('/:id', requirePermission('dealers.update'), ctrl.updateDealer);
 router.patch('/:id/status', requirePermission('dealers.update'), ctrl.updateDealerStatus);
 router.get('/:id/inventory', requirePermission('dealers.read'), ctrl.getDealerInventory);
 router.get('/:id/team', requireAnyPermission('dealers.read', 'dealer.team.read'), ctrl.getDealerTeam);

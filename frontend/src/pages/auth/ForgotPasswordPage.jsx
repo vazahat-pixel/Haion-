@@ -13,6 +13,7 @@ import { ArrowLeft, Mail } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
+  const [devResetToken, setDevResetToken] = useState('');
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
@@ -20,7 +21,8 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data) => {
     try {
-      await authService.forgotPassword(data.email);
+      const response = await authService.forgotPassword(data.email);
+      setDevResetToken(response?.resetToken || '');
       setSent(true);
       toast.success('If an account exists, a reset link has been sent.');
     } catch {
@@ -55,9 +57,23 @@ export default function ForgotPasswordPage() {
             </Button>
           </form>
         ) : (
-          <Button className="w-full" variant="outline" asChild>
-            <Link to={ROUTES.AUTH_LOGIN}>Back to sign in</Link>
-          </Button>
+          <div className="space-y-3">
+            {devResetToken && (
+              <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-left text-xs text-amber-900">
+                <p className="font-semibold">Dev reset token</p>
+                <p className="mt-1 break-all">{devResetToken}</p>
+                <Link
+                  to={`${ROUTES.AUTH_RESET_PASSWORD}?token=${encodeURIComponent(devResetToken)}`}
+                  className="mt-2 inline-block text-brand-700 underline"
+                >
+                  Open reset page
+                </Link>
+              </div>
+            )}
+            <Button className="w-full" variant="outline" asChild>
+              <Link to={ROUTES.AUTH_LOGIN}>Back to sign in</Link>
+            </Button>
+          </div>
         )}
 
         <Link

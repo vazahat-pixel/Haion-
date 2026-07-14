@@ -1,6 +1,7 @@
 export const reportColumns = [
   { key: 'title', label: 'Report', width: 220 },
-  { key: 'type', label: 'Type', width: 120 },
+  { key: 'type', label: 'Category', width: 120 },
+  { key: 'period', label: 'Period', width: 160 },
   { key: 'author', label: 'Author', width: 140 },
   { key: 'status', label: 'Status', width: 110, render: 'badge' },
   { key: 'createdAt', label: 'Created', width: 120, render: 'relativeDate' },

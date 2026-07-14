@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Menu, Search, Bell } from 'lucide-react';
+import { Menu, Search, Bell, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useSidebar } from '@/hooks/useSidebar';
@@ -12,7 +13,7 @@ import { notificationsService } from '@/services/notifications.service';
 import { queryKeys } from '@/services/api/queryKeys';
 import { cn } from '@/utils/cn';
 
-export function Topbar({ panel: _panel }) {
+export function Topbar({ panel, className }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -28,6 +29,7 @@ export function Topbar({ panel: _panel }) {
   }, []);
   const { toggleMobile, toggleCollapse, isCollapsed } = useSidebar();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { data: unread } = useQuery({
     queryKey: queryKeys.notifications.unreadCount(),
     queryFn: () => notificationsService.getUnreadCount(),
@@ -46,7 +48,8 @@ export function Topbar({ panel: _panel }) {
     <header
       className={cn(
         'fixed right-0 top-0 z-sticky flex h-[var(--topbar-height)] items-center justify-between border-b border-surface-3 glass-panel px-3',
-        isCollapsed ? 'left-0 lg:left-[var(--sidebar-width-collapsed)]' : 'left-0 lg:left-[var(--sidebar-width)]'
+        isCollapsed ? 'left-0 lg:left-[var(--sidebar-width-collapsed)]' : 'left-0 lg:left-[var(--sidebar-width)]',
+        className
       )}
     >
       <div className="flex items-center gap-1">
@@ -80,13 +83,21 @@ export function Topbar({ panel: _panel }) {
         </Button>
         <NotificationPanel open={notifOpen} onOpenChange={setNotifOpen} />
         <div className="ml-1 flex items-center gap-2 border-l border-surface-3 pl-2">
-          <Avatar className="h-7 w-7">
-            <AvatarFallback className="bg-brand-50 text-[10px] font-medium text-brand-700">{initials}</AvatarFallback>
-          </Avatar>
-          <div className="hidden md:block">
-            <p className="text-[12px] font-medium leading-none text-[var(--color-text-primary)]">{user?.name}</p>
-            <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">{user?.role?.replace(/_/g, ' ')}</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => panel === 'admin' && navigate('/admin/business/manage')}
+            className={cn('flex items-center gap-2 rounded-md px-1.5 py-0.5 group', panel === 'admin' && 'transition-colors hover:bg-surface-2')}
+            title="Profile & Settings"
+          >
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-brand-5 text-[10px] font-medium text-brand-700">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="hidden md:block text-left mr-0.5">
+              <p className="text-[12px] font-medium leading-none text-[var(--color-text-primary)]">{user?.name}</p>
+              <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">{user?.role?.replace(/_/g, ' ')}</p>
+            </div>
+            <Settings className="h-3.5 w-3.5 hidden md:block text-[var(--color-text-secondary)] opacity-60 group-hover:opacity-100 transition-all duration-150" />
+          </button>
           <Button variant="ghost" size="sm" onClick={logout} className="hidden h-7 md:inline-flex text-[11px] text-[var(--color-text-secondary)]">
             Logout
           </Button>

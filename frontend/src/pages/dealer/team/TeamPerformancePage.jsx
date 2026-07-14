@@ -3,7 +3,7 @@ import { TeamPerformanceDashboard } from '@/modules/team';
 
 export default function TeamPerformancePage() {
   return (
-    <PageShell title="Team Performance" subtitle="Sales metrics and targets">
+    <PageShell title="Team Performance" subtitle="Live metrics from paid invoices">
       <TeamPerformanceDashboard />
     </PageShell>
   );

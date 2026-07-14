@@ -16,11 +16,11 @@ export const MOCK_BRANDS = [
 ];
 
 export const MOCK_PRODUCTS = [
-  { id: 'p1', sku: 'SKU-001', name: 'Industrial Motor 5HP', category: 'Motors', brand: 'Haion', hsn: '8501', mrp: 32000, dealerPrice: 28500, status: 'ACTIVE', stockTotal: 145, updatedAt: daysAgo(1) },
-  { id: 'p2', sku: 'SKU-002', name: 'Control Panel XL', category: 'Electronics', brand: 'Bosch', hsn: '8537', mrp: 52000, dealerPrice: 45200, status: 'ACTIVE', stockTotal: 12, updatedAt: daysAgo(2) },
-  { id: 'p3', sku: 'SKU-003', name: 'Hydraulic Pump', category: 'Pumps', brand: 'Haion', hsn: '8413', mrp: 22000, dealerPrice: 18900, status: 'ACTIVE', stockTotal: 0, updatedAt: daysAgo(4) },
-  { id: 'p4', sku: 'SKU-004', name: 'Conveyor Belt 10m', category: 'Accessories', brand: 'Tata', hsn: '4010', mrp: 15000, dealerPrice: 12400, status: 'ACTIVE', stockTotal: 67, updatedAt: daysAgo(1) },
-  { id: 'p5', sku: 'SKU-005', name: 'Servo Drive 3kW', category: 'Electronics', brand: 'ABB', hsn: '8504', mrp: 68000, dealerPrice: 59500, status: 'DRAFT', stockTotal: 0, updatedAt: daysAgo(0) },
+  { id: 'p1', sku: 'SKU-001', name: 'Industrial Motor 5HP', category: 'Motors', brand: 'Haion', hsn: '8501', gstRate: 18, status: 'ACTIVE', stockTotal: 145, updatedAt: daysAgo(1) },
+  { id: 'p2', sku: 'SKU-002', name: 'Control Panel XL', category: 'Electronics', brand: 'Bosch', hsn: '8537', gstRate: 18, status: 'ACTIVE', stockTotal: 12, updatedAt: daysAgo(2) },
+  { id: 'p3', sku: 'SKU-003', name: 'Hydraulic Pump', category: 'Pumps', brand: 'Haion', hsn: '8413', gstRate: 18, status: 'ACTIVE', stockTotal: 0, updatedAt: daysAgo(4) },
+  { id: 'p4', sku: 'SKU-004', name: 'Conveyor Belt 10m', category: 'Accessories', brand: 'Tata', hsn: '4010', gstRate: 12, status: 'ACTIVE', stockTotal: 67, updatedAt: daysAgo(1) },
+  { id: 'p5', sku: 'SKU-005', name: 'Servo Drive 3kW', category: 'Electronics', brand: 'ABB', hsn: '8504', gstRate: 18, status: 'DRAFT', stockTotal: 0, updatedAt: daysAgo(0) },
 ];
 
 export const MOCK_PRODUCT_TIERS = [

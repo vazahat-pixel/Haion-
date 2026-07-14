@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { DetailPageShell } from '@/components/layout/DetailPageShell';
-import { ReportDetail, downloadReportJson } from '@/modules/reports';
+import { ReportDetail, downloadReportJson, ReportDataView } from '@/modules/reports';
 import { reportsService } from '@/services/reports.service';
 import { queryKeys } from '@/services/api/queryKeys';
 import { Button } from '@/components/ui/button';
@@ -27,8 +27,10 @@ export default function ReportDetailPage() {
       ) : null}
     >
       <ReportDetail id={id} />
-      {data?.summary && (
-        <p className="mt-4 text-sm text-[var(--color-text-secondary)]">{data.summary}</p>
+      {data?.data && (
+        <div className="mt-6">
+          <ReportDataView data={data.data} />
+        </div>
       )}
     </DetailPageShell>
   );

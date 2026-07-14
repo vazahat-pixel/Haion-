@@ -98,6 +98,11 @@ export const endpoints = {
     detail: (id) => `/employees/${id}`,
     team: (managerId) => `/employees/team/${managerId}`,
     hierarchy: '/employees/hierarchy',
+    reportingLine: (id) => `/employees/${id}/reporting-line`,
+    dealers: {
+      list: (id) => `/employees/${id}/dealers`,
+      update: (id) => `/employees/${id}/dealers`,
+    },
   },
   tasks: {
     list: '/tasks',
@@ -111,6 +116,9 @@ export const endpoints = {
   },
   reports: {
     list: '/reports',
+    catalog: '/reports/catalog',
+    run: '/reports/run',
+    preview: (code) => `/reports/preview/${code}`,
     detail: (id) => `/reports/${id}`,
   },
   orders: {
@@ -145,6 +153,12 @@ export const endpoints = {
     general: '/settings/general',
     gst: '/settings/gst',
     notifications: '/settings/notifications',
+    customerPortal: '/settings/customer-portal',
+    caReports: '/settings/ca-reports',
+    business: '/settings/business',
+    businessBundle: '/settings/business/profile-bundle',
+    invoice: '/settings/invoice',
+    print: '/settings/print',
   },
   search: {
     global: '/search',

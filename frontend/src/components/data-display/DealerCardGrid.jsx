@@ -15,15 +15,15 @@ const FILTERS = [
   { value: 'RED', label: 'Red' },
 ];
 
-export function DealerCardGrid({ limit, basePath, className }) {
+export function DealerCardGrid({ limit, basePath, className, team = false }) {
   const [zone, setZone] = useState('ALL');
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: queryKeys.assignedDealers.list({}),
-    queryFn: () => assignedDealersService.getList(),
+    queryKey: team ? queryKeys.assignedDealers.team({}) : queryKeys.assignedDealers.list({}),
+    queryFn: () => (team ? assignedDealersService.getTeamList() : assignedDealersService.getList()),
   });
 
   const dealers = useMemo(() => {
-    let rows = data?.data ?? [];
+    let rows = team ? (data?.data ?? data ?? []) : (data?.data ?? []);
     if (zone !== 'ALL') rows = rows.filter((d) => d.zone === zone);
     if (limit) rows = rows.slice(0, limit);
     return rows;

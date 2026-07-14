@@ -21,6 +21,16 @@ export const queryKeys = {
     list: (filters) => [...queryKeys.brands.all, 'list', filters],
     detail: (id) => [...queryKeys.brands.all, 'detail', id],
   },
+  parties: {
+    all: ['parties'],
+    list: (filters) => [...queryKeys.parties.all, 'list', filters],
+    detail: (id) => [...queryKeys.parties.all, 'detail', id],
+  },
+  purchases: {
+    all: ['purchases'],
+    list: (filters) => [...queryKeys.purchases.all, 'list', filters],
+    detail: (id) => [...queryKeys.purchases.all, 'detail', id],
+  },
   productTiers: {
     all: ['product-tiers'],
     list: (filters) => [...queryKeys.productTiers.all, 'list', filters],
@@ -44,6 +54,11 @@ export const queryKeys = {
     detail: (id) => [...queryKeys.inventory.details(), id],
     lowStock: () => [...queryKeys.inventory.all, 'low-stock'],
     categories: () => [...queryKeys.inventory.all, 'categories'],
+  },
+  stockMovements: {
+    all: ['stock-movements'],
+    list: (filters) => [...queryKeys.stockMovements.all, 'list', filters],
+    skuHistory: (sku) => [...queryKeys.stockMovements.all, 'sku', sku],
   },
   warehouses: {
     all: ['warehouses'],
@@ -148,10 +163,20 @@ export const queryKeys = {
     lists: () => [...queryKeys.employees.all, 'list'],
     list: (filters) => [...queryKeys.employees.lists(), filters],
     detail: (id) => [...queryKeys.employees.all, 'detail', id],
+    hierarchy: () => [...queryKeys.employees.all, 'hierarchy'],
+  },
+  employeeReportingLine: {
+    all: ['employee-reporting-line'],
+    detail: (id) => [...queryKeys.employeeReportingLine.all, 'detail', id],
+  },
+  employeeDealers: {
+    all: ['employee-dealers'],
+    detail: (id) => [...queryKeys.employeeDealers.all, 'detail', id],
   },
   assignedDealers: {
     all: ['assigned-dealers'],
     list: (filters) => [...queryKeys.assignedDealers.all, 'list', filters],
+    team: (filters) => [...queryKeys.assignedDealers.all, 'team', filters],
     detail: (id) => [...queryKeys.assignedDealers.all, 'detail', id],
   },
   employeePerformance: {
@@ -201,6 +226,12 @@ export const queryKeys = {
     list: (filters) => [...queryKeys.notifications.all, 'list', filters],
     infinite: (filters) => [...queryKeys.notifications.all, 'infinite', filters],
     unreadCount: () => [...queryKeys.notifications.all, 'unread-count'],
+  },
+  customerPortal: {
+    all: ['customer-portal'],
+    config: ['customer-portal', 'config'],
+    hub: ['customer-portal', 'hub'],
+    notifications: ['customer-portal', 'notifications'],
   },
   audit: {
     all: ['audit'],

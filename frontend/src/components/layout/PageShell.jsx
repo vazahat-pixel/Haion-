@@ -1,19 +1,24 @@
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageHeader } from './PageHeader';
+import { Breadcrumbs } from './Breadcrumbs';
 import { MotionPage } from '@/components/motion/MotionPage';
 import { getAdminModuleDecor } from '@/config/adminModules.config';
 
-export function PageShell({ title, subtitle, actions, breadcrumbs, children, module, hero = true }) {
+export function PageShell({ title, subtitle, actions, breadcrumbs, back, children, module, hero = true }) {
   const location = useLocation();
   const decor = module ? getAdminModuleDecor(`/admin/${module}`) : getAdminModuleDecor(location.pathname);
   const Icon = decor?.Icon;
   const Mesh = decor?.Mesh;
   const showHero = hero && decor;
+  const resolvedBreadcrumbs = breadcrumbs
+    ?? (back
+      ? <Breadcrumbs items={[{ label: back.label, href: back.href }, { label: title }]} />
+      : null);
 
   return (
     <MotionPage>
-      <div className="space-y-3 p-3 sm:p-4">
+      <div className="min-w-0 max-w-full space-y-3 p-3 sm:p-4">
         {showHero ? (
           <motion.div
             className="dashboard-hero relative overflow-hidden px-3.5 py-3"
@@ -27,7 +32,7 @@ export function PageShell({ title, subtitle, actions, breadcrumbs, children, mod
                 title={title}
                 subtitle={subtitle}
                 actions={actions}
-                breadcrumbs={breadcrumbs}
+                breadcrumbs={resolvedBreadcrumbs}
                 icon={Icon}
               />
             </div>
@@ -37,7 +42,7 @@ export function PageShell({ title, subtitle, actions, breadcrumbs, children, mod
             title={title}
             subtitle={subtitle}
             actions={actions}
-            breadcrumbs={breadcrumbs}
+            breadcrumbs={resolvedBreadcrumbs}
             icon={Icon}
           />
         )}

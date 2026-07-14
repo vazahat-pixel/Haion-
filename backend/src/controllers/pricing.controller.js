@@ -37,6 +37,15 @@ export const createPricing = asyncHandler(async (req, res) => {
     discountPct,
     gst: req.body.gst ?? 18,
     status: req.body.status || 'ACTIVE',
+    changeHistory: [{
+      changedAt: new Date(),
+      changedBy: req.user?.email || 'system',
+      basePrice,
+      discountPct,
+      effectivePrice,
+      gst: req.body.gst ?? 18,
+      note: 'Initial pricing rule created',
+    }],
   });
   return sendCreated(res, { data: mapPricingRule(doc.toObject()), message: 'Pricing rule created' });
 });
@@ -45,9 +54,31 @@ export const updatePricing = asyncHandler(async (req, res) => {
   const doc = await PricingRule.findById(req.params.id);
   if (!doc) return sendError(res, { message: 'Pricing rule not found', statusCode: 404 });
 
+  const previous = {
+    basePrice: doc.basePrice,
+    discountPct: doc.discountPct,
+    effectivePrice: doc.effectivePrice,
+    gst: doc.gst,
+  };
   Object.assign(doc, req.body);
   if (req.body.basePrice != null && req.body.discountPct != null) {
     doc.effectivePrice = Math.round(doc.basePrice * (1 - doc.discountPct / 100));
+  }
+  if (
+    previous.basePrice !== doc.basePrice
+    || previous.discountPct !== doc.discountPct
+    || previous.effectivePrice !== doc.effectivePrice
+    || previous.gst !== doc.gst
+  ) {
+    doc.changeHistory.push({
+      changedAt: new Date(),
+      changedBy: req.user?.email || 'system',
+      basePrice: doc.basePrice,
+      discountPct: doc.discountPct,
+      effectivePrice: doc.effectivePrice,
+      gst: doc.gst,
+      note: req.body.changeNote || 'Pricing parameters updated',
+    });
   }
   await doc.save();
   return sendSuccess(res, { data: mapPricingRule(doc.toObject()), message: 'Pricing rule updated' });

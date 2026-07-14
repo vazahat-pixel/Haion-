@@ -74,9 +74,18 @@ export function LoginForm() {
           </Button>
         </form>
 
+        <p className="mt-4 text-center text-xs text-[var(--color-text-secondary)]">
+          Customer?{' '}
+          <Link to={ROUTES.CUSTOMER_ACCESS} className="font-medium text-brand-600 hover:text-brand-700">
+            View account without login
+          </Link>
+        </p>
+
         {env.isDev && (
-          <p className="mt-4 rounded-md bg-surface-2 px-2.5 py-1.5 text-center text-[10px] text-[var(--color-text-tertiary)]">
+          <p className="mt-3 rounded-md bg-surface-2 px-2.5 py-1.5 text-center text-[10px] text-[var(--color-text-tertiary)]">
             Dev: <strong>admin@haion.com</strong> / <strong>password</strong>
+            {' · '}
+            <strong>customer@haion.com</strong>
           </p>
         )}
       </div>

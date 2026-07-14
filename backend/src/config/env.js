@@ -22,6 +22,11 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
   SMTP_SECURE: z.coerce.boolean().optional(),
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+  /** Dev only: charge this amount (INR) via Razorpay when catalog total exceeds test limits */
+  RAZORPAY_DEV_TEST_AMOUNT: z.coerce.number().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -53,4 +58,8 @@ export const env = {
   smtpPass: parsed.data.SMTP_PASS,
   smtpFrom: parsed.data.SMTP_FROM,
   smtpSecure: parsed.data.SMTP_SECURE ?? false,
+  razorpayKeyId: parsed.data.RAZORPAY_KEY_ID,
+  razorpayKeySecret: parsed.data.RAZORPAY_KEY_SECRET,
+  razorpayWebhookSecret: parsed.data.RAZORPAY_WEBHOOK_SECRET,
+  razorpayDevTestAmount: parsed.data.RAZORPAY_DEV_TEST_AMOUNT,
 };

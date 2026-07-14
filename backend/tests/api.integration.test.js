@@ -1,11 +1,17 @@
-import { test, after } from 'node:test';
+import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../src/app.js';
+import { connectDatabase, disconnectDatabase } from '../src/config/database.js';
 
 let server;
 
-after(() => {
+before(async () => {
+  await connectDatabase();
+});
+
+after(async () => {
+  await disconnectDatabase();
   if (server) server.close();
 });
 

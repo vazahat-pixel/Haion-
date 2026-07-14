@@ -11,6 +11,13 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_PRODUCT_DETAIL: '/admin/products/:id',
+  ADMIN_PARTIES: '/admin/parties',
+  ADMIN_PARTY_NEW: '/admin/parties/new',
+  ADMIN_PARTY_EDIT: '/admin/parties/:id/edit',
+  ADMIN_PARTY_DETAIL: '/admin/parties/:id',
+  ADMIN_PURCHASES: '/admin/purchases',
+  ADMIN_PURCHASE_NEW: '/admin/purchases/new',
+  ADMIN_PURCHASE_DETAIL: '/admin/purchases/:id',
   ADMIN_CATEGORIES: '/admin/categories',
   ADMIN_CATEGORY_DETAIL: '/admin/categories/:id',
   ADMIN_BRANDS: '/admin/brands',
@@ -31,6 +38,7 @@ export const ROUTES = {
   ADMIN_DISPATCH_DETAIL: '/admin/dispatch/:id',
   ADMIN_INVENTORY: '/admin/inventory',
   ADMIN_INVENTORY_DETAIL: '/admin/inventory/:id',
+  ADMIN_STOCK_MOVEMENTS: '/admin/stock-movements',
   ADMIN_DEALERS: '/admin/dealers',
   ADMIN_DEALER_DETAIL: '/admin/dealers/:id',
   ADMIN_DEALER_ONBOARDING: '/admin/dealers/onboarding',
@@ -42,8 +50,26 @@ export const ROUTES = {
   ADMIN_SETTINGS_GENERAL: '/admin/settings/general',
   ADMIN_SETTINGS_GST: '/admin/settings/gst',
   ADMIN_SETTINGS_NOTIFICATIONS: '/admin/settings/notifications',
+  ADMIN_SETTINGS_CUSTOMER_PORTAL: '/admin/settings/customer-portal',
+  ADMIN_SETTINGS_CA_REPORTS: '/admin/settings/ca-reports',
+  ADMIN_BUSINESS_MANAGE: '/admin/business/manage',
+  ADMIN_BUSINESS_INVOICE: '/admin/business/invoice',
+  ADMIN_BUSINESS_PRINT: '/admin/business/print',
   ADMIN_SETTINGS_ROLES: '/admin/settings/roles',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
+
+  // Website CMS
+  ADMIN_CMS: '/admin/cms',
+  ADMIN_CMS_SETTINGS: '/admin/cms/settings',
+  ADMIN_CMS_PAGES_HOME: '/admin/cms/pages/home',
+  ADMIN_CMS_PAGES_STORE: '/admin/cms/pages/store',
+  ADMIN_CMS_PAGES_ABOUT: '/admin/cms/pages/about',
+  ADMIN_CMS_PAGES_APPLIANCES: '/admin/cms/pages/appliances',
+  ADMIN_CMS_PAGES_INVERTER: '/admin/cms/pages/inverter',
+  ADMIN_CMS_COLLECTIONS: '/admin/cms/collections',
+  ADMIN_CMS_COLLECTION: '/admin/cms/collections/:collection',
+  ADMIN_STORE_ORDERS: '/admin/store-orders',
+  ADMIN_STORE_ORDER_DETAIL: '/admin/store-orders/:id',
 
   // Dealer
   DEALER_DASHBOARD: '/dealer/dashboard',
@@ -58,6 +84,7 @@ export const ROUTES = {
   DEALER_INVENTORY_DETAIL: '/dealer/inventory/:id',
   DEALER_BILLING: '/dealer/billing',
   DEALER_BILLING_NEW: '/dealer/billing/new',
+  DEALER_SALES_QUICK: '/dealer/sales/quick',
   DEALER_BILLING_DETAIL: '/dealer/billing/:billId',
   DEALER_INVOICES: '/dealer/invoices',
   DEALER_INVOICE_DETAIL: '/dealer/invoices/:id',
@@ -82,6 +109,9 @@ export const ROUTES = {
 
   // Service
   SERVICE_DASHBOARD: '/service/dashboard',
+  SERVICE_TICKETS: '/service/tickets',
+  SERVICE_TICKET_NEW: '/service/tickets/new',
+  SERVICE_TICKET_DETAIL: '/service/tickets/:id',
   SERVICE_COMPLAINTS: '/service/complaints',
   SERVICE_COMPLAINT_NEW: '/service/complaints/new',
   SERVICE_COMPLAINT_DETAIL: '/service/complaints/:ticketId',
@@ -92,6 +122,8 @@ export const ROUTES = {
 
   // Customer
   CUSTOMER_DASHBOARD: '/customer/dashboard',
+  CUSTOMER_PRODUCTS: '/customer/products',
+  CUSTOMER_PRODUCT_DETAIL: '/customer/products/:id',
   CUSTOMER_ORDERS: '/customer/orders',
   CUSTOMER_ORDER_DETAIL: '/customer/orders/:id',
   CUSTOMER_WARRANTY: '/customer/warranty',
@@ -100,6 +132,16 @@ export const ROUTES = {
   CUSTOMER_SERVICE_REQUESTS: '/customer/service-requests',
   CUSTOMER_SERVICE_REQUEST_NEW: '/customer/service-requests/new',
   CUSTOMER_SERVICE_REQUEST_DETAIL: '/customer/service-requests/:id',
+
+  // Public customer portal (no login)
+  CUSTOMER_ACCESS: '/customer/access',
+  CUSTOMER_ACCESS_HUB: '/customer/access/hub',
+  CUSTOMER_ACCESS_PRODUCTS: '/customer/access/products',
+
+  // Public (no login)
+  LANDING: '/landing',
+  PUBLIC_COMPLAINT: '/support/complaint',
+  PUBLIC_WARRANTY_CHECK: '/warranty/check',
 
   // Shared
   UNAUTHORIZED: '/unauthorized',

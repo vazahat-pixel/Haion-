@@ -10,7 +10,7 @@ const warrantySchema = new mongoose.Schema(
     bill: { type: mongoose.Schema.Types.ObjectId, ref: 'Bill', required: true },
     billNo: { type: String, required: true },
     dealer: { type: mongoose.Schema.Types.ObjectId, ref: 'Dealer', required: true },
-    status: { type: String, enum: ['ACTIVE', 'EXPIRED', 'CLAIMED'], default: 'ACTIVE' },
+    status: { type: String, enum: ['ACTIVE', 'EXPIRED', 'CLAIMED', 'VOID'], default: 'ACTIVE' },
     startDate: { type: Date, required: true, default: Date.now },
     endDate: { type: Date, required: true },
     warrantyMonths: { type: Number, default: 12 },

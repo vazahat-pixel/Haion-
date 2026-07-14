@@ -1,23 +1,35 @@
 import client from './api/client';
 import { endpoints } from './api/endpoints';
-import { withMockFallback } from '@/utils/withMockFallback';
-import { mockService } from './mock.service';
 
 export const warrantyService = {
-  getList: (filters) => withMockFallback(
-    async () => (await client.get(endpoints.warranty.list, { params: filters })).normalized,
-    () => mockService.warranty.getList(filters)
-  ),
-  getDetail: (id) => withMockFallback(
-    async () => (await client.get(endpoints.warranty.detail(id))).normalized.data,
-    () => mockService.warranty.getDetail(id)
-  ),
-  lookupBySerial: (serial) => withMockFallback(
-    async () => (await client.get(endpoints.warranty.eligibility, { params: { serial } })).normalized.data,
-    () => mockService.warranty.lookupBySerial(serial)
-  ),
-  downloadCertificate: (id) => withMockFallback(
-    async () => (await client.get(`${endpoints.warranty.detail(id)}/certificate`)).normalized.data,
-    () => mockService.warranty.downloadCertificate(id)
-  ),
+  getList: async (filters) => (await client.get(endpoints.warranty.list, { params: filters })).normalized,
+  getDetail: async (id) => (await client.get(endpoints.warranty.detail(id))).normalized.data,
+  lookupBySerial: async (serial) =>
+    (await client.get(endpoints.warranty.eligibility, { params: { serial } })).normalized.data,
+  publicLookup: async ({ billNo, serial }) =>
+    (await client.get('/warranty/lookup', { params: { billNo, serial } })).normalized.data,
+  downloadCertificate: async (id) => {
+    try {
+      const response = await client.get(`${endpoints.warranty.detail(id)}/certificate/pdf`, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `warranty-${id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return true;
+    } catch {
+      const data = (await client.get(`${endpoints.warranty.detail(id)}/certificate`)).normalized.data;
+      const html = data.certificateHtml || '';
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = data.filename || `warranty-${data.serialNo}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return data;
+    }
+  },
 };

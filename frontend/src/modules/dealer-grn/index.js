@@ -13,7 +13,8 @@ export const DealerGRNTable = createListTable({
   searchKeys: ['grnNo', 'dispatchNo'],
   filterKey: 'status',
   filterOptions: [
-    { value: 'PENDING', label: 'Pending' },
+    { value: 'PENDING_VERIFICATION', label: 'Pending' },
     { value: 'VERIFIED', label: 'Verified' },
+    { value: 'REJECTED', label: 'Rejected' },
   ],
 });

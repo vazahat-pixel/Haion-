@@ -20,7 +20,7 @@ export const listCustomers = asyncHandler(async (req, res) => {
   if (req.query.status) filter.status = req.query.status;
 
   const [rows, total] = await Promise.all([
-    Customer.find(filter).sort(sort).skip(skip).limit(perPage).lean(),
+    Customer.find(filter).populate('assignedSalesMember', 'name role').sort(sort).skip(skip).limit(perPage).lean(),
     Customer.countDocuments(filter),
   ]);
   return sendPaginated(res, { data: rows.map(mapCustomer), total, page, perPage });
@@ -28,7 +28,7 @@ export const listCustomers = asyncHandler(async (req, res) => {
 
 export const getCustomer = asyncHandler(async (req, res) => {
   const filter = { _id: req.params.id, ...dealerFilter(req) };
-  const customer = await Customer.findOne(filter).lean();
+  const customer = await Customer.findOne(filter).populate('assignedSalesMember', 'name role').lean();
   if (!customer) return sendError(res, { message: 'Customer not found', statusCode: 404 });
   return sendSuccess(res, { data: mapCustomer(customer) });
 });
@@ -49,13 +49,19 @@ export const createCustomer = asyncHandler(async (req, res) => {
     address: req.body.address,
     gstin: req.body.gstin || '',
     status: req.body.status || 'ACTIVE',
+    assignedSalesMember: req.body.assignedSalesMember || undefined,
   });
-  return sendCreated(res, { data: mapCustomer(customer.toObject()), message: 'Customer created' });
+  const populated = await Customer.findById(customer._id).populate('assignedSalesMember', 'name role').lean();
+  return sendCreated(res, { data: mapCustomer(populated), message: 'Customer created' });
 });
 
 export const updateCustomer = asyncHandler(async (req, res) => {
   const filter = { _id: req.params.id, ...dealerFilter(req) };
-  const customer = await Customer.findOneAndUpdate(filter, req.body, { new: true, runValidators: true }).lean();
+  const updates = { ...req.body };
+  if (updates.assignedSalesMember === '') updates.assignedSalesMember = null;
+  const customer = await Customer.findOneAndUpdate(filter, updates, { new: true, runValidators: true })
+    .populate('assignedSalesMember', 'name role')
+    .lean();
   if (!customer) return sendError(res, { message: 'Customer not found', statusCode: 404 });
   return sendSuccess(res, { data: mapCustomer(customer), message: 'Customer updated' });
 });

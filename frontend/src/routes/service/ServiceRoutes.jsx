@@ -9,6 +9,9 @@ import { PERMISSIONS } from '@/constants/permissions';
 import { ServicePanelSkeleton } from './ServicePanelSkeleton';
 
 const ServiceDashboardPage = lazy(() => import('@/pages/service/ServiceDashboardPage'));
+const ServiceTicketListPage = lazy(() => import('@/pages/service/tickets/ServiceTicketListPage'));
+const ServiceTicketNewPage = lazy(() => import('@/pages/service/tickets/ServiceTicketNewPage'));
+const ServiceTicketDetailPage = lazy(() => import('@/pages/service/tickets/ServiceTicketDetailPage'));
 const ComplaintListPage = lazy(() => import('@/pages/service/complaints/ComplaintListPage'));
 const ComplaintNewPage = lazy(() => import('@/pages/service/complaints/ComplaintNewPage'));
 const ComplaintDetailPage = lazy(() => import('@/pages/service/complaints/ComplaintDetailPage'));
@@ -28,6 +31,9 @@ export default function ServiceRoutes() {
             <Route element={<ServiceLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<PermissionGuard require={PERMISSIONS.SERVICE_DASHBOARD} redirectTo="/unauthorized"><ServiceDashboardPage /></PermissionGuard>} />
+              <Route path="tickets" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_READ} redirectTo="/unauthorized"><ServiceTicketListPage /></PermissionGuard>} />
+              <Route path="tickets/new" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_CREATE} redirectTo="/unauthorized"><ServiceTicketNewPage /></PermissionGuard>} />
+              <Route path="tickets/:id" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_READ} redirectTo="/unauthorized"><ServiceTicketDetailPage /></PermissionGuard>} />
               <Route path="complaints" element={<ComplaintListPage />} />
               <Route path="complaints/new" element={<PermissionGuard require={PERMISSIONS.COMPLAINTS_CREATE} redirectTo="/unauthorized"><ComplaintNewPage /></PermissionGuard>} />
               <Route path="complaints/:ticketId" element={<ComplaintDetailPage />} />

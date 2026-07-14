@@ -4,6 +4,7 @@ import App from './app/App';
 import './styles/globals.css';
 import './styles/typography.css';
 import './styles/animations.css';
+import './styles/customer-app.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
