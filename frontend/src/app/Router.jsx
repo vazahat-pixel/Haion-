@@ -30,16 +30,16 @@ const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 const MaintenancePage = lazy(() => import('@/pages/shared/MaintenancePage'));
 const ServerErrorPage = lazy(() => import('@/pages/shared/ServerErrorPage'));
 
-function PublicHome() {
+function RootRedirect() {
   const { isAuthenticated, user, isInitializing } = useAuth();
 
   if (isInitializing) return <LoadingState message="Loading..." fullPage />;
 
-  if (isAuthenticated) {
-    return <Navigate to={ROLE_HOME_ROUTE[user?.role] || ROUTES.ADMIN_DASHBOARD} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.AUTH_LOGIN} replace />;
   }
 
-  return <LandingPage />;
+  return <Navigate to={ROLE_HOME_ROUTE[user?.role] || ROUTES.ADMIN_DASHBOARD} replace />;
 }
 
 function PanelFallback() {
@@ -50,9 +50,10 @@ export function Router() {
   return (
     <Suspense fallback={<PanelFallback />}>
       <Routes>
+        <Route path="/" element={<RootRedirect />} />
+
         <Route element={<LandingLayout />}>
-          <Route path="/" element={<PublicHome />} />
-          <Route path="/landing" element={<Navigate to="/" replace />} />
+          <Route path="/landing" element={<LandingPage />} />
         </Route>
 
         <Route element={<AuthLayout />}>
