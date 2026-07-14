@@ -1,44 +1,80 @@
-node_modules
-dist
+# ===========================
+# Dependencies
+# ===========================
+node_modules/
+
+# ===========================
+# Build outputs
+# ===========================
+dist/
+.vite/
+
+# ===========================
+# Environment files
+# ===========================
 .env
 .env.local
 .env.production
 .env.development.local
 .env.test.local
+
+# ===========================
+# Logs
+# ===========================
 *.log
+
+# ===========================
+# OS files
+# ===========================
 .DS_Store
-.vite
-uploads
 
-# Separate folders and assets
-landing page website/
-*.webp
+# ===========================
+# Backend uploads (user files)
+# ===========================
+uploads/
 
-# Playwright
+# ===========================
+# Seed scripts (sensitive)
+# ===========================
+seed.js
+backend/src/seed.js
+backend/seed.js
+
+# ===========================
+# Temp scripts
+# ===========================
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+
+# ===========================
+# Testing artifacts
+# ===========================
 playwright-report/
 test-results/
 frontend/playwright-report/
 frontend/test-results/
 
-# Ignored specific files requested
+# ===========================
+# PDFs (generated reports etc)
+# ===========================
 *.pdf
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.svg
-*.webp
-seed.js
-backend/src/seed.js
-backend/seed.js
+.pdf-pages/
 
-branch_structure.json
-temp_auto_push.bat
-temp_interactive_push.bat
+# ===========================
+# The large external landing page website folder
+# (has thousands of scroll-sequence webp frames)
+# ===========================
+landing page website/
 
-# Whitelist all frontend assets and public files so they are committed
-!frontend/src/assets/**/*
-!frontend/public/**/*
-!frontend/src/features/landing/assets/**/*
-
-
+# ===========================
+# Image files are ALLOWED inside frontend/
+# They are intentionally NOT ignored here.
+# Only ignore images at root level (not inside frontend/)
+# ===========================
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.svg
+/*.webp
