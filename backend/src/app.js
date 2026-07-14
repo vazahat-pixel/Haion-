@@ -61,6 +61,13 @@ function isAllowedCorsOrigin(origin) {
   // Dev: allow any localhost Vite port (5173, 5174, …)
   if (env.isDev && /^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
   if (env.isDev && /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return true;
+  // Production: allow Vercel frontend preview & production URLs
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname.endsWith('.vercel.app')) return true;
+  } catch {
+    // ignore malformed origin
+  }
   return false;
 }
 

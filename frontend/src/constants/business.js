@@ -32,7 +32,9 @@ export const HAION_BRAND_LOGO = '/brand/haion-logo.png';
 export function assetUrl(path) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace(/\/api\/?$/, '');
+  const apiBase = import.meta.env.VITE_API_BASE_URL
+    || (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
+  const base = apiBase.replace(/\/api\/?$/, '');
   return `${base}${path}`;
 }
 

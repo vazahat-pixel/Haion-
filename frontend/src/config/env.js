@@ -1,5 +1,16 @@
+function resolveApiBaseUrl() {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  // Production on Vercel: same-origin /api (proxied via middleware.js to BACKEND_URL)
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  return 'http://localhost:3000/api';
+}
+
 export const env = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  apiBaseUrl: resolveApiBaseUrl(),
   appName: import.meta.env.VITE_APP_NAME || 'Haion ERP',
   appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',
   isDev: import.meta.env.DEV,
