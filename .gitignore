@@ -27,6 +27,7 @@ frontend/test-results/
 *.png
 *.gif
 *.svg
+*.webp
 seed.js
 backend/src/seed.js
 backend/seed.js
@@ -34,4 +35,10 @@ backend/seed.js
 branch_structure.json
 temp_auto_push.bat
 temp_interactive_push.bat
+
+# Whitelist all frontend assets and public files so they are committed
+!frontend/src/assets/**/*
+!frontend/public/**/*
+!frontend/src/features/landing/assets/**/*
+
 
