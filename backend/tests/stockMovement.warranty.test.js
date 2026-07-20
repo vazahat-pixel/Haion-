@@ -1,16 +1,11 @@
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from '../src/app.js';
-import { connectDatabase, disconnectDatabase } from '../src/config/database.js';
 
-before(async () => {
-  await connectDatabase();
-});
-
-after(async () => {
-  await disconnectDatabase();
-});
+// These tests only verify auth/access-control guards — no DB connection required.
+// Authenticated endpoints return 401 from the JWT middleware (before any DB query).
+// Public endpoints return non-401 even if DB is unavailable (e.g. 200 or 500).
 
 test('GET /api/stock-movements requires auth', async () => {
   const res = await request(app).get('/api/stock-movements');

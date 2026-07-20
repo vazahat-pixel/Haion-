@@ -29,10 +29,11 @@ export async function connectDatabase() {
     await mongoose.connect(env.mongodbUri, options);
     return mongoose.connection;
   } catch (err) {
-    if (!env.isDev) throw err;
+    // Fall back to in-memory MongoDB for development AND test environments
+    if (env.nodeEnv === 'production') throw err;
 
-    console.warn(`Local MongoDB unavailable (${err.message})`);
-    console.warn('Starting in-memory MongoDB for development…');
+    console.warn(`MongoDB unavailable (${err.message})`);
+    console.warn('Starting in-memory MongoDB…');
 
     memoryServer = await MongoMemoryServer.create();
     await mongoose.connect(memoryServer.getUri(), options);

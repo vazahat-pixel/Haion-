@@ -57,6 +57,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// ── Health check — placed before CORS/rate-limit so it is always reachable ────
+app.get('/api/health', (_req, res) => {
+  res.json({ success: true, message: 'OK', data: { version: process.env.npm_package_version || '1.0.0' } });
+});
+
 // ── Security headers (helmet) ─────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
@@ -85,8 +90,8 @@ app.use(morgan(env.isDev ? 'dev' : 'combined'));
 const _corsAllowedSet = new Set(env.corsOrigins);
 function isAllowedCorsOrigin(origin) {
   if (!origin) {
-    // No origin = same-origin or server-to-server — block in production
-    return env.isDev;
+    // No origin = same-origin, server-to-server, or supertest — allow in dev/test, block in production
+    return env.isDev || env.nodeEnv === 'test';
   }
   if (_corsAllowedSet.has(origin)) return true;
   // Dev only: allow any localhost Vite port (5173, 5174, …)
@@ -135,10 +140,7 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// ── Health check ─────────────────────────────────────────────────────────────
-app.get('/api/health', (_req, res) => {
-  res.json({ success: true, message: 'OK', data: { version: process.env.npm_package_version || '1.0.0' } });
-});
+// (health check registered above, before CORS middleware)
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
