@@ -12,6 +12,18 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,7 +32,23 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - run: npm test
+      # Run unit tests and QA tests explicitly — avoids shell glob ambiguity
+      # on Linux where tests/**/*.test.js may only expand to tests/qa/*.test.js
+      - run: |
+          node --test --test-concurrency=1 \
+            tests/address.test.js \
+            tests/api.integration.test.js \
+            tests/gst.util.test.js \
+            tests/health.test.js \
+            tests/invoicePdf.test.js \
+            tests/permissionCatalog.test.js \
+            tests/stockMovement.warranty.test.js \
+            tests/store.checkout.test.js \
+            tests/qa/admin-panel.test.js \
+            tests/qa/auth-roles.test.js \
+            tests/qa/dealer-panel.test.js \
+            tests/qa/employee-service-customer.test.js \
+            tests/qa/public-workflows.test.js
         env:
           NODE_ENV: test
           MONGODB_URI: mongodb://127.0.0.1:27017/haion_erp_test
