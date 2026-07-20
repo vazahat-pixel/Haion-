@@ -27,7 +27,10 @@ export const createCategory = asyncHandler(async (req, res) => {
 });
 
 export const updateCategory = asyncHandler(async (req, res) => {
-  const doc = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).lean();
+  // SECURITY: Whitelist allowed update fields — prevent mass assignment
+  const ALLOWED = ['name', 'description', 'isActive'];
+  const safeUpdate = Object.fromEntries(ALLOWED.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k]]));
+  const doc = await Category.findByIdAndUpdate(req.params.id, { $set: safeUpdate }, { new: true, runValidators: true }).lean();
   if (!doc) return sendError(res, { message: 'Category not found', statusCode: 404 });
   return sendSuccess(res, { data: toPublicDoc(doc), message: 'Category updated' });
 });
@@ -53,7 +56,10 @@ export const createBrand = asyncHandler(async (req, res) => {
 });
 
 export const updateBrand = asyncHandler(async (req, res) => {
-  const doc = await Brand.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).lean();
+  // SECURITY: Whitelist allowed update fields — prevent mass assignment
+  const ALLOWED = ['name', 'description', 'logo', 'isActive'];
+  const safeUpdate = Object.fromEntries(ALLOWED.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k]]));
+  const doc = await Brand.findByIdAndUpdate(req.params.id, { $set: safeUpdate }, { new: true, runValidators: true }).lean();
   if (!doc) return sendError(res, { message: 'Brand not found', statusCode: 404 });
   return sendSuccess(res, { data: toPublicDoc(doc), message: 'Brand updated' });
 });

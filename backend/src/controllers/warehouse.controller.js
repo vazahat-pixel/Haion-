@@ -52,7 +52,10 @@ export const createWarehouse = asyncHandler(async (req, res) => {
 });
 
 export const updateWarehouse = asyncHandler(async (req, res) => {
-  const warehouse = await Warehouse.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).lean();
+  // SECURITY: Whitelist update fields — prevent mass assignment
+  const ALLOWED = ['name', 'code', 'address', 'city', 'state', 'pincode', 'phone', 'status', 'notes'];
+  const safeUpdate = Object.fromEntries(ALLOWED.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k]]));
+  const warehouse = await Warehouse.findByIdAndUpdate(req.params.id, { $set: safeUpdate }, { new: true, runValidators: true }).lean();
   if (!warehouse) return sendError(res, { message: 'Warehouse not found', statusCode: 404 });
   return sendSuccess(res, { data: mapWarehouse(warehouse), message: 'Warehouse updated' });
 });

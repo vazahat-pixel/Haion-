@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DealerLayout from '@/layouts/DealerLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -6,7 +6,6 @@ import { PanelGuard } from '@/components/auth/PanelGuard';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
-import { DealerPanelSkeleton } from './DealerPanelSkeleton';
 
 const DealerDashboardPage = lazy(() => import('@/pages/dealer/DealerDashboardPage'));
 const DealerInventoryListPage = lazy(() => import('@/pages/dealer/inventory/DealerInventoryListPage'));
@@ -37,7 +36,6 @@ export default function DealerRoutes() {
   return (
     <AuthGuard>
       <PanelGuard allowedRoles={PANEL_ROLES}>
-        <Suspense fallback={<DealerPanelSkeleton />}>
           <Routes>
             <Route element={<DealerLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -65,7 +63,6 @@ export default function DealerRoutes() {
               <Route path="team/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_TEAM_READ} redirectTo="/unauthorized"><TeamMemberDetailPage /></PermissionGuard>} />
             </Route>
           </Routes>
-        </Suspense>
       </PanelGuard>
     </AuthGuard>
   );

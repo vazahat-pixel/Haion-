@@ -31,6 +31,12 @@ export const queryKeys = {
     list: (filters) => [...queryKeys.purchases.all, 'list', filters],
     detail: (id) => [...queryKeys.purchases.all, 'detail', id],
   },
+  manufacture: {
+    all: ['manufacture'],
+    list: (filters) => [...queryKeys.manufacture.all, 'list', filters],
+    detail: (id) => [...queryKeys.manufacture.all, 'detail', id],
+    materials: (warehouseId) => [...queryKeys.manufacture.all, 'materials', warehouseId],
+  },
   productTiers: {
     all: ['product-tiers'],
     list: (filters) => [...queryKeys.productTiers.all, 'list', filters],

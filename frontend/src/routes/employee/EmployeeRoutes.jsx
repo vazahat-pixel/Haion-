@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import EmployeeLayout from '@/layouts/EmployeeLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -6,7 +6,6 @@ import { PanelGuard } from '@/components/auth/PanelGuard';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
-import { EmployeePanelSkeleton } from './EmployeePanelSkeleton';
 
 const EmployeeDashboardPage = lazy(() => import('@/pages/employee/EmployeeDashboardPage'));
 const AssignedDealersPage = lazy(() => import('@/pages/employee/dealers/AssignedDealersPage'));
@@ -28,7 +27,6 @@ export default function EmployeeRoutes() {
   return (
     <AuthGuard>
       <PanelGuard allowedRoles={PANEL_ROLES}>
-        <Suspense fallback={<EmployeePanelSkeleton />}>
           <Routes>
             <Route element={<EmployeeLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -47,7 +45,6 @@ export default function EmployeeRoutes() {
               <Route path="approvals/:id" element={<PermissionGuard require={PERMISSIONS.APPROVALS_READ} redirectTo="/unauthorized"><ApprovalDetailPage /></PermissionGuard>} />
             </Route>
           </Routes>
-        </Suspense>
       </PanelGuard>
     </AuthGuard>
   );

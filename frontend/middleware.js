@@ -34,11 +34,12 @@ export default async function middleware(request) {
   try {
     return await fetch(targetUrl, init);
   } catch (err) {
+    // SECURITY: Don't expose internal error messages in production
+    const isProd = process.env.NODE_ENV === 'production';
     return new Response(
       JSON.stringify({
         success: false,
-        message: 'Backend unreachable',
-        error: err.message,
+        message: isProd ? 'Backend unreachable' : `Backend unreachable: ${err.message}`,
       }),
       { status: 502, headers: { 'Content-Type': 'application/json' } },
     );

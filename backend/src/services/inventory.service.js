@@ -44,10 +44,17 @@ export async function upsertWarehouseStock({
     await item.save(session ? { session } : undefined);
   }
 
+  let action = 'ADJUSTMENT';
+  if (qtyDelta >= 0) {
+    if (referenceType === 'Purchase') action = 'PURCHASE';
+    else if (referenceType === 'Manufacture') action = 'MANUFACTURE_IN';
+    else action = 'GRN';
+  }
+
   await logMovement({
     sku,
     name: name || item.name,
-    action: qtyDelta >= 0 ? (referenceType === 'Purchase' ? 'PURCHASE' : 'GRN') : 'ADJUSTMENT',
+    action,
     qtyBefore,
     qtyDelta,
     qtyAfter: item.quantity,
@@ -108,12 +115,16 @@ export async function deductWarehouseStock({
   warehouseId, lineItems,
   reference, referenceType, referenceId, performedBy, performedByUser,
   session,
+  action = 'DISPATCH',
 }) {
   for (const line of lineItems) {
     // eslint-disable-next-line no-await-in-loop
     const item = await Inventory.findOne({ sku: line.sku, warehouse: warehouseId, isDeleted: false }).session(session || null);
     if (!item || item.quantity < line.quantity) {
-      throw new Error(`Insufficient stock for SKU ${line.sku}`);
+      throw Object.assign(
+        new Error(`Insufficient stock for SKU ${line.sku} (available: ${item?.quantity ?? 0})`),
+        { statusCode: 400 }
+      );
     }
     const qtyBefore = item.quantity;
     item.quantity -= line.quantity;
@@ -124,7 +135,7 @@ export async function deductWarehouseStock({
     await logMovement({
       sku: line.sku,
       name: line.name || item.name,
-      action: 'DISPATCH',
+      action,
       qtyBefore,
       qtyDelta: -line.quantity,
       qtyAfter: item.quantity,

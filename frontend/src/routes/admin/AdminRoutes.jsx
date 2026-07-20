@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -6,7 +6,6 @@ import { PanelGuard } from '@/components/auth/PanelGuard';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
-import { AdminPanelSkeleton } from './AdminPanelSkeleton';
 
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const ProductListPage = lazy(() => import('@/pages/admin/products/ProductListPage'));
@@ -62,6 +61,10 @@ const PartyDetailPage = lazy(() => import('@/pages/admin/parties/PartyDetailPage
 const PurchaseListPage = lazy(() => import('@/pages/admin/purchases/PurchaseListPage'));
 const PurchaseNewPage = lazy(() => import('@/pages/admin/purchases/PurchaseNewPage'));
 const PurchaseDetailPage = lazy(() => import('@/pages/admin/purchases/PurchaseDetailPage'));
+const ManufactureListPage = lazy(() => import('@/pages/admin/manufacture/ManufactureListPage'));
+const ManufactureNewPage = lazy(() => import('@/pages/admin/manufacture/ManufactureNewPage'));
+const ManufactureDetailPage = lazy(() => import('@/pages/admin/manufacture/ManufactureDetailPage'));
+const FinishedGoodsPage = lazy(() => import('@/pages/admin/manufacture/FinishedGoodsPage'));
 const ManageBusinessPage = lazy(() => import('@/pages/admin/business/ManageBusinessPage'));
 const InvoiceSettingsPage = lazy(() => import('@/pages/admin/business/InvoiceSettingsPage'));
 const PrintSettingsPage = lazy(() => import('@/pages/admin/business/PrintSettingsPage'));
@@ -72,7 +75,6 @@ export default function AdminRoutes() {
   return (
     <AuthGuard>
       <PanelGuard allowedRoles={ADMIN_ROLES}>
-        <Suspense fallback={<AdminPanelSkeleton />}>
           <Routes>
             <Route element={<AdminLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -86,6 +88,10 @@ export default function AdminRoutes() {
               <Route path="purchases" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PurchaseListPage /></PermissionGuard>} />
               <Route path="purchases/new" element={<PermissionGuard require={PERMISSIONS.PURCHASES_CREATE} redirectTo="/unauthorized"><PurchaseNewPage /></PermissionGuard>} />
               <Route path="purchases/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PurchaseDetailPage /></PermissionGuard>} />
+              <Route path="manufacture" element={<PermissionGuard require={PERMISSIONS.MANUFACTURE_READ} redirectTo="/unauthorized"><ManufactureListPage /></PermissionGuard>} />
+              <Route path="manufacture/new" element={<PermissionGuard require={PERMISSIONS.MANUFACTURE_CREATE} redirectTo="/unauthorized"><ManufactureNewPage /></PermissionGuard>} />
+              <Route path="manufacture/:id" element={<PermissionGuard require={PERMISSIONS.MANUFACTURE_READ} redirectTo="/unauthorized"><ManufactureDetailPage /></PermissionGuard>} />
+              <Route path="finished-goods" element={<PermissionGuard require={PERMISSIONS.INVENTORY_READ} redirectTo="/unauthorized"><FinishedGoodsPage /></PermissionGuard>} />
               <Route path="categories" element={<PermissionGuard require={PERMISSIONS.CATEGORIES_READ} redirectTo="/unauthorized"><CategoryListPage /></PermissionGuard>} />
               <Route path="categories/:id" element={<PermissionGuard require={PERMISSIONS.CATEGORIES_READ} redirectTo="/unauthorized"><CategoryDetailPage /></PermissionGuard>} />
               <Route path="brands" element={<PermissionGuard require={PERMISSIONS.BRANDS_READ} redirectTo="/unauthorized"><BrandListPage /></PermissionGuard>} />
@@ -176,7 +182,6 @@ export default function AdminRoutes() {
               <Route path="store-orders" element={<PermissionGuard require={PERMISSIONS.STORE_ORDERS_READ} redirectTo="/unauthorized"><StoreOrdersPage /></PermissionGuard>} />
             </Route>
           </Routes>
-        </Suspense>
       </PanelGuard>
     </AuthGuard>
   );

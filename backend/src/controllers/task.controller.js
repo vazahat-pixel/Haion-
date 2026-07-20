@@ -23,7 +23,10 @@ export const getTask = asyncHandler(async (req, res) => {
 });
 
 export const updateTask = asyncHandler(async (req, res) => {
-  const doc = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).lean();
+  // SECURITY: Whitelist allowed update fields — prevent mass assignment
+  const ALLOWED = ['title', 'description', 'status', 'assignee', 'dueDate', 'priority', 'notes'];
+  const safeUpdate = Object.fromEntries(ALLOWED.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k]]));
+  const doc = await Task.findByIdAndUpdate(req.params.id, { $set: safeUpdate }, { new: true, runValidators: true }).lean();
   if (!doc) return sendError(res, { message: 'Task not found', statusCode: 404 });
   return sendSuccess(res, { data: toPublicDoc(doc), message: 'Task updated' });
 });

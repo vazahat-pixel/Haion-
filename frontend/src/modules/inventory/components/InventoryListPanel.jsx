@@ -1,10 +1,14 @@
 import { ModuleTable } from '@/components/data-display/ModuleTable';
 import { inventoryColumns } from '../columns.config';
 import { useInventoryList } from '../queries/useInventoryList';
-import { MESSAGES } from '@/constants/messages';
 
-export function InventoryListPanel() {
-  const { data, isLoading, isError, refetch } = useInventoryList();
+export function InventoryListPanel({
+  filters = {},
+  emptyTitle = 'No inventory items yet',
+  emptyDescription = 'Items will appear here automatically when purchases are received. Go to Purchases → create a purchase → mark it as received.',
+  basePath = '/admin/inventory',
+}) {
+  const { data, isLoading, isError, refetch } = useInventoryList(filters);
   const rows = data?.data ?? [];
 
   return (
@@ -14,7 +18,7 @@ export function InventoryListPanel() {
       isLoading={isLoading}
       isError={isError}
       onRetry={refetch}
-      basePath="/admin/inventory"
+      basePath={basePath}
       searchKeys={['sku', 'name', 'category', 'warehouse']}
       filterKey="status"
       filterOptions={[
@@ -22,8 +26,8 @@ export function InventoryListPanel() {
         { value: 'LOW_STOCK', label: 'Low Stock' },
         { value: 'OUT_OF_STOCK', label: 'Out of Stock' },
       ]}
-      emptyTitle="No inventory items yet"
-      emptyDescription="Items will appear here automatically when purchases are received. Go to Purchases → create a purchase → mark it as received."
+      emptyTitle={emptyTitle}
+      emptyDescription={emptyDescription}
     />
   );
 }

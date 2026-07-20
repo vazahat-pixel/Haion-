@@ -13,6 +13,7 @@ function mapProduct(doc, stockTotal = 0) {
     hsn: d.hsnCode,
     brand: d.brand || d.description?.split(' · ')?.[0] || '',
     gstRate: d.gstRate ?? 18,
+    productKind: d.productKind || 'RAW',
     stockTotal,
   };
 }
@@ -31,6 +32,7 @@ export const listProducts = asyncHandler(async (req, res) => {
   const filter = { ...buildSearchFilter(req.query.search, ['name', 'sku', 'category']) };
   if (req.query.status) filter.status = req.query.status;
   if (req.query.category) filter.category = req.query.category;
+  if (req.query.productKind) filter.productKind = req.query.productKind;
 
   const [data, total] = await Promise.all([
     Product.find(filter).sort(sort).skip(skip).limit(perPage).lean(),
@@ -62,7 +64,10 @@ export const createProduct = asyncHandler(async (req, res) => {
 });
 
 export const updateProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  // SECURITY: Whitelist allowed update fields — prevent mass assignment
+  const ALLOWED = ['name', 'description', 'category', 'brand', 'hsnCode', 'gstRate', 'unit', 'unitOfMeasure', 'status', 'minOrderQty', 'images', 'productKind'];
+  const safeUpdate = Object.fromEntries(ALLOWED.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k]]));
+  const product = await Product.findByIdAndUpdate(req.params.id, { $set: safeUpdate }, { new: true, runValidators: true });
   if (!product) return sendError(res, { message: 'Item not found', statusCode: 404 });
   return sendSuccess(res, { data: mapProduct(product.toObject()), message: 'Item updated' });
 });
@@ -132,9 +137,12 @@ export const createTier = asyncHandler(async (req, res) => {
 });
 
 export const updateTier = asyncHandler(async (req, res) => {
+  // SECURITY: Whitelist allowed tier update fields — prevent mass assignment
+  const ALLOWED = ['name', 'basePrice', 'discountPercent', 'minQty', 'status', 'description'];
+  const safeUpdate = Object.fromEntries(ALLOWED.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k]]));
   const tier = await ProductTier.findOneAndUpdate(
     { _id: req.params.tierId, product: req.params.id },
-    req.body,
+    { $set: safeUpdate },
     { new: true, runValidators: true }
   );
   if (!tier) return sendError(res, { message: 'Tier not found', statusCode: 404 });

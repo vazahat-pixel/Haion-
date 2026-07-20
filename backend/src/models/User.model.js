@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { ROLES } from '../config/constants.js';
 
+// ── Refresh token stored as SHA-256 hash (not plain JWT) ─────────────────────
+// This means: even if DB is dumped, attacker cannot reuse the tokens
 const refreshTokenSchema = new mongoose.Schema({
-  token: { type: String, required: true },
+  tokenHash: { type: String, required: true }, // SHA-256 hash of raw refresh token
   createdAt: { type: Date, default: Date.now },
 }, { _id: false });
 
@@ -29,6 +32,9 @@ const userSchema = new mongoose.Schema(
     passwordResetExpires: { type: Date, select: false },
     lastLogin: { type: Date, default: null },
     isActive: { type: Boolean, default: true },
+    // ── Account lockout fields (brute-force protection) ──────────────────────
+    failedLoginAttempts: { type: Number, default: 0, select: false },
+    lockedUntil: { type: Date, default: null, select: false },
   },
   { timestamps: true }
 );
@@ -43,6 +49,11 @@ userSchema.methods.comparePassword = async function (candidate) {
 
 userSchema.statics.hashPassword = async function (password) {
   return bcrypt.hash(password, 12);
+};
+
+// ── Hash a raw refresh token for storage ─────────────────────────────────────
+userSchema.statics.hashRefreshToken = function (rawToken) {
+  return crypto.createHash('sha256').update(rawToken).digest('hex');
 };
 
 userSchema.methods.toAuthJSON = function () {

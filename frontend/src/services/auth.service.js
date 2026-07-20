@@ -73,7 +73,11 @@ export const authService = {
     try {
       const res = await client.post(endpoints.auth.refresh);
       return res.normalized.data;
-    } catch {
+    } catch (err) {
+      // Re-throw 401 so callers can detect an actually-expired refresh token
+      // and clear the session. For network errors / 5xx, return null so the
+      // caller keeps the persisted session alive.
+      if (err?.response?.status === 401) throw err;
       return null;
     }
   },

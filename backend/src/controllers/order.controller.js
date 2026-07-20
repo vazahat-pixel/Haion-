@@ -7,9 +7,13 @@ import { nextSequence } from '../utils/sequence.util.js';
 
 function scopeFilter(req) {
   const filter = {};
-  if (req.user.role === 'CUSTOMER') filter.customer = req.user._id;
-  if (req.user.dealerId) filter.dealer = req.user.dealerId;
-  if (req.query.dealerId) filter.dealer = req.query.dealerId;
+  if (req.user.role === 'CUSTOMER') {
+    filter.customer = req.user._id;
+  } else if (req.user.dealerId) {
+    filter.dealer = req.user.dealerId;
+  } else if (req.query.dealerId) {
+    filter.dealer = req.query.dealerId;
+  }
   return filter;
 }
 

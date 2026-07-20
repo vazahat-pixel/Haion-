@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ServiceLayout from '@/layouts/ServiceLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -6,7 +6,6 @@ import { PanelGuard } from '@/components/auth/PanelGuard';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
-import { ServicePanelSkeleton } from './ServicePanelSkeleton';
 
 const ServiceDashboardPage = lazy(() => import('@/pages/service/ServiceDashboardPage'));
 const ServiceTicketListPage = lazy(() => import('@/pages/service/tickets/ServiceTicketListPage'));
@@ -26,7 +25,6 @@ export default function ServiceRoutes() {
   return (
     <AuthGuard>
       <PanelGuard allowedRoles={PANEL_ROLES}>
-        <Suspense fallback={<ServicePanelSkeleton />}>
           <Routes>
             <Route element={<ServiceLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -43,7 +41,6 @@ export default function ServiceRoutes() {
               <Route path="defective-returns/:id" element={<PermissionGuard require={PERMISSIONS.RETURNS_READ} redirectTo="/unauthorized"><DefectiveReturnsDetailPage /></PermissionGuard>} />
             </Route>
           </Routes>
-        </Suspense>
       </PanelGuard>
     </AuthGuard>
   );

@@ -18,6 +18,7 @@ import { Select } from '@/components/ui/select';
 import { FileUploadField } from '@/components/data-entry/FileUploadField';
 import { toast } from '@/utils/toast';
 import { ProductsEmptyIllustration } from '@/components/illustrations';
+import { UNITS_OF_MEASURE, DEFAULT_UNIT_OF_MEASURE } from '@/constants/unitsOfMeasure';
 
 export const ProductTable = createListTable({
   service: productsService,
@@ -49,6 +50,8 @@ const productSchema = z.object({
   brand: z.string().min(1, 'Brand required'),
   hsn: z.string().min(4, 'HSN required'),
   gstRate: z.coerce.number().refine((v) => [0, 5, 12, 18, 28].includes(v), 'Select GST rate'),
+  unitOfMeasure: z.string().min(1, 'Measuring unit required'),
+  productKind: z.enum(['RAW', 'FINISHED']).default('RAW'),
   imageUrl: z.string().optional(),
 });
 
@@ -61,7 +64,16 @@ export function ProductDrawer({ open, onOpenChange }) {
   const brandOptions = (brandRes?.data || []).map((b) => ({ value: b.name, label: b.name }));
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(productSchema),
-    defaultValues: { sku: '', name: '', category: 'Motors', brand: 'Haion', hsn: '', gstRate: 18 },
+    defaultValues: {
+      sku: '',
+      name: '',
+      category: 'Motors',
+      brand: 'Haion',
+      hsn: '',
+      gstRate: 18,
+      unitOfMeasure: DEFAULT_UNIT_OF_MEASURE,
+      productKind: 'RAW',
+    },
   });
 
   const submit = async (data) => {
@@ -105,6 +117,21 @@ export function ProductDrawer({ open, onOpenChange }) {
           </Select>
           {errors.gstRate && <p className="text-xs text-[var(--color-danger)]">{errors.gstRate.message}</p>}
         </div>
+        <div>
+          <Label>Measuring Unit</Label>
+          <Select {...register('unitOfMeasure')}>
+            {UNITS_OF_MEASURE.map((u) => (
+              <option key={u.code} value={u.code}>{u.label}</option>
+            ))}
+          </Select>
+          {errors.unitOfMeasure && <p className="text-xs text-[var(--color-danger)]">{errors.unitOfMeasure.message}</p>}
+        </div>
+        <div><Label>Item Type</Label>
+          <Select {...register('productKind')}>
+            <option value="RAW">Raw material (purchased)</option>
+            <option value="FINISHED">Finished good (manufactured)</option>
+          </Select>
+        </div>
         <FileUploadField label="Item Image" value={imageUrl} onChange={setImageUrl} accept="image/*" />
         <div className="flex gap-2 pt-2">
           <Button type="submit" disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Saving…' : 'Create Item'}</Button>
@@ -121,6 +148,7 @@ const editSchema = z.object({
   brand: z.string().min(1, 'Brand required'),
   hsn: z.string().min(4, 'HSN required'),
   gstRate: z.coerce.number().refine((v) => [0, 5, 12, 18, 28].includes(v), 'Select GST rate'),
+  productKind: z.enum(['RAW', 'FINISHED']).default('RAW'),
   imageUrl: z.string().optional(),
 });
 
@@ -138,7 +166,7 @@ export function ProductEditDrawer({ productId, open, onOpenChange }) {
   const brandOptions = (brandRes?.data || []).map((b) => ({ value: b.name, label: b.name }));
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(editSchema),
-    defaultValues: { name: '', category: '', brand: '', hsn: '', gstRate: 18, imageUrl: '' },
+    defaultValues: { name: '', category: '', brand: '', hsn: '', gstRate: 18, productKind: 'RAW', imageUrl: '' },
   });
 
   useEffect(() => {
@@ -150,6 +178,7 @@ export function ProductEditDrawer({ productId, open, onOpenChange }) {
       brand,
       hsn: product.hsn || product.hsnCode || '',
       gstRate: product.gstRate ?? 18,
+      productKind: product.productKind || 'RAW',
       imageUrl: product.imageUrl || '',
     });
     setImageUrl(product.imageUrl || '');
@@ -192,6 +221,12 @@ export function ProductEditDrawer({ productId, open, onOpenChange }) {
             ))}
           </Select>
           {errors.gstRate && <p className="text-xs text-[var(--color-danger)]">{errors.gstRate.message}</p>}
+        </div>
+        <div><Label>Item Type</Label>
+          <Select {...register('productKind')}>
+            <option value="RAW">Raw material (purchased)</option>
+            <option value="FINISHED">Finished good (manufactured)</option>
+          </Select>
         </div>
         <FileUploadField label="Item Image" value={imageUrl} onChange={setImageUrl} accept="image/*" />
         <div className="flex gap-2 pt-2">

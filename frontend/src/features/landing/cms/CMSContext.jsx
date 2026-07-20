@@ -30,6 +30,36 @@ function buildProductsFallback() {
 
 const PRODUCTS_FALLBACK = buildProductsFallback();
 
+function sanitizeCmsHtml(unsafeHtml) {
+  if (!unsafeHtml) return '';
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(unsafeHtml, 'text/html');
+    
+    const unsafeElements = doc.querySelectorAll('script, iframe, object, embed, link, style, meta');
+    unsafeElements.forEach((el) => el.remove());
+    
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach((el) => {
+      const attrs = Array.from(el.attributes);
+      attrs.forEach((attr) => {
+        if (attr.name.toLowerCase().startsWith('on')) {
+          el.removeAttribute(attr.name);
+        } else if (['href', 'src', 'action'].includes(attr.name.toLowerCase())) {
+          const val = attr.value.trim().toLowerCase();
+          if (val.startsWith('javascript:') || val.startsWith('data:text/html')) {
+            el.removeAttribute(attr.name);
+          }
+        }
+      });
+    });
+    
+    return doc.body.innerHTML;
+  } catch (e) {
+    return unsafeHtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  }
+}
+
 function fallbackForCollection(key) {
   if (key === 'products') return PRODUCTS_FALLBACK;
   return CMS_FALLBACKS[key] ?? [];
@@ -159,8 +189,9 @@ export function CMSProvider({ page = 'home', children }) {
           <div
             className="text-zinc-400 prose prose-invert"
             dangerouslySetInnerHTML={{
-              __html:
-                settings.maintenanceMode?.message ?? CMS_DEFAULTS.settings.maintenanceMode.message,
+              __html: sanitizeCmsHtml(
+                settings.maintenanceMode?.message ?? CMS_DEFAULTS.settings.maintenanceMode.message
+              ),
             }}
           />
         </div>

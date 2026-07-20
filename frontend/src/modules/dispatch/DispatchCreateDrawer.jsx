@@ -33,14 +33,22 @@ export function DispatchCreateDrawer({ open, onOpenChange }) {
     enabled: open,
   });
   const { data: productsRes } = useQuery({
-    queryKey: ['products', 'dispatch-create'],
-    queryFn: () => productsService.getList({ perPage: 100, status: 'ACTIVE' }),
+    queryKey: ['products', 'dispatch-create', 'finished'],
+    queryFn: () => productsService.getList({ perPage: 200, status: 'ACTIVE', productKind: 'FINISHED' }),
+    enabled: open,
+  });
+  const { data: allProductsRes } = useQuery({
+    queryKey: ['products', 'dispatch-create', 'all'],
+    queryFn: () => productsService.getList({ perPage: 200, status: 'ACTIVE' }),
     enabled: open,
   });
 
   const dealers = dealersRes?.data || [];
   const warehouses = whRes?.data || [];
-  const products = productsRes?.data || [];
+  const finishedProducts = productsRes?.data || [];
+  const products = finishedProducts.length
+    ? finishedProducts
+    : (allProductsRes?.data || []);
 
   const pickProduct = (idx, sku) => {
     const p = products.find((x) => x.sku === sku);
@@ -102,7 +110,7 @@ export function DispatchCreateDrawer({ open, onOpenChange }) {
             <div key={idx} className="flex gap-2 items-end">
               <div className="flex-1">
                 <Select value={line.sku} onChange={(e) => pickProduct(idx, e.target.value)}>
-                  <option value="">Product SKU…</option>
+                  <option value="">{finishedProducts.length ? 'Finished good SKU…' : 'Product SKU…'}</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.sku}>{p.sku} — {p.name}</option>
                   ))}

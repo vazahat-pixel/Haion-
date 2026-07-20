@@ -2,6 +2,7 @@ export const inventoryColumns = [
   { key: 'sku', label: 'SKU', width: 120, sortable: true, pinnable: true },
   { key: 'name', label: 'Product', width: 280, sortable: true },
   { key: 'category', label: 'Category', width: 140, filterable: true },
+  { key: 'productKind', label: 'Type', width: 100, render: 'badge' },
   { key: 'quantity', label: 'Qty', width: 80, align: 'right', sortable: true, render: 'number' },
   { key: 'status', label: 'Status', width: 110, render: 'badge' },
   { key: 'updatedAt', label: 'Updated', width: 140, render: 'relativeDate' },

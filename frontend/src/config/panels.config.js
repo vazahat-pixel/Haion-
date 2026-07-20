@@ -30,6 +30,7 @@ import {
   Globe,
   Contact,
   ShoppingCart,
+  Factory,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/constants/permissions';
 import { ROLES } from '@/constants/roles';
@@ -47,6 +48,8 @@ export const PANELS = {
       { id: 'items', label: 'Items', icon: Boxes, path: ROUTES.ADMIN_PRODUCTS, permission: PERMISSIONS.PRODUCTS_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'parties', label: 'Parties', icon: Contact, path: ROUTES.ADMIN_PARTIES, permission: PERMISSIONS.PARTIES_READ },
       { id: 'purchases', label: 'Purchases', icon: ShoppingCart, path: ROUTES.ADMIN_PURCHASES, permission: PERMISSIONS.PURCHASES_READ },
+      { id: 'manufacture', label: 'Manufacture', icon: Factory, path: ROUTES.ADMIN_MANUFACTURE, permission: PERMISSIONS.MANUFACTURE_READ },
+      { id: 'finished-goods', label: 'Finished Goods', icon: Package, path: ROUTES.ADMIN_FINISHED_GOODS, permission: PERMISSIONS.INVENTORY_READ },
       { id: 'categories', label: 'Categories', icon: Tags, path: ROUTES.ADMIN_CATEGORIES, permission: PERMISSIONS.CATEGORIES_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'brands', label: 'Brands', icon: Award, path: ROUTES.ADMIN_BRANDS, permission: PERMISSIONS.BRANDS_READ, roles: [ROLES.MASTER_ADMIN] },
       { id: 'tiers', label: 'Product Tiers', icon: Layers, path: ROUTES.ADMIN_PRODUCT_TIERS, permission: PERMISSIONS.PRICING_READ, roles: [ROLES.MASTER_ADMIN] },

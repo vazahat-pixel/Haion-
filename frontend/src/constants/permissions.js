@@ -21,6 +21,8 @@ export const PERMISSIONS = {
   PURCHASES_READ: 'purchases.read',
   PURCHASES_CREATE: 'purchases.create',
   PURCHASES_RECEIVE: 'purchases.receive',
+  MANUFACTURE_READ: 'manufacture.read',
+  MANUFACTURE_CREATE: 'manufacture.create',
   PRICING_READ: 'pricing.read',
   PRICING_UPDATE: 'pricing.update',
   EXPENSES_READ: 'expenses.read',

@@ -20,8 +20,10 @@ export const productsService = {
       brand: data.brand,
       hsnCode: data.hsn || data.hsnCode,
       gstRate: Number(data.gstRate),
+      unitOfMeasure: data.unitOfMeasure || 'PCS',
       imageUrl: data.imageUrl || null,
       status: data.status || 'ACTIVE',
+      productKind: data.productKind || 'RAW',
     };
     return (await client.post(endpoints.products.list, payload)).normalized.data;
   },
@@ -32,8 +34,10 @@ export const productsService = {
       brand: data.brand,
       hsnCode: data.hsn || data.hsnCode,
       gstRate: Number(data.gstRate),
+      unitOfMeasure: data.unitOfMeasure,
       imageUrl: data.imageUrl || null,
       status: data.status,
+      productKind: data.productKind,
     };
     return (await client.put(endpoints.products.detail(id), payload)).normalized.data;
   },

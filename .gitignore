@@ -16,6 +16,9 @@ dist/
 .env.local
 .env.development.local
 .env.test.local
+# SECURITY: Explicitly ignore backend .env — contains DB credentials and JWT secrets
+backend/.env
+backend/.env.local
 # Allow committed production defaults (no secrets)
 !.env.production
 

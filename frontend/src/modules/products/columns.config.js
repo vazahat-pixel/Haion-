@@ -16,6 +16,7 @@ export const productDetailFields = [
   { key: 'brand', label: 'Brand' },
   { key: 'hsn', label: 'HSN Code' },
   { key: 'gstRate', label: 'GST Rate', format: 'percent' },
+  { key: 'unitOfMeasure', label: 'Measuring Unit' },
   { key: 'imageUrl', label: 'Image', format: 'image' },
   { key: 'stockTotal', label: 'Total Stock', format: 'number' },
   { key: 'status', label: 'Status', format: 'badge' },
@@ -23,7 +24,7 @@ export const productDetailFields = [
 ];
 
 export const GST_RATE_OPTIONS = [
-  { value: 0, label: '0%' },
+  { value: 0, label: 'None' },
   { value: 5, label: '5%' },
   { value: 12, label: '12%' },
   { value: 18, label: '18%' },

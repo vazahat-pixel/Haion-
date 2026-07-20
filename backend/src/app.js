@@ -3,6 +3,9 @@ import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import hpp from 'hpp';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
@@ -46,6 +49,7 @@ import adminCmsRoutes from './routes/cms/admin.cms.routes.js';
 import publicCmsRoutes from './routes/cms/public.cms.routes.js';
 import partyRoutes from './routes/party.routes.js';
 import purchaseRoutes from './routes/purchase.routes.js';
+import manufactureRoutes from './routes/manufacture.routes.js';
 import storeRoutes from './routes/store.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
@@ -53,21 +57,41 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// ── Security headers (helmet) ─────────────────────────────────────────────────
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: env.isDev ? null : [],
+    },
+  },
+  hsts: env.isDev ? false : { maxAge: 31536000, includeSubDomains: true, preload: true },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// ── HTTP request logging (no body — avoids logging passwords) ─────────────────
 app.use(morgan(env.isDev ? 'dev' : 'combined'));
 
+// ── CORS — only explicitly allowlisted origins ────────────────────────────────
+// SECURITY: Removed wildcard *.vercel.app — attacker could register evil.vercel.app
+const _corsAllowedSet = new Set(env.corsOrigins);
 function isAllowedCorsOrigin(origin) {
-  if (!origin) return true;
-  if (env.corsOrigins.includes(origin)) return true;
-  // Dev: allow any localhost Vite port (5173, 5174, …)
+  if (!origin) {
+    // No origin = same-origin or server-to-server — block in production
+    return env.isDev;
+  }
+  if (_corsAllowedSet.has(origin)) return true;
+  // Dev only: allow any localhost Vite port (5173, 5174, …)
   if (env.isDev && /^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
   if (env.isDev && /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return true;
-  // Production: allow Vercel frontend preview & production URLs
-  try {
-    const { hostname } = new URL(origin);
-    if (hostname.endsWith('.vercel.app')) return true;
-  } catch {
-    // ignore malformed origin
-  }
   return false;
 }
 
@@ -84,11 +108,24 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Panel', 'X-Request-ID'],
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// ── NoSQL injection prevention — strip $ and . from req.body/query/params ─────
+app.use(mongoSanitize({ replaceWith: '_', allowDots: false }));
+
+// ── HTTP Parameter Pollution prevention ───────────────────────────────────────
+app.use(hpp());
+
+// ── Uploaded files — force download, prevent script execution ────────────────
+app.use('/uploads', (req, res, next) => {
+  // Prevent browsers from executing uploaded files as scripts
+  res.setHeader('Content-Disposition', 'attachment');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -98,8 +135,9 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// ── Health check — no version/info leak ──────────────────────────────────────
 app.get('/api/health', (_req, res) => {
-  res.json({ success: true, message: 'Haion ERP API is running', data: { version: '1.0.0' } });
+  res.json({ success: true, message: 'OK' });
 });
 
 app.use('/api/auth', authRoutes);
@@ -143,6 +181,7 @@ app.use('/api/cms', publicCmsRoutes);
 app.use('/api/admin/cms', adminCmsRoutes);
 app.use('/api/parties', partyRoutes);
 app.use('/api/purchases', purchaseRoutes);
+app.use('/api/manufacture', manufactureRoutes);
 app.use('/api/store', storeRoutes);
 
 app.use(notFoundHandler);

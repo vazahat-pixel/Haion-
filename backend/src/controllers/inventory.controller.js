@@ -1,5 +1,6 @@
 import Inventory from '../models/Inventory.model.js';
 import StockMovement from '../models/StockMovement.model.js';
+import Product from '../models/Product.model.js';
 import { transferWarehouseStock } from '../services/inventory.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
@@ -20,15 +21,30 @@ export const listInventory = asyncHandler(async (req, res) => {
     filter.warehouse = req.query.warehouseId;
   }
 
+  // Filter by product kind (RAW materials vs FINISHED goods)
+  if (req.query.stockType || req.query.productKind) {
+    const kind = (req.query.stockType || req.query.productKind).toUpperCase();
+    if (kind === 'FINISHED' || kind === 'RAW') {
+      const products = await Product.find({ productKind: kind }).select('sku').lean();
+      const skus = products.map((p) => p.sku);
+      filter.sku = { ...(filter.sku || {}), $in: skus.length ? skus : ['__none__'] };
+    }
+  }
+
   const [rows, total] = await Promise.all([
     Inventory.find(filter).populate('warehouse', 'code name').sort(sort).skip(skip).limit(perPage).lean(),
     Inventory.countDocuments(filter),
   ]);
 
+  const skuList = rows.map((r) => r.sku);
+  const productKinds = await Product.find({ sku: { $in: skuList } }).select('sku productKind').lean();
+  const kindBySku = Object.fromEntries(productKinds.map((p) => [p.sku, p.productKind || 'RAW']));
+
   const data = rows.map((r) => mapInventory({
     ...r,
     warehouseCode: r.warehouse?.code,
     warehouse: r.warehouse,
+    productKind: kindBySku[r.sku] || 'RAW',
   }));
   return sendPaginated(res, { data, total, page, perPage });
 });
@@ -50,9 +66,22 @@ export const createInventory = asyncHandler(async (_req, res) => {
 });
 
 export const updateInventory = asyncHandler(async (req, res) => {
+  // SECURITY: Whitelist allowed update fields — prevents mass assignment and
+  // MongoDB operator injection (e.g. { "$set": { quantity: 99999 } } in req.body)
+  const ALLOWED_FIELDS = ['minStock', 'maxStock', 'notes', 'location', 'status', 'reorderPoint'];
+  const safeUpdate = {};
+  for (const key of ALLOWED_FIELDS) {
+    if (req.body[key] !== undefined) {
+      safeUpdate[key] = req.body[key];
+    }
+  }
+  if (Object.keys(safeUpdate).length === 0) {
+    return sendError(res, { message: 'No valid fields provided for update', statusCode: 400 });
+  }
+
   const item = await Inventory.findOneAndUpdate(
     { _id: req.params.id, isDeleted: false },
-    req.body,
+    { $set: safeUpdate },   // Always use $set explicitly — never spread req.body
     { new: true, runValidators: true }
   ).populate('warehouse', 'code');
   if (!item) return sendError(res, { message: 'Inventory item not found', statusCode: 404 });

@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { ROLE_PANEL_MAP } from '@/constants/roles';
 import { authService } from '@/services/auth.service';
 import { syncPermissionsFromUser } from '@/utils/syncPermissions';
+import { usePermissionStore } from '@/store/permission.store';
 
 const initialState = {
   user: null,
@@ -27,7 +28,10 @@ export const useAuthStore = create(
 
       setInitializing: (isInitializing) => set({ isInitializing }),
 
-      clearAuth: () => set({ ...initialState, isInitializing: false }),
+      clearAuth: () => {
+        set({ ...initialState, isInitializing: false });
+        usePermissionStore.getState().clearPermissions();
+      },
 
       login: async (credentials) => {
         set({ loginError: null });
@@ -59,6 +63,7 @@ export const useAuthStore = create(
           await authService.logout();
         } finally {
           set({ ...initialState, isInitializing: false });
+          usePermissionStore.getState().clearPermissions();
         }
       },
 
@@ -66,16 +71,30 @@ export const useAuthStore = create(
         try {
           const data = await authService.refresh();
           if (!data?.user) {
-            set({ ...initialState, isInitializing: false });
+            // authService.refresh returned null — this means a network error
+            // occurred (not a 401), so keep the persisted session alive.
+            set({ isInitializing: false });
             return false;
           }
           const { user, accessToken } = data;
           const panel = ROLE_PANEL_MAP[user.role] || null;
-          set({ user, accessToken, panel, isAuthenticated: true, isInitializing: false });
+          const userWithPermissions = {
+            ...user,
+            permissions: user.permissions?.length ? user.permissions : undefined,
+          };
+          set({
+            user: userWithPermissions,
+            accessToken,
+            panel,
+            isAuthenticated: true,
+            isInitializing: false,
+          });
+          syncPermissionsFromUser();
           return true;
-        } catch {
-          set({ ...initialState, isInitializing: false });
-          return false;
+        } catch (err) {
+          // Re-throw so the caller (AuthProvider) can decide whether to clear
+          // auth (401 = expired token) or keep the session (network error).
+          throw err;
         }
       },
     }),

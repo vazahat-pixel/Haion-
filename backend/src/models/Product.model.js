@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { DEFAULT_UNIT_OF_MEASURE } from '../constants/unitsOfMeasure.js';
 
 const productSchema = new mongoose.Schema(
   {
@@ -11,8 +12,15 @@ const productSchema = new mongoose.Schema(
     gstRate: { type: Number, required: true, enum: [0, 5, 12, 18, 28], default: 18 },
     unitOfMeasure: {
       type: String,
-      enum: ['Piece', 'Box', 'Set', 'Kit'],
-      default: 'Piece',
+      trim: true,
+      maxlength: 40,
+      default: DEFAULT_UNIT_OF_MEASURE,
+    },
+    /** RAW = purchased materials; FINISHED = manufactured / assembled goods */
+    productKind: {
+      type: String,
+      enum: ['RAW', 'FINISHED'],
+      default: 'RAW',
     },
     imageUrl: { type: String, default: null },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
@@ -22,6 +30,7 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ name: 'text', sku: 'text', category: 1 });
+productSchema.index({ productKind: 1, status: 1 });
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

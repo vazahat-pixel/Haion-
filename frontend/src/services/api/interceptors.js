@@ -82,15 +82,21 @@ export function setupInterceptors(client) {
             original.headers.Authorization = `Bearer ${token}`;
             return client(original);
           }
-          throw error;
+          // Refresh failed due to network / 5xx — keep session, fail this request only.
+          processQueue(error, null);
+          return Promise.reject(error);
         } catch (refreshError) {
           processQueue(refreshError, null);
-          const path = window.location.pathname;
-          if (!path.startsWith('/auth')) {
-            useSessionStore.getState().saveLastPath(path);
+          // Only force logout when the refresh token itself is invalid/expired.
+          const status = refreshError?.response?.status;
+          if (status === 401) {
+            const path = window.location.pathname;
+            if (!path.startsWith('/auth')) {
+              useSessionStore.getState().saveLastPath(path);
+            }
+            useAuthStore.getState().clearAuth();
+            window.location.href = ROUTES.AUTH_SESSION_EXPIRED;
           }
-          useAuthStore.getState().clearAuth();
-          window.location.href = ROUTES.AUTH_SESSION_EXPIRED;
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;

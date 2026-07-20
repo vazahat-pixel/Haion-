@@ -36,9 +36,18 @@ export async function resolveCustomerProfile({ code, phone, billNo, user }) {
   }
 
   if (billNo) {
+    if (!phone) return null;
     const bill = await Bill.findOne({ billNo: billNo.toUpperCase().trim() }).lean();
     if (!bill?.customer) return null;
-    return Customer.findById(bill.customer).lean();
+    const customer = await Customer.findById(bill.customer).lean();
+    if (!customer) return null;
+    
+    const normalizedCustomerPhone = customer.phone.replace(/\D/g, '').slice(-10);
+    const normalizedInputPhone = phone.trim().replace(/\D/g, '').slice(-10);
+    if (normalizedCustomerPhone !== normalizedInputPhone) {
+      return null;
+    }
+    return customer;
   }
 
   if (code && phone) {
@@ -129,10 +138,13 @@ export const getPortalConfigPublic = asyncHandler(async (_req, res) => {
 
 export const accessHub = asyncHandler(async (req, res) => {
   const { code, phone, billNo } = req.body;
-  if (!billNo && (!code || !phone)) {
-    return sendError(res, { message: 'Provide customer code + phone, or bill number', statusCode: 400 });
+  if (!phone) {
+    return sendError(res, { message: 'Phone number is required for verification', statusCode: 400 });
   }
-  if (phone && !/^\d{10}$/.test(phone.trim().replace(/\D/g, '').slice(-10))) {
+  if (!billNo && !code) {
+    return sendError(res, { message: 'Provide customer code or bill number', statusCode: 400 });
+  }
+  if (!/^\d{10}$/.test(phone.trim().replace(/\D/g, '').slice(-10))) {
     return sendError(res, { message: 'Enter a valid 10-digit phone number', statusCode: 400 });
   }
 

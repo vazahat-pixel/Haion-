@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import CustomerLayout from '@/layouts/CustomerLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -6,7 +6,6 @@ import { PanelGuard } from '@/components/auth/PanelGuard';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
-import { CustomerPanelSkeleton } from './CustomerPanelSkeleton';
 
 const CustomerDashboardPage = lazy(() => import('@/pages/customer/CustomerDashboardPage'));
 const CustomerProductsPage = lazy(() => import('@/pages/customer/products/CustomerProductsPage'));
@@ -27,7 +26,6 @@ export default function CustomerRoutes() {
   return (
     <AuthGuard>
       <PanelGuard allowedRoles={PANEL_ROLES}>
-        <Suspense fallback={<CustomerPanelSkeleton />}>
           <Routes>
             <Route element={<CustomerLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -45,7 +43,6 @@ export default function CustomerRoutes() {
               <Route path="notifications" element={<CustomerNotificationsPage />} />
             </Route>
           </Routes>
-        </Suspense>
       </PanelGuard>
     </AuthGuard>
   );
