@@ -135,9 +135,9 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// ── Health check — no version/info leak ──────────────────────────────────────
+// ── Health check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
-  res.json({ success: true, message: 'OK' });
+  res.json({ success: true, message: 'OK', data: { version: process.env.npm_package_version || '1.0.0' } });
 });
 
 app.use('/api/auth', authRoutes);

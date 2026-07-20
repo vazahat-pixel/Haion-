@@ -34,6 +34,8 @@ export const PERMISSION_CATALOG = [
   { key: 'purchases.read', label: 'View Purchases', module: 'Purchases' },
   { key: 'purchases.create', label: 'Create Purchases', module: 'Purchases' },
   { key: 'purchases.receive', label: 'Receive Purchases', module: 'Purchases' },
+  { key: 'manufacture.read', label: 'View Manufacture', module: 'Manufacture' },
+  { key: 'manufacture.create', label: 'Create Manufacture Orders', module: 'Manufacture' },
   { key: 'pricing.read', label: 'View Pricing', module: 'Pricing' },
   { key: 'pricing.update', label: 'Update Pricing', module: 'Pricing' },
   { key: 'expenses.read', label: 'View Expenses', module: 'Expenses' },
