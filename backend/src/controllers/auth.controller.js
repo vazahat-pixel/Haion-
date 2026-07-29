@@ -32,7 +32,7 @@ function setRefreshCookie(res, token) {
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email: email.toLowerCase() })
+  let user = await User.findOne({ email: email.toLowerCase() })
     .select('+password +refreshTokens +failedLoginAttempts +lockedUntil');
 
   // ── Generic error for both "not found" and "wrong password" (same message) ──

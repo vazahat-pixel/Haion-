@@ -48,6 +48,45 @@ export function downloadReportJson(report) {
   URL.revokeObjectURL(url);
 }
 
+export function downloadReportCsv(report) {
+  const data = report?.data;
+  if (!data || !data.sections) {
+    alert("No data available to export");
+    return;
+  }
+  const tableSections = data.sections.filter(s => s.type === 'table');
+  if (tableSections.length === 0) {
+    alert("No tables found in this report to export");
+    return;
+  }
+
+  let csvContent = "";
+  tableSections.forEach((section) => {
+    csvContent += `"${(section.title || 'Table').replace(/"/g, '""')}"\n`;
+    const cols = section.columns || [];
+    const headerLine = cols.map(c => `"${c.label.replace(/"/g, '""')}"`).join(",");
+    csvContent += headerLine + "\n";
+    const rows = section.rows || [];
+    rows.forEach((row) => {
+      const rowLine = cols.map(c => {
+        const val = row[c.key];
+        const formatted = val == null ? "" : String(val);
+        return `"${formatted.replace(/"/g, '""')}"`;
+      }).join(",");
+      csvContent += rowLine + "\n";
+    });
+    csvContent += "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(report?.title || 'report').replace(/\s+/g, '-').toLowerCase()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const deliveryColumns = [
   { key: 'reportType', label: 'Schedule' },
   { key: 'recipientType', label: 'Recipient' },

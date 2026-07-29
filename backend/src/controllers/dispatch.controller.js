@@ -1,5 +1,7 @@
 import Dispatch from '../models/Dispatch.model.js';
 import Dealer from '../models/Dealer.model.js';
+import User from '../models/User.model.js';
+import Notification from '../models/Notification.model.js';
 import mongoose from 'mongoose';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
@@ -55,6 +57,29 @@ export const getDispatchTracking = asyncHandler(async (req, res) => {
   return sendSuccess(res, { data: events });
 });
 
+async function notifyDealerOfDispatch(dispatch, actionTitle) {
+  try {
+    if (!dispatch.dealer) return;
+    const dealerId = dispatch.dealer._id || dispatch.dealer;
+    const dealerUsers = await User.find({ dealerId, isActive: true }).select('_id');
+    if (!dealerUsers.length) return;
+
+    const notifications = dealerUsers.map((u) => ({
+      user: u._id,
+      title: `📦 Incoming GRN / Stock Dispatch: ${dispatch.dispatchNo}`,
+      message: `${actionTitle}. ${dispatch.lineItems?.length || 0} line item(s) awaiting GRN verification.`,
+      type: 'GRN',
+      module: 'GRN',
+      resourceId: String(dispatch._id),
+      link: '/dealer/grn',
+      read: false,
+    }));
+    await Notification.insertMany(notifications);
+  } catch (err) {
+    console.error('Failed to send dealer dispatch notification:', err);
+  }
+}
+
 export const createDispatch = asyncHandler(async (req, res) => {
   const dispatchNo = req.body.dispatchNo || nextSequence('DSP');
   const dispatch = await Dispatch.create({
@@ -65,6 +90,7 @@ export const createDispatch = asyncHandler(async (req, res) => {
     timeline: [{ title: 'Dispatch created', variant: 'success' }],
   });
   await dispatch.populate(['dealer', 'warehouse']);
+  await notifyDealerOfDispatch(dispatch, 'New stock dispatch created by warehouse');
   return sendCreated(res, { data: mapDispatch(dispatch.toObject()), message: 'Dispatch created' });
 });
 
@@ -98,6 +124,10 @@ export const updateDispatchStatus = asyncHandler(async (req, res) => {
   });
   await dispatch.save();
   await dispatch.populate(['dealer', 'warehouse']);
+
+  if (['DISPATCHED', 'IN_TRANSIT', 'DELIVERED'].includes(status)) {
+    await notifyDealerOfDispatch(dispatch, `Stock dispatch status updated to ${status.replace(/_/g, ' ')}`);
+  }
 
   return sendSuccess(res, { data: mapDispatch(dispatch.toObject()), message: 'Dispatch status updated' });
 });

@@ -6,14 +6,17 @@ import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/api
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
 
-function mapProduct(doc, stockTotal = 0) {
+function mapProduct(doc, stockTotal = 0, priceInfo = {}) {
   const d = toPublicDoc(doc);
+  const unitPrice = priceInfo.unitPrice ?? d.unitPrice ?? d.basePrice ?? priceInfo.basePrice ?? 0;
   return {
     ...d,
     hsn: d.hsnCode,
     brand: d.brand || d.description?.split(' · ')?.[0] || '',
     gstRate: d.gstRate ?? 18,
     productKind: d.productKind || 'RAW',
+    unitPrice,
+    basePrice: priceInfo.basePrice ?? unitPrice,
     stockTotal,
   };
 }
@@ -25,6 +28,23 @@ async function stockTotalsBySku(skus) {
     { $group: { _id: '$sku', stockTotal: { $sum: '$quantity' } } },
   ]);
   return Object.fromEntries(rows.map((r) => [r._id, r.stockTotal]));
+}
+
+async function priceMapBySkusAndIds(skus, productIds) {
+  if (!skus.length) return { invMap: {}, tierMap: {} };
+  const [invRows, tierRows] = await Promise.all([
+    Inventory.aggregate([
+      { $match: { sku: { $in: skus }, isDeleted: { $ne: true } } },
+      { $group: { _id: '$sku', unitPrice: { $avg: '$unitPrice' } } },
+    ]),
+    ProductTier.aggregate([
+      { $match: { product: { $in: productIds }, status: 'ACTIVE' } },
+      { $group: { _id: '$product', basePrice: { $min: '$basePrice' } } },
+    ]),
+  ]);
+  const invMap = Object.fromEntries(invRows.map((r) => [r._id, r.unitPrice]));
+  const tierMap = Object.fromEntries(tierRows.map((r) => [String(r._id), r.basePrice]));
+  return { invMap, tierMap };
 }
 
 export const listProducts = asyncHandler(async (req, res) => {
@@ -39,9 +59,21 @@ export const listProducts = asyncHandler(async (req, res) => {
     Product.countDocuments(filter),
   ]);
 
-  const stockMap = await stockTotalsBySku(data.map((p) => p.sku));
+  const skus = data.map((p) => p.sku);
+  const productIds = data.map((p) => p._id);
+  const [stockMap, { invMap, tierMap }] = await Promise.all([
+    stockTotalsBySku(skus),
+    priceMapBySkusAndIds(skus, productIds),
+  ]);
+
   return sendPaginated(res, {
-    data: data.map((p) => mapProduct(p, stockMap[p.sku] ?? 0)),
+    data: data.map((p) => {
+      const priceInfo = {
+        unitPrice: invMap[p.sku] ?? tierMap[String(p._id)],
+        basePrice: tierMap[String(p._id)] ?? invMap[p.sku],
+      };
+      return mapProduct(p, stockMap[p.sku] ?? 0, priceInfo);
+    }),
     total,
     page,
     perPage,

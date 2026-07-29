@@ -42,6 +42,8 @@ const schema = z.object({
     unitPrice: z.coerce.number().min(1),
     basePrice: z.coerce.number().optional(),
     gstRate: z.coerce.number().min(0).max(28),
+    warrantyMonths: z.coerce.number().optional(),
+    serialNos: z.array(z.string()).optional(),
     appliedRules: z.array(z.object({
       name: z.string(),
       adjustment: z.number(),
@@ -157,6 +159,8 @@ export function BillingInvoiceBuilder() {
       form.setValue(`lineItems.${index}.unitPrice`, p.unitPrice);
       form.setValue(`lineItems.${index}.basePrice`, p.basePrice ?? p.unitPrice);
       form.setValue(`lineItems.${index}.gstRate`, p.gstRate);
+      form.setValue(`lineItems.${index}.warrantyMonths`, p.warrantyMonths || 12);
+      form.setValue(`lineItems.${index}.serialNos`, Array.from({ length: form.getValues().lineItems[index]?.quantity || 1 }).map(() => ''));
       form.setValue(`lineItems.${index}.appliedRules`, p.appliedRules || []);
     }
   };
@@ -272,7 +276,7 @@ export function BillingInvoiceBuilder() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-base">Line Items</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ sku: '', product: '', hsn: '', quantity: 1, unitPrice: 0, basePrice: 0, gstRate: 18, appliedRules: [] })}>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ sku: '', product: '', hsn: '', quantity: 1, unitPrice: 0, basePrice: 0, gstRate: 18, warrantyMonths: 12, serialNos: [], appliedRules: [] })}>
               <Plus className="h-3.5 w-3.5" /> Add Row
             </Button>
           </CardHeader>
@@ -321,11 +325,45 @@ export function BillingInvoiceBuilder() {
                   <Input type="number" {...form.register(`lineItems.${i}.gstRate`)} />
                 </div>
                 <div className="flex items-end justify-between gap-2">
-                  <span className="text-sm font-medium tabular-nums">{formatCurrency((watchItems[i]?.quantity || 0) * (watchItems[i]?.unitPrice || 0))}</span>
+                  <div className="text-right w-full">
+                    <span className="block text-sm font-medium tabular-nums">{formatCurrency((watchItems[i]?.quantity || 0) * (watchItems[i]?.unitPrice || 0))}</span>
+                    {watchItems[i]?.warrantyMonths && (
+                      <span className="block mt-1 text-[10px] text-[var(--color-text-secondary)] font-semibold">
+                        🛡️ Warranty: {watchItems[i].warrantyMonths} Months
+                      </span>
+                    )}
+                  </div>
                   {fields.length > 1 && (
                     <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)}><Trash2 className="h-4 w-4" /></Button>
                   )}
                 </div>
+
+                {watchItems[i]?.sku && (
+                  <div className="sm:col-span-6 border-t border-dashed pt-3 mt-1">
+                    <Label className="text-xs font-semibold text-[var(--color-text-secondary)] flex justify-between">
+                      <span>Enter Serial Numbers for Warranty tracking *</span>
+                      <span className="text-[10px] font-normal">Please input {Number(watchItems[i].quantity) || 1} serial number(s)</span>
+                    </Label>
+                    <div className="grid gap-2 mt-1.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {Array.from({ length: Number(watchItems[i].quantity) || 1 }).map((_, sIdx) => (
+                        <div key={sIdx}>
+                          <Input
+                            placeholder={`Serial Number #${sIdx + 1}`}
+                            className="text-xs"
+                            required
+                            value={watchItems[i]?.serialNos?.[sIdx] || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const curr = [...(watchItems[i]?.serialNos || [])];
+                              curr[sIdx] = val;
+                              form.setValue(`lineItems.${i}.serialNos`, curr);
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             <div className="flex gap-2">

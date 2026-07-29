@@ -89,6 +89,7 @@ export async function priceCatalogForDealer(dealerId) {
       appliedRules: priced.appliedRules,
       hsn: inv?.hsn || product?.hsnCode || '',
       gstRate: product?.gstRate ?? 18,
+      warrantyMonths: product?.warrantyMonths ?? 12,
       availableQty: item.quantity,
     };
   }));

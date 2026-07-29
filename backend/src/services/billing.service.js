@@ -30,9 +30,10 @@ export async function computeBillTotals(lineItems, { customerGstin, customerStat
   const interstate = isInterState ?? (customerStateCode !== env.companyStateCode);
   const skus = [...new Set(lineItems.map((item) => item.sku?.toUpperCase()).filter(Boolean))];
   const products = skus.length
-    ? await Product.find({ sku: { $in: skus } }).select('sku gstRate hsnCode').lean()
+    ? await Product.find({ sku: { $in: skus } }).select('sku gstRate hsnCode warrantyMonths').lean()
     : [];
   const productGstMap = Object.fromEntries(products.map((p) => [p.sku, p.gstRate]));
+  const productWarrantyMap = Object.fromEntries(products.map((p) => [p.sku, p.warrantyMonths ?? 12]));
 
   const normalized = lineItems.map((item) => ({
     sku: item.sku,
@@ -41,8 +42,15 @@ export async function computeBillTotals(lineItems, { customerGstin, customerStat
     quantity: item.quantity,
     unitPrice: item.unitPrice,
     gstRate: item.gstRate ?? productGstMap[item.sku?.toUpperCase()] ?? HSN_RATES[item.hsn] ?? 18,
+    warrantyMonths: item.warrantyMonths ?? productWarrantyMap[item.sku?.toUpperCase()] ?? 12,
+    serialNos: item.serialNos || [],
   }));
   const totals = calculateInvoiceTotals(normalized, env.companyStateCode, customerStateCode);
+  totals.lineItems = totals.lineItems.map((item, idx) => ({
+    ...item,
+    warrantyMonths: normalized[idx].warrantyMonths,
+    serialNos: normalized[idx].serialNos,
+  }));
   if (isInterState === true || isInterState === false) {
     totals.isInterState = isInterState;
   }
@@ -115,13 +123,19 @@ export async function registerWarrantiesForBill(bill, options = {}) {
 
   const warranties = [];
   const startDate = new Date();
-  const endDate = new Date(startDate);
-  endDate.setMonth(endDate.getMonth() + 12);
 
   for (const line of bill.lineItems) {
+    const months = line.warrantyMonths || 12;
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + months);
+
     for (let i = 0; i < line.quantity; i += 1) {
+      const serialNo = (line.serialNos && line.serialNos[i])
+        ? line.serialNos[i].toUpperCase().trim()
+        : generateSerialNo(line.sku);
+
       warranties.push({
-        serialNo: generateSerialNo(line.sku),
+        serialNo,
         product: line.product,
         sku: line.sku,
         customer: bill.customer,
@@ -132,7 +146,7 @@ export async function registerWarrantiesForBill(bill, options = {}) {
         status: 'ACTIVE',
         startDate,
         endDate,
-        warrantyMonths: 12,
+        warrantyMonths: months,
       });
     }
   }

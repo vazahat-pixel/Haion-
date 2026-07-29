@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { DetailPageShell } from '@/components/layout/DetailPageShell';
-import { ReportDataView, downloadReportJson } from '@/modules/reports';
+import { ReportDataView, downloadReportJson, downloadReportCsv } from '@/modules/reports';
 import { dealerReportsService } from '@/services/dealer-reports.service';
 import { queryKeys } from '@/services/api/queryKeys';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ export default function DealerReportDetailPage() {
   const { id } = useParams();
 
   const { data } = useQuery({
-    queryKey: [...queryKeys.dealerReports.list, 'detail', id],
+    queryKey: queryKeys.dealerReports.detail(id),
     queryFn: () => dealerReportsService.getDetail(id),
   });
 
@@ -21,9 +21,14 @@ export default function DealerReportDetailPage() {
       title={data?.title || 'Report Details'}
       subtitle={data?.period || 'Database-generated report'}
       actions={data ? (
-        <Button size="sm" variant="outline" onClick={() => downloadReportJson(data)}>
-          <Download className="h-4 w-4" /> Download JSON
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => downloadReportCsv(data)}>
+            <Download className="h-4 w-4" /> Download CSV
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => downloadReportJson(data)}>
+            <Download className="h-4 w-4" /> Download JSON
+          </Button>
+        </div>
       ) : null}
     >
       {data?.data && <ReportDataView data={data.data} />}

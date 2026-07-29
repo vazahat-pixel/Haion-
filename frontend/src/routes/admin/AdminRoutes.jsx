@@ -69,6 +69,20 @@ const ManageBusinessPage = lazy(() => import('@/pages/admin/business/ManageBusin
 const InvoiceSettingsPage = lazy(() => import('@/pages/admin/business/InvoiceSettingsPage'));
 const PrintSettingsPage = lazy(() => import('@/pages/admin/business/PrintSettingsPage'));
 
+// Sales Invoices B2B
+const SalesInvoiceListPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceListPage'));
+const SalesInvoiceNewPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceNewPage'));
+const SalesInvoiceDetailPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceDetailPage'));
+const SalesInvoiceEditPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceEditPage'));
+
+// Sale PO (Dealer Orders)
+const SalePOListPage = lazy(() => import('@/pages/admin/purchases/SalePOListPage'));
+const SalePODetailPage = lazy(() => import('@/pages/admin/purchases/SalePODetailPage'));
+
+// Dealer Retail Invoices (Dealer -> Customer)
+const DealerInvoiceListPage = lazy(() => import('@/pages/admin/dealers/DealerInvoiceListPage'));
+const DealerInvoiceDetailPage = lazy(() => import('@/pages/admin/dealers/DealerInvoiceDetailPage'));
+
 const ADMIN_ROLES = [ROLES.MASTER_ADMIN, ROLES.WAREHOUSE_MANAGER];
 
 export default function AdminRoutes() {
@@ -88,6 +102,17 @@ export default function AdminRoutes() {
               <Route path="purchases" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PurchaseListPage /></PermissionGuard>} />
               <Route path="purchases/new" element={<PermissionGuard require={PERMISSIONS.PURCHASES_CREATE} redirectTo="/unauthorized"><PurchaseNewPage /></PermissionGuard>} />
               <Route path="purchases/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PurchaseDetailPage /></PermissionGuard>} />
+              
+              {/* Sales Invoices B2B */}
+              <Route path="sales-invoices" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><SalesInvoiceListPage /></PermissionGuard>} />
+              <Route path="sales-invoices/new" element={<PermissionGuard require={PERMISSIONS.PURCHASES_CREATE} redirectTo="/unauthorized"><SalesInvoiceNewPage /></PermissionGuard>} />
+              <Route path="sales-invoices/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><SalesInvoiceDetailPage /></PermissionGuard>} />
+              <Route path="sales-invoices/:id/edit" element={<PermissionGuard require={PERMISSIONS.PURCHASES_CREATE} redirectTo="/unauthorized"><SalesInvoiceEditPage /></PermissionGuard>} />
+
+              {/* Sale PO (Dealer orders) */}
+              <Route path="sale-po" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><SalePOListPage /></PermissionGuard>} />
+              <Route path="sale-po/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><SalePODetailPage /></PermissionGuard>} />
+
               <Route path="manufacture" element={<PermissionGuard require={PERMISSIONS.MANUFACTURE_READ} redirectTo="/unauthorized"><ManufactureListPage /></PermissionGuard>} />
               <Route path="manufacture/new" element={<PermissionGuard require={PERMISSIONS.MANUFACTURE_CREATE} redirectTo="/unauthorized"><ManufactureNewPage /></PermissionGuard>} />
               <Route path="manufacture/:id" element={<PermissionGuard require={PERMISSIONS.MANUFACTURE_READ} redirectTo="/unauthorized"><ManufactureDetailPage /></PermissionGuard>} />
@@ -127,6 +152,16 @@ export default function AdminRoutes() {
               <Route path="dealers/:id" element={
                 <PermissionGuard require={PERMISSIONS.DEALERS_READ} redirectTo="/unauthorized">
                   <DealerDetailPage />
+                </PermissionGuard>
+              } />
+              <Route path="dealer-invoices" element={
+                <PermissionGuard require={PERMISSIONS.DEALERS_READ} redirectTo="/unauthorized">
+                  <DealerInvoiceListPage />
+                </PermissionGuard>
+              } />
+              <Route path="dealer-invoices/:id" element={
+                <PermissionGuard require={PERMISSIONS.DEALERS_READ} redirectTo="/unauthorized">
+                  <DealerInvoiceDetailPage />
                 </PermissionGuard>
               } />
               <Route path="employees" element={

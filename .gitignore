@@ -82,3 +82,7 @@ landing page website/
 /*.gif
 /*.svg
 /*.webp
+
+# Scratch folders
+scratch/
+backend/scratch/

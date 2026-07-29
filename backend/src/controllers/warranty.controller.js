@@ -143,10 +143,30 @@ export const publicLookup = asyncHandler(async (req, res) => {
     return sendSuccess(res, { data: { found: false, warranties: [] } });
   }
 
+  const skus = warranties.map((w) => w.sku).filter(Boolean);
+  const Product = (await import('../models/Product.model.js')).default;
+  const products = await Product.find({ sku: { $in: skus } }).lean();
+  const productMap = Object.fromEntries(products.map((p) => [p.sku.toUpperCase(), p]));
+
+  const enriched = warranties.map((w) => {
+    const prod = w.sku ? productMap[w.sku.toUpperCase()] : null;
+    return {
+      ...mapWarranty(w),
+      productDetails: prod ? {
+        description: prod.description || '',
+        category: prod.category || '',
+        brand: prod.brand || '',
+        imageUrl: prod.imageUrl || null,
+        warrantyMonths: prod.warrantyMonths || 12,
+        name: prod.name,
+      } : null,
+    };
+  });
+
   return sendSuccess(res, {
     data: {
       found: true,
-      warranties: warranties.map(mapWarranty),
+      warranties: enriched,
       shareUrl: billNo ? `/warranty/check?bill=${billNo}` : undefined,
     },
   });

@@ -22,10 +22,12 @@ const productSchema = new mongoose.Schema(
       enum: ['RAW', 'FINISHED'],
       default: 'RAW',
     },
+    warrantyMonths: { type: Number, default: 12 },
     imageUrl: { type: String, default: null },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
+
   { timestamps: true }
 );
 

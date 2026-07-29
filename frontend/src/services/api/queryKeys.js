@@ -107,6 +107,7 @@ export const queryKeys = {
   dealerReports: {
     all: ['dealer-reports'],
     list: (filters) => [...queryKeys.dealerReports.all, 'list', filters],
+    detail: (id) => [...queryKeys.dealerReports.all, 'detail', id],
   },
   billing: {
     all: ['billing'],
@@ -250,5 +251,16 @@ export const queryKeys = {
   address: {
     pincode: (pin) => ['address', 'pincode', pin],
     states: () => ['address', 'states'],
+  },
+  salesInvoices: {
+    all: ['sales-invoices'],
+    list: (filters) => ['sales-invoices', 'list', filters],
+    detail: (id) => ['sales-invoices', 'detail', id],
+    nextNumber: (prefix) => ['sales-invoices', 'next-number', prefix],
+  },
+  dealerOrders: {
+    all: ['dealer-orders'],
+    list: (filters) => ['dealer-orders', 'list', filters],
+    detail: (id) => ['dealer-orders', 'detail', id],
   },
 };

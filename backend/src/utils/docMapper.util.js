@@ -39,11 +39,17 @@ export function mapGRN(doc) {
 export function mapDispatch(doc) {
   if (!doc) return doc;
   const d = toPublicDoc(doc);
+  const lineItems = doc.lineItems || [];
+  const calculatedItems = lineItems.reduce((sum, li) => sum + (li.quantity || 0), 0);
+  const calculatedReceived = lineItems.reduce((sum, li) => {
+    return sum + (li.receivedQty !== null && li.receivedQty !== undefined ? li.receivedQty : 0);
+  }, 0);
   return {
     ...d,
     dealer: d.dealer?.name || d.dealer,
     warehouse: d.warehouse?.code || d.warehouse,
-    items: d.items ?? 0,
+    items: d.items ?? calculatedItems,
+    received: d.received ?? (doc.dealerConfirmedAt ? calculatedReceived : 0),
     createdAt: d.createdAt,
   };
 }

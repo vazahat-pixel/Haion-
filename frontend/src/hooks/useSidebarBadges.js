@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { grnService } from '@/services/grn.service';
+import { dealerGrnService } from '@/services/dealer-grn.service';
 import client from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
 import { inventoryService } from '@/services/inventory.service';
@@ -9,13 +10,17 @@ export function useSidebarBadges(panel) {
   const enabled = panel === 'admin' || panel === 'dealer';
 
   const { data: grnPending = 0 } = useQuery({
-    queryKey: ['badges', 'grn', 'pending'],
+    queryKey: ['badges', 'grn', 'pending', panel],
     queryFn: async () => {
+      if (panel === 'dealer') {
+        const res = await dealerGrnService.getList({ status: 'PENDING_VERIFICATION', perPage: 1 });
+        return res?.meta?.total ?? res?.data?.length ?? 0;
+      }
       const res = await grnService.getList({ status: 'PENDING_VERIFICATION', perPage: 1 });
       return res?.meta?.total ?? 0;
     },
     enabled,
-    staleTime: 60_000,
+    staleTime: 30_000,
   });
 
   const { data: dispatchPending = 0 } = useQuery({

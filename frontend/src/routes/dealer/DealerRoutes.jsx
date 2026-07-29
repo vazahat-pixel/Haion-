@@ -30,6 +30,16 @@ const TeamListPage = lazy(() => import('@/pages/dealer/team/TeamListPage'));
 const TeamMemberDetailPage = lazy(() => import('@/pages/dealer/team/TeamMemberDetailPage'));
 const TeamPerformancePage = lazy(() => import('@/pages/dealer/team/TeamPerformancePage'));
 
+// Dealer Purchases B2B
+const DealerPurchaseListPage = lazy(() => import('@/pages/dealer/purchases/DealerPurchaseListPage'));
+const DealerPurchaseDetailPage = lazy(() => import('@/pages/dealer/purchases/DealerPurchaseDetailPage'));
+
+// Dealer Orders
+const DealerOrderListPage = lazy(() => import('@/pages/dealer/orders/DealerOrderListPage'));
+const DealerOrderNewPage = lazy(() => import('@/pages/dealer/orders/DealerOrderNewPage'));
+const DealerOrderDetailPage = lazy(() => import('@/pages/dealer/orders/DealerOrderDetailPage'));
+
+
 const PANEL_ROLES = [ROLES.DEALER_ADMIN, ROLES.DEALER_SALES];
 
 export default function DealerRoutes() {
@@ -44,13 +54,23 @@ export default function DealerRoutes() {
               <Route path="dispatches/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_DISPATCH_READ} redirectTo="/unauthorized"><DispatchInboxDetailPage /></PermissionGuard>} />
               <Route path="grn" element={<PermissionGuard require={PERMISSIONS.DEALER_GRN_READ} redirectTo="/unauthorized"><DealerGRNListPage /></PermissionGuard>} />
               <Route path="grn/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_GRN_READ} redirectTo="/unauthorized"><DealerGRNDetailPage /></PermissionGuard>} />
+
+              {/* Purchases B2B (Invoices generated for dealer by admin) */}
+              <Route path="purchases" element={<PermissionGuard require={PERMISSIONS.DEALER_DASHBOARD} redirectTo="/unauthorized"><DealerPurchaseListPage /></PermissionGuard>} />
+              <Route path="purchases/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_DASHBOARD} redirectTo="/unauthorized"><DealerPurchaseDetailPage /></PermissionGuard>} />
+
+              {/* Orders (placed by dealer to admin) */}
+              <Route path="orders" element={<PermissionGuard require={PERMISSIONS.DEALER_DASHBOARD} redirectTo="/unauthorized"><DealerOrderListPage /></PermissionGuard>} />
+              <Route path="orders/new" element={<PermissionGuard require={PERMISSIONS.DEALER_DASHBOARD} redirectTo="/unauthorized"><DealerOrderNewPage /></PermissionGuard>} />
+              <Route path="orders/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_DASHBOARD} redirectTo="/unauthorized"><DealerOrderDetailPage /></PermissionGuard>} />
+
               <Route path="inventory" element={<DealerInventoryListPage />} />
               <Route path="inventory/:id" element={<DealerInventoryDetailPage />} />
               <Route path="customers" element={<PermissionGuard require={PERMISSIONS.DEALER_CUSTOMERS_READ} redirectTo="/unauthorized"><CustomerListPage /></PermissionGuard>} />
               <Route path="customers/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_CUSTOMERS_READ} redirectTo="/unauthorized"><CustomerDetailPage /></PermissionGuard>} />
               <Route path="billing" element={<BillingListPage />} />
               <Route path="billing/new" element={<PermissionGuard require={PERMISSIONS.BILLING_CREATE} redirectTo="/unauthorized"><BillingNewPage /></PermissionGuard>} />
-              <Route path="sales/quick" element={<PermissionGuard require={PERMISSIONS.BILLING_CREATE} redirectTo="/unauthorized"><DealerQuickSalePage /></PermissionGuard>} />
+              <Route path="sales/quick" element={<PermissionGuard require={PERMISSIONS.BILLING_CREATE} redirectTo="/unauthorized"><BillingNewPage /></PermissionGuard>} />
               <Route path="billing/:billId" element={<BillingDetailPage />} />
               <Route path="invoices" element={<InvoiceListPage />} />
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />

@@ -15,7 +15,11 @@ export function buildInvoiceHtml(invoice) {
       (item, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>${item.product || ''}</td>
+        <td>
+          <strong>${item.product || ''}</strong>
+          ${item.warrantyMonths ? `<br/><small style="color:#4b5563">Warranty: ${item.warrantyMonths} Months</small>` : ''}
+          ${item.serialNos?.length ? `<br/><small style="color:#6b7280">Serials: ${item.serialNos.join(', ')}</small>` : ''}
+        </td>
         <td>${item.hsn || ''}</td>
         <td style="text-align:right">${item.quantity}</td>
         <td style="text-align:right">${fmt(item.unitPrice)}</td>

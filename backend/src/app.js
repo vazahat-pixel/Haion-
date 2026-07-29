@@ -51,6 +51,8 @@ import partyRoutes from './routes/party.routes.js';
 import purchaseRoutes from './routes/purchase.routes.js';
 import manufactureRoutes from './routes/manufacture.routes.js';
 import storeRoutes from './routes/store.routes.js';
+import salesInvoiceRoutes from './routes/salesInvoice.routes.js';
+import dealerOrderRoutes from './routes/dealerOrder.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -185,6 +187,8 @@ app.use('/api/parties', partyRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/manufacture', manufactureRoutes);
 app.use('/api/store', storeRoutes);
+app.use('/api/sales-invoices', salesInvoiceRoutes);
+app.use('/api/dealer-orders', dealerOrderRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -74,6 +74,13 @@ export const ROUTES = {
   ADMIN_CMS_COLLECTION: '/admin/cms/collections/:collection',
   ADMIN_STORE_ORDERS: '/admin/store-orders',
   ADMIN_STORE_ORDER_DETAIL: '/admin/store-orders/:id',
+  // Sales Invoices (Admin → Dealer B2B)
+  ADMIN_SALES_INVOICES: '/admin/sales-invoices',
+  ADMIN_SALES_INVOICE_NEW: '/admin/sales-invoices/new',
+  ADMIN_SALES_INVOICE_DETAIL: '/admin/sales-invoices/:id',
+  // Sale PO — Dealer orders viewed by admin
+  ADMIN_SALE_PO: '/admin/sale-po',
+  ADMIN_SALE_PO_DETAIL: '/admin/sale-po/:id',
 
   // Dealer
   DEALER_DASHBOARD: '/dealer/dashboard',
@@ -96,6 +103,13 @@ export const ROUTES = {
   DEALER_WARRANTY_DETAIL: '/dealer/warranty/:id',
   DEALER_TEAM: '/dealer/team',
   DEALER_TEAM_PERFORMANCE: '/dealer/team/performance',
+  // Dealer Purchases (invoices sent by admin to this dealer)
+  DEALER_PURCHASES: '/dealer/purchases',
+  DEALER_PURCHASE_DETAIL: '/dealer/purchases/:id',
+  // Dealer Orders (dealer places purchase requests to admin)
+  DEALER_ORDERS: '/dealer/orders',
+  DEALER_ORDER_NEW: '/dealer/orders/new',
+  DEALER_ORDER_DETAIL: '/dealer/orders/:id',
 
   // Employee
   EMPLOYEE_DASHBOARD: '/employee/dashboard',

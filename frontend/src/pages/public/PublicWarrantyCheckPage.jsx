@@ -97,6 +97,37 @@ export default function PublicWarrantyCheckPage() {
                   <span className="text-[var(--color-text-tertiary)]">Coverage:</span>{' '}
                   {formatDate(w.startDate)} — {formatDate(w.endDate)}
                 </p>
+
+                {w.productDetails && (
+                  <div className="mt-3 rounded bg-surface-2 p-3 space-y-2 border">
+                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Product Specifications & Coverage</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {w.productDetails.brand && (
+                        <span><strong className="text-[var(--color-text-secondary)]">Brand:</strong> {w.productDetails.brand}</span>
+                      )}
+                      {w.productDetails.category && (
+                        <span><strong className="text-[var(--color-text-secondary)]">Category:</strong> {w.productDetails.category}</span>
+                      )}
+                      {w.productDetails.warrantyMonths && (
+                        <span><strong className="text-[var(--color-text-secondary)]">Coverage Period:</strong> {w.productDetails.warrantyMonths} Months</span>
+                      )}
+                    </div>
+                    {w.productDetails.description && (
+                      <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed bg-white p-2 rounded border">
+                        {w.productDetails.description}
+                      </p>
+                    )}
+                    {w.productDetails.imageUrl && (
+                      <div className="mt-2 max-w-[140px] rounded overflow-hidden border shadow-sm bg-white p-1">
+                        <img
+                          src={w.productDetails.imageUrl}
+                          alt={w.productDetails.name || 'product'}
+                          className="w-full h-auto object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>

@@ -149,6 +149,8 @@ export const createBill = asyncHandler(async (req, res) => {
           cgst: item.cgst,
           sgst: item.sgst,
           igst: item.igst,
+          serialNos: item.serialNos || [],
+          warrantyMonths: item.warrantyMonths || 12,
         })),
         amount: totals.subtotal,
         tax: totals.totalGST,

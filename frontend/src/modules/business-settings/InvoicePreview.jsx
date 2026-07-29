@@ -33,7 +33,10 @@ export function InvoicePreview({ business: biz = {}, invoice: inv = {}, bill, co
         const taxAmt = item.taxAmount || (amount * taxPct) / (100 + taxPct);
         return {
           name: item.product || item.name || 'Item',
-          desc: item.description || '',
+          desc: item.description || [
+            item.warrantyMonths ? `Warranty: ${item.warrantyMonths} Months` : '',
+            item.serialNos?.length ? `Serials: ${item.serialNos.join(', ')}` : ''
+          ].filter(Boolean).join(' · '),
           hsn: item.hsn || '—',
           qty,
           unit: item.unit || 'PCS',
