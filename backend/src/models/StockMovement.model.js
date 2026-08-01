@@ -20,6 +20,9 @@ const stockMovementSchema = new mongoose.Schema(
         'PURCHASE',
         'MANUFACTURE_IN',
         'MANUFACTURE_OUT',
+        'SALE_RETURN',
+        'SALE_RETURN_VOID',
+        'PURCHASE_RETURN',
       ],
       uppercase: true,
     },
@@ -32,7 +35,7 @@ const stockMovementSchema = new mongoose.Schema(
     referenceId: { type: mongoose.Schema.Types.ObjectId },
     referenceType: {
       type: String,
-      enum: ['GRN', 'Dispatch', 'Bill', 'Return', 'SpareRequest', 'Manual', 'Purchase', 'Manufacture'],
+      enum: ['GRN', 'Dispatch', 'Bill', 'Return', 'SpareRequest', 'Manual', 'Purchase', 'Manufacture', 'SaleReturn', 'PurchaseReturn'],
     },
     performedBy: { type: String, trim: true },
     performedByUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

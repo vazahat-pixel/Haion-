@@ -33,6 +33,7 @@ export function Topbar({ panel, className }) {
   const { data: unread } = useQuery({
     queryKey: queryKeys.notifications.unreadCount(),
     queryFn: () => notificationsService.getUnreadCount(),
+    enabled: !!user,
     refetchInterval: 60_000,
   });
   const unreadCount = unread?.count ?? 0;

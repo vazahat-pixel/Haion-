@@ -144,4 +144,21 @@ export const PERMISSIONS = {
   STORE_ORDERS_READ: 'store.orders.read',
   STORE_ORDERS_UPDATE: 'store.orders.update',
   STORE_ANALYTICS_READ: 'store.analytics.read',
+
+  // Insurance
+  INSURANCE_WALLET_READ: 'insurance.wallet.read',
+  INSURANCE_WALLET_MANAGE: 'insurance.wallet.manage',
+  INSURANCE_CLAIMS_READ: 'insurance.claims.read',
+  INSURANCE_CLAIMS_CREATE: 'insurance.claims.create',
+  INSURANCE_CLAIMS_REVIEW: 'insurance.claims.review',
+
+  // Sale Returns (customer -> dealer)
+  SALE_RETURNS_READ: 'sale-returns.read',
+  SALE_RETURNS_CREATE: 'sale-returns.create',
+  SALE_RETURNS_MANAGE: 'sale-returns.manage',
+
+  // Purchase Returns (dealer -> admin)
+  PURCHASE_RETURNS_READ: 'purchase-returns.read',
+  PURCHASE_RETURNS_CREATE: 'purchase-returns.create',
+  PURCHASE_RETURNS_MANAGE: 'purchase-returns.manage',
 };

@@ -105,6 +105,20 @@ export const APPROVAL_STATUS = {
   REJECTED: 'REJECTED',
 };
 
+export const SALE_RETURN_STATUS = {
+  COMPLETED: 'COMPLETED',
+  VOIDED: 'VOIDED',
+};
+
+export const INSURANCE_CLAIM_STATUS = {
+  SUBMITTED: 'SUBMITTED',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  PAID: 'PAID',
+  CLOSED: 'CLOSED',
+};
+
 /** Unified status config for StatusBadge component */
 export const STATUS_CONFIG = {
   // Inventory
@@ -192,6 +206,15 @@ export const STATUS_CONFIG = {
   [APPROVAL_STATUS.PENDING]: { label: 'Pending', color: 'warning' },
   [APPROVAL_STATUS.APPROVED]: { label: 'Approved', color: 'success' },
   [APPROVAL_STATUS.REJECTED]: { label: 'Rejected', color: 'danger' },
+
+  // Insurance claims
+  [INSURANCE_CLAIM_STATUS.SUBMITTED]: { label: 'Submitted', color: 'info' },
+  [INSURANCE_CLAIM_STATUS.UNDER_REVIEW]: { label: 'Under Review', color: 'warning' },
+  [INSURANCE_CLAIM_STATUS.PAID]: { label: 'Paid', color: 'success' },
+
+  // Sale returns
+  [SALE_RETURN_STATUS.COMPLETED]: { label: 'Completed', color: 'success' },
+  [SALE_RETURN_STATUS.VOIDED]: { label: 'Voided', color: 'danger' },
 
   // Website store orders
   CONFIRMED: { label: 'Confirmed', color: 'info' },

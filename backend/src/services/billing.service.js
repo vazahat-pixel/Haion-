@@ -125,9 +125,27 @@ export async function registerWarrantiesForBill(bill, options = {}) {
   const startDate = new Date();
 
   for (const line of bill.lineItems) {
-    const months = line.warrantyMonths || 12;
+    const productDoc = await Product.findOne({ sku: line.sku }).session(session || null).lean();
+    const months = line.warrantyMonths || productDoc?.warrantyMonths || 12;
+    const batMonths = productDoc?.batteryWarrantyMonths || 36;
+    const ctrlMonths = productDoc?.controllerWarrantyMonths || 24;
+    const motorMonths = productDoc?.motorWarrantyMonths || 36;
+    const chgMonths = productDoc?.chargerWarrantyMonths || 12;
+
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + months);
+
+    const batEndDate = new Date(startDate);
+    batEndDate.setMonth(batEndDate.getMonth() + batMonths);
+
+    const ctrlEndDate = new Date(startDate);
+    ctrlEndDate.setMonth(ctrlEndDate.getMonth() + ctrlMonths);
+
+    const motorEndDate = new Date(startDate);
+    motorEndDate.setMonth(motorEndDate.getMonth() + motorMonths);
+
+    const chgEndDate = new Date(startDate);
+    chgEndDate.setMonth(chgEndDate.getMonth() + chgMonths);
 
     for (let i = 0; i < line.quantity; i += 1) {
       const serialNo = (line.serialNos && line.serialNos[i])
@@ -147,6 +165,14 @@ export async function registerWarrantiesForBill(bill, options = {}) {
         startDate,
         endDate,
         warrantyMonths: months,
+        batteryWarrantyMonths: batMonths,
+        controllerWarrantyMonths: ctrlMonths,
+        motorWarrantyMonths: motorMonths,
+        chargerWarrantyMonths: chgMonths,
+        batteryEndDate: batEndDate,
+        controllerEndDate: ctrlEndDate,
+        motorEndDate: motorEndDate,
+        chargerEndDate: chgEndDate,
       });
     }
   }

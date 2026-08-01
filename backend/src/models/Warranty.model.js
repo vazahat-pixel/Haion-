@@ -14,6 +14,14 @@ const warrantySchema = new mongoose.Schema(
     startDate: { type: Date, required: true, default: Date.now },
     endDate: { type: Date, required: true },
     warrantyMonths: { type: Number, default: 12 },
+    batteryWarrantyMonths: { type: Number, default: 36 },
+    controllerWarrantyMonths: { type: Number, default: 24 },
+    motorWarrantyMonths: { type: Number, default: 36 },
+    chargerWarrantyMonths: { type: Number, default: 12 },
+    batteryEndDate: { type: Date },
+    controllerEndDate: { type: Date },
+    motorEndDate: { type: Date },
+    chargerEndDate: { type: Date },
   },
   { timestamps: true }
 );

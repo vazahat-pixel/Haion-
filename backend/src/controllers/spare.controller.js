@@ -199,7 +199,31 @@ export const receiveSpare = asyncHandler(async (req, res) => {
   doc.overdue = false;
   doc.timeline.push({ title: 'Parts received', description: req.body.notes, variant: 'success', at: new Date(), by: req.user?.email });
   await doc.save();
-  return sendSuccess(res, { data: mapSpare(doc.toObject()), message: 'Spare parts received' });
+
+  try {
+    const ServiceCenterInventory = (await import('../models/ServiceCenterInventory.model.js')).default;
+    const centerId = req.body.serviceCenterId || req.user?.serviceCenterId;
+    if (centerId && doc.sku) {
+      let inv = await ServiceCenterInventory.findOne({ serviceCenter: centerId, sku: doc.sku.toUpperCase() });
+      if (inv) {
+        inv.availableStock += doc.quantity;
+        await inv.save();
+      } else {
+        await ServiceCenterInventory.create({
+          serviceCenter: centerId,
+          sku: doc.sku.toUpperCase(),
+          name: doc.partName,
+          category: 'Spare Parts',
+          availableStock: doc.quantity,
+          reorderLevel: 5,
+        });
+      }
+    }
+  } catch (err) {
+    console.error('ServiceCenterInventory update error on receiveSpare:', err.message);
+  }
+
+  return sendSuccess(res, { data: mapSpare(doc.toObject()), message: 'Spare parts received & inventory updated' });
 });
 
 export const completeSpare = asyncHandler(async (req, res) => {

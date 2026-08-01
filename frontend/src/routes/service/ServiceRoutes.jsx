@@ -8,6 +8,10 @@ import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
 
 const ServiceDashboardPage = lazy(() => import('@/pages/service/ServiceDashboardPage'));
+const WalkinComplaintPage = lazy(() => import('@/pages/service/walkin/WalkinComplaintPage'));
+const JobCardListPage = lazy(() => import('@/pages/service/job-cards/JobCardListPage'));
+const JobCardDetailPage = lazy(() => import('@/pages/service/job-cards/JobCardDetailPage'));
+const ServiceInventoryPage = lazy(() => import('@/pages/service/inventory/ServiceInventoryPage'));
 const ServiceTicketListPage = lazy(() => import('@/pages/service/tickets/ServiceTicketListPage'));
 const ServiceTicketNewPage = lazy(() => import('@/pages/service/tickets/ServiceTicketNewPage'));
 const ServiceTicketDetailPage = lazy(() => import('@/pages/service/tickets/ServiceTicketDetailPage'));
@@ -29,6 +33,10 @@ export default function ServiceRoutes() {
             <Route element={<ServiceLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<PermissionGuard require={PERMISSIONS.SERVICE_DASHBOARD} redirectTo="/unauthorized"><ServiceDashboardPage /></PermissionGuard>} />
+              <Route path="walkin" element={<WalkinComplaintPage />} />
+              <Route path="job-cards" element={<JobCardListPage />} />
+              <Route path="job-cards/:id" element={<JobCardDetailPage />} />
+              <Route path="inventory" element={<ServiceInventoryPage />} />
               <Route path="tickets" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_READ} redirectTo="/unauthorized"><ServiceTicketListPage /></PermissionGuard>} />
               <Route path="tickets/new" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_CREATE} redirectTo="/unauthorized"><ServiceTicketNewPage /></PermissionGuard>} />
               <Route path="tickets/:id" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_READ} redirectTo="/unauthorized"><ServiceTicketDetailPage /></PermissionGuard>} />

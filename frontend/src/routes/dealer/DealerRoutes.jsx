@@ -39,6 +39,21 @@ const DealerOrderListPage = lazy(() => import('@/pages/dealer/orders/DealerOrder
 const DealerOrderNewPage = lazy(() => import('@/pages/dealer/orders/DealerOrderNewPage'));
 const DealerOrderDetailPage = lazy(() => import('@/pages/dealer/orders/DealerOrderDetailPage'));
 
+// Dealer Insurance
+const DealerInsuranceListPage = lazy(() => import('@/pages/dealer/insurance/DealerInsuranceListPage'));
+const DealerInsuranceClaimNewPage = lazy(() => import('@/pages/dealer/insurance/DealerInsuranceClaimNewPage'));
+const DealerInsuranceClaimDetailPage = lazy(() => import('@/pages/dealer/insurance/DealerInsuranceClaimDetailPage'));
+
+// Dealer Sale Returns
+const DealerSaleReturnListPage = lazy(() => import('@/pages/dealer/sale-returns/DealerSaleReturnListPage'));
+const DealerSaleReturnNewPage = lazy(() => import('@/pages/dealer/sale-returns/DealerSaleReturnNewPage'));
+const DealerSaleReturnDetailPage = lazy(() => import('@/pages/dealer/sale-returns/DealerSaleReturnDetailPage'));
+
+// Dealer Purchase Returns
+const DealerPurchaseReturnListPage = lazy(() => import('@/pages/dealer/purchase-returns/DealerPurchaseReturnListPage'));
+const DealerPurchaseReturnNewPage = lazy(() => import('@/pages/dealer/purchase-returns/DealerPurchaseReturnNewPage'));
+const DealerPurchaseReturnDetailPage = lazy(() => import('@/pages/dealer/purchase-returns/DealerPurchaseReturnDetailPage'));
+
 
 const PANEL_ROLES = [ROLES.DEALER_ADMIN, ROLES.DEALER_SALES];
 
@@ -76,6 +91,21 @@ export default function DealerRoutes() {
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="warranty" element={<WarrantyListPage />} />
               <Route path="warranty/:id" element={<WarrantyDetailPage />} />
+
+              {/* Insurance */}
+              <Route path="insurance" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_READ} redirectTo="/unauthorized"><DealerInsuranceListPage /></PermissionGuard>} />
+              <Route path="insurance/claims/new" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_CREATE} redirectTo="/unauthorized"><DealerInsuranceClaimNewPage /></PermissionGuard>} />
+              <Route path="insurance/claims/:id" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_READ} redirectTo="/unauthorized"><DealerInsuranceClaimDetailPage /></PermissionGuard>} />
+
+              {/* Sale Returns */}
+              <Route path="sale-returns" element={<PermissionGuard require={PERMISSIONS.SALE_RETURNS_READ} redirectTo="/unauthorized"><DealerSaleReturnListPage /></PermissionGuard>} />
+              <Route path="sale-returns/new" element={<PermissionGuard require={PERMISSIONS.SALE_RETURNS_CREATE} redirectTo="/unauthorized"><DealerSaleReturnNewPage /></PermissionGuard>} />
+              <Route path="sale-returns/:id" element={<PermissionGuard require={PERMISSIONS.SALE_RETURNS_READ} redirectTo="/unauthorized"><DealerSaleReturnDetailPage /></PermissionGuard>} />
+
+              {/* Purchase Returns */}
+              <Route path="purchase-returns" element={<PermissionGuard require={PERMISSIONS.PURCHASE_RETURNS_READ} redirectTo="/unauthorized"><DealerPurchaseReturnListPage /></PermissionGuard>} />
+              <Route path="purchase-returns/new" element={<PermissionGuard require={PERMISSIONS.PURCHASE_RETURNS_CREATE} redirectTo="/unauthorized"><DealerPurchaseReturnNewPage /></PermissionGuard>} />
+              <Route path="purchase-returns/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASE_RETURNS_READ} redirectTo="/unauthorized"><DealerPurchaseReturnDetailPage /></PermissionGuard>} />
               <Route path="reports" element={<PermissionGuard require={PERMISSIONS.DEALER_REPORTS_READ} redirectTo="/unauthorized"><DealerReportsPage /></PermissionGuard>} />
               <Route path="reports/:id" element={<PermissionGuard require={PERMISSIONS.DEALER_REPORTS_READ} redirectTo="/unauthorized"><DealerReportDetailPage /></PermissionGuard>} />
               <Route path="team" element={<PermissionGuard require={PERMISSIONS.DEALER_TEAM_READ} redirectTo="/unauthorized"><TeamListPage /></PermissionGuard>} />

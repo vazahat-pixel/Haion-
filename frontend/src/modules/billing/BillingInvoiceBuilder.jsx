@@ -26,20 +26,20 @@ import { gstinOptionalValidator } from '@/validators/common.validators';
 const STEPS = ['Customer', 'Line Items', 'Review & GST'];
 
 const schema = z.object({
-  customerId: z.string().min(1, 'Select a customer'),
-  customer: z.string().min(2),
+  customerId: z.string().optional(),
+  customer: z.string().min(2, 'Customer name is required'),
   customerPhone: z.string().optional(),
-  customerAddress: z.string().min(5, 'Address required'),
-  customerState: z.string().min(2, 'State required'),
+  customerAddress: z.string().min(3, 'Address is required'),
+  customerState: z.string().min(2, 'State is required'),
   customerGstin: gstinOptionalValidator,
   teamMemberId: z.string().optional(),
   isInterstate: z.boolean().optional(),
   lineItems: z.array(z.object({
-    sku: z.string(),
-    product: z.string(),
-    hsn: z.string(),
-    quantity: z.coerce.number().min(1),
-    unitPrice: z.coerce.number().min(1),
+    sku: z.string().optional(),
+    product: z.string().optional(),
+    hsn: z.string().optional(),
+    quantity: z.coerce.number().min(1, 'Quantity must be at least 1'),
+    unitPrice: z.coerce.number().min(0),
     basePrice: z.coerce.number().optional(),
     gstRate: z.coerce.number().min(0).max(28),
     warrantyMonths: z.coerce.number().optional(),
@@ -130,12 +130,12 @@ export function BillingInvoiceBuilder() {
   const onCustomerSelect = (id) => {
     const c = customers.find((x) => x.id === id);
     if (c) {
-      form.setValue('customerId', id);
-      form.setValue('customer', c.name);
-      form.setValue('customerGstin', c.gstin || '');
-      form.setValue('customerPhone', c.phone || '');
-      form.setValue('customerState', c.state || c.city || '');
-      form.setValue('customerAddress', c.address || [c.city, c.state].filter(Boolean).join(', '));
+      form.setValue('customerId', id, { shouldValidate: true });
+      form.setValue('customer', c.name, { shouldValidate: true });
+      form.setValue('customerGstin', c.gstin || '', { shouldValidate: true });
+      form.setValue('customerPhone', c.phone || '', { shouldValidate: true });
+      form.setValue('customerState', c.state || c.city || '', { shouldValidate: true });
+      form.setValue('customerAddress', c.address || [c.city, c.state].filter(Boolean).join(', '), { shouldValidate: true });
     }
   };
 
@@ -163,6 +163,28 @@ export function BillingInvoiceBuilder() {
       form.setValue(`lineItems.${index}.serialNos`, Array.from({ length: form.getValues().lineItems[index]?.quantity || 1 }).map(() => ''));
       form.setValue(`lineItems.${index}.appliedRules`, p.appliedRules || []);
     }
+  };
+
+  const handleNextToLineItems = async () => {
+    const valid = await form.trigger(['customer', 'customerAddress', 'customerState', 'customerGstin']);
+    if (valid) {
+      setStep(1);
+    }
+  };
+
+  const handleNextToReview = async () => {
+    const items = form.getValues('lineItems');
+    if (!items || items.length === 0) {
+      toast.error('Add at least one line item');
+      return;
+    }
+    for (let i = 0; i < items.length; i++) {
+      if (!items[i].sku) {
+        toast.error(`Please select a product for row #${i + 1}`);
+        return;
+      }
+    }
+    setStep(2);
   };
 
   const save = async (status) => {
@@ -222,20 +244,32 @@ export function BillingInvoiceBuilder() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label>Customer Name</Label>
-                <Input {...form.register('customer')} />
+                <Label>Customer Name *</Label>
+                <Input {...form.register('customer')} placeholder="e.g. Rahul Verma" />
+                {form.formState.errors.customer && (
+                  <p className="mt-1 text-xs text-red-500">{form.formState.errors.customer.message}</p>
+                )}
               </div>
               <div>
                 <Label>Phone</Label>
-                <Input {...form.register('customerPhone')} />
+                <Input {...form.register('customerPhone')} placeholder="e.g. 9876543210" />
+                {form.formState.errors.customerPhone && (
+                  <p className="mt-1 text-xs text-red-500">{form.formState.errors.customerPhone.message}</p>
+                )}
               </div>
               <div className="sm:col-span-2">
-                <Label>Address</Label>
-                <Textarea rows={2} {...form.register('customerAddress')} />
+                <Label>Address *</Label>
+                <Textarea rows={2} {...form.register('customerAddress')} placeholder="Enter customer address" />
+                {form.formState.errors.customerAddress && (
+                  <p className="mt-1 text-xs text-red-500">{form.formState.errors.customerAddress.message}</p>
+                )}
               </div>
               <div>
-                <Label>State</Label>
-                <Input {...form.register('customerState')} />
+                <Label>State *</Label>
+                <Input {...form.register('customerState')} placeholder="e.g. Uttar Pradesh" />
+                {form.formState.errors.customerState && (
+                  <p className="mt-1 text-xs text-red-500">{form.formState.errors.customerState.message}</p>
+                )}
               </div>
               <div>
                 <Label>GSTIN</Label>
@@ -249,7 +283,9 @@ export function BillingInvoiceBuilder() {
                     form.setValue('customerGstin', e.target.value, { shouldValidate: true });
                   }}
                 />
-                {form.formState.errors.customerGstin && <p className="text-xs text-[var(--color-danger)]">{form.formState.errors.customerGstin.message}</p>}
+                {form.formState.errors.customerGstin && (
+                  <p className="mt-1 text-xs text-red-500">{form.formState.errors.customerGstin.message}</p>
+                )}
               </div>
             </div>
             {isDealerAdmin && (
@@ -267,7 +303,7 @@ export function BillingInvoiceBuilder() {
               <input type="checkbox" {...form.register('isInterstate')} className="rounded" />
               Interstate supply (IGST applies)
             </label>
-            <Button onClick={form.handleSubmit(() => setStep(1))}>Next: Line Items</Button>
+            <Button type="button" onClick={handleNextToLineItems}>Next: Line Items</Button>
           </CardContent>
         </Card>
       )}
@@ -367,8 +403,8 @@ export function BillingInvoiceBuilder() {
               </div>
             ))}
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(0)}>Back</Button>
-              <Button onClick={form.handleSubmit(() => setStep(2))}>Next: Review</Button>
+              <Button variant="outline" type="button" onClick={() => setStep(0)}>Back</Button>
+              <Button type="button" onClick={handleNextToReview}>Next: Review</Button>
             </div>
           </CardContent>
         </Card>

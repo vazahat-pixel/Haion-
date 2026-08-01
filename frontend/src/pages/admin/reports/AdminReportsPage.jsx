@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { PageShell } from '@/components/layout/PageShell';
 import { AdminReportTable, ReportDeliveriesTable, ReportHub } from '@/modules/reports';
+import { MasterAnalyticsReports } from './MasterAnalyticsReports';
 import { cn } from '@/utils/cn';
 
 export default function AdminReportsPage() {
-  const [tab, setTab] = useState('hub');
+  const [tab, setTab] = useState('analytics');
 
   return (
     <PageShell
-      title="Reports"
-      subtitle="GST, transaction & financial reports — live data from database"
+      title="Reports & Analytics Hub"
+      subtitle="Dealer Shop-wise sales, stock reports, customer analytics, and GST financial reports"
     >
       <div className="mb-4 flex gap-1 border-b border-surface-3">
         {[
+          { id: 'analytics', label: 'Master Reports & Analytics' },
           { id: 'hub', label: 'Report Library' },
           { id: 'history', label: 'Generated Reports' },
           { id: 'deliveries', label: 'Email Deliveries' },
@@ -33,6 +35,7 @@ export default function AdminReportsPage() {
         ))}
       </div>
 
+      {tab === 'analytics' && <MasterAnalyticsReports />}
       {tab === 'hub' && <ReportHub />}
 
       {tab === 'history' && (

@@ -92,6 +92,17 @@ export const PERMISSION_CATALOG = [
   { key: 'store.orders.read', label: 'View Website Orders', module: 'Online Store' },
   { key: 'store.orders.update', label: 'Manage Website Orders', module: 'Online Store' },
   { key: 'store.analytics.read', label: 'View Store Sales Analytics', module: 'Online Store' },
+  { key: 'insurance.wallet.read', label: 'View Insurance Wallets', module: 'Insurance' },
+  { key: 'insurance.wallet.manage', label: 'Top-up Insurance Wallets', module: 'Insurance' },
+  { key: 'insurance.claims.read', label: 'View Insurance Claims', module: 'Insurance' },
+  { key: 'insurance.claims.create', label: 'Submit Insurance Claims', module: 'Insurance' },
+  { key: 'insurance.claims.review', label: 'Review & Pay Insurance Claims', module: 'Insurance' },
+  { key: 'sale-returns.read', label: 'View Sale Returns', module: 'Returns' },
+  { key: 'sale-returns.create', label: 'Record Sale Returns', module: 'Returns' },
+  { key: 'sale-returns.manage', label: 'Void Sale Returns', module: 'Returns' },
+  { key: 'purchase-returns.read', label: 'View Purchase Returns', module: 'Returns' },
+  { key: 'purchase-returns.create', label: 'Request/Ship Purchase Returns', module: 'Returns' },
+  { key: 'purchase-returns.manage', label: 'Receive/Reject Purchase Returns', module: 'Returns' },
 ];
 
 export const ALL_PERMISSION_KEYS = PERMISSION_CATALOG.map((p) => p.key);

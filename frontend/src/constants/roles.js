@@ -30,6 +30,6 @@ export const ROLE_HOME_ROUTE = {
   [ROLES.EMPLOYEE]: '/employee/dashboard',
   [ROLES.MANAGER]: '/employee/dashboard',
   [ROLES.CUSTOMER_SUPPORT]: '/service/dashboard',
-  [ROLES.SERVICE_CENTER]: '/service/complaints',
+  [ROLES.SERVICE_CENTER]: '/service/walkin',
   [ROLES.CUSTOMER]: '/customer/dashboard',
 };

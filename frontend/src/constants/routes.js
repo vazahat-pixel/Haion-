@@ -61,6 +61,17 @@ export const ROUTES = {
   ADMIN_BUSINESS_PRINT: '/admin/business/print',
   ADMIN_SETTINGS_ROLES: '/admin/settings/roles',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
+  ADMIN_COMPLAINTS: '/admin/complaints',
+  ADMIN_SERVICE_CENTERS: '/admin/service-centers',
+  ADMIN_JOB_CARDS: '/admin/job-cards',
+  ADMIN_INSURANCE: '/admin/insurance',
+  ADMIN_INSURANCE_CLAIM_DETAIL: '/admin/insurance/claims/:id',
+  // Dealer Sale Returns (customer returns product to dealer)
+  ADMIN_DEALER_SALE_RETURNS: '/admin/dealer-sale-returns',
+  ADMIN_DEALER_SALE_RETURN_DETAIL: '/admin/dealer-sale-returns/:id',
+  // Dealer Purchase Returns (dealer sends stock back to admin)
+  ADMIN_DEALER_PURCHASE_RETURNS: '/admin/dealer-purchase-returns',
+  ADMIN_DEALER_PURCHASE_RETURN_DETAIL: '/admin/dealer-purchase-returns/:id',
 
   // Website CMS
   ADMIN_CMS: '/admin/cms',
@@ -81,6 +92,17 @@ export const ROUTES = {
   // Sale PO — Dealer orders viewed by admin
   ADMIN_SALE_PO: '/admin/sale-po',
   ADMIN_SALE_PO_DETAIL: '/admin/sale-po/:id',
+  // Payment In — admin receives money from party
+  ADMIN_PAYMENT_IN: '/admin/sales/payment-in',
+  ADMIN_PAYMENT_IN_NEW: '/admin/sales/payment-in/new',
+  ADMIN_PAYMENT_IN_DETAIL: '/admin/sales/payment-in/:id',
+  // Payment Out — admin pays money to party
+  ADMIN_PAYMENT_OUT: '/admin/purchases/payment-out',
+  ADMIN_PAYMENT_OUT_NEW: '/admin/purchases/payment-out/new',
+  ADMIN_PAYMENT_OUT_DETAIL: '/admin/purchases/payment-out/:id',
+  // Ledger
+  ADMIN_LEDGER: '/admin/reports/ledger',
+
 
   // Dealer
   DEALER_DASHBOARD: '/dealer/dashboard',
@@ -110,6 +132,18 @@ export const ROUTES = {
   DEALER_ORDERS: '/dealer/orders',
   DEALER_ORDER_NEW: '/dealer/orders/new',
   DEALER_ORDER_DETAIL: '/dealer/orders/:id',
+  // Dealer Insurance (claims against admin-funded virtual wallet)
+  DEALER_INSURANCE: '/dealer/insurance',
+  DEALER_INSURANCE_CLAIM_NEW: '/dealer/insurance/claims/new',
+  DEALER_INSURANCE_CLAIM_DETAIL: '/dealer/insurance/claims/:id',
+  // Dealer Sale Returns (customer returns product to dealer)
+  DEALER_SALE_RETURNS: '/dealer/sale-returns',
+  DEALER_SALE_RETURN_NEW: '/dealer/sale-returns/new',
+  DEALER_SALE_RETURN_DETAIL: '/dealer/sale-returns/:id',
+  // Dealer Purchase Returns (dealer sends stock back to admin)
+  DEALER_PURCHASE_RETURNS: '/dealer/purchase-returns',
+  DEALER_PURCHASE_RETURN_NEW: '/dealer/purchase-returns/new',
+  DEALER_PURCHASE_RETURN_DETAIL: '/dealer/purchase-returns/:id',
 
   // Employee
   EMPLOYEE_DASHBOARD: '/employee/dashboard',
@@ -127,6 +161,10 @@ export const ROUTES = {
 
   // Service
   SERVICE_DASHBOARD: '/service/dashboard',
+  SERVICE_WALKIN: '/service/walkin',
+  SERVICE_JOB_CARDS: '/service/job-cards',
+  SERVICE_JOB_CARD_DETAIL: '/service/job-cards/:id',
+  SERVICE_INVENTORY: '/service/inventory',
   SERVICE_TICKETS: '/service/tickets',
   SERVICE_TICKET_NEW: '/service/tickets/new',
   SERVICE_TICKET_DETAIL: '/service/tickets/:id',
