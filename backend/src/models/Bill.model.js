@@ -43,6 +43,10 @@ const billSchema = new mongoose.Schema(
     paidAt: { type: Date },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     teamMember: { type: mongoose.Schema.Types.ObjectId, ref: 'DealerTeamMember' },
+
+    // ── Referral tracking ────────────────────────────────────────────────────
+    appliedReferralCode: { type: String, trim: true, uppercase: true, default: '' },
+    referredByCustomer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', default: null },
   },
   { timestamps: true }
 );

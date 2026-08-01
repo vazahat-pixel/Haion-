@@ -10,11 +10,14 @@ router.get('/public/validate-bill', ctrl.validateBill);
 router.get('/public/lookup-contact', ctrl.lookupContact);
 router.use(authenticate);
 
+router.get('/search-360', requirePermission('complaints.read'), ctrl.searchCustomer360);
+router.post('/search-360', requirePermission('complaints.read'), ctrl.searchCustomer360);
 router.get('/open-count', requirePermission('complaints.read'), ctrl.getOpenCount);
 router.get('/validate-bill', requirePermission('complaints.read'), ctrl.validateBill);
 router.post('/validate-bill', requirePermission('complaints.read'), ctrl.validateBill);
 router.get('/', requirePermission('complaints.read'), ctrl.listComplaints);
 router.post('/', requirePermission('complaints.create'), ctrl.createComplaint);
+router.post('/:id/assign-center', requirePermission('complaints.update'), ctrl.assignServiceCenter);
 router.get('/:id/timeline', requirePermission('complaints.read'), ctrl.getComplaintTimeline);
 router.get('/:id', requirePermission('complaints.read'), ctrl.getComplaint);
 router.patch('/:id', requirePermission('complaints.update'), ctrl.updateComplaint);

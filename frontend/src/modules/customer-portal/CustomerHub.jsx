@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Shield, Headphones, FileText, Package, ShoppingBag,
-  Wrench, Receipt, Ticket, ArrowUpRight, Zap,
+  Wrench, Receipt, Ticket, ArrowUpRight, Zap, Gift,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate, formatRelative } from '@/utils/format';
@@ -19,6 +19,7 @@ const QUICK_ACTION_DEFAULTS = {
     { label: 'Warranty', href: '/customer/warranty', icon: Shield },
     { label: 'Service', href: '/customer/service-requests/new', icon: Wrench },
     { label: 'Lookup', href: '/customer/warranty/lookup', icon: FileText },
+    { label: 'Referral', href: '/customer/referral', icon: Gift },
   ],
   guest: [
     { label: 'Products', href: ROUTES.CUSTOMER_ACCESS_PRODUCTS, icon: Package },
@@ -110,6 +111,39 @@ export function CustomerHub({ hub, authenticated = false }) {
             </Link>
           ))}
         </div>
+      </motion.div>
+
+      {/* Refer & Earn Hero Banner */}
+      <motion.div variants={customerStagger.item} className="col-span-12">
+        <Link
+          to="/customer/referral"
+          className="group relative flex flex-col sm:flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 text-white shadow-xl transition-all duration-300 hover:border-indigo-400/60 hover:shadow-indigo-500/20 cursor-pointer"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg group-hover:scale-105 transition-transform">
+              <Gift className="h-6 w-6 text-white" />
+            </div>
+            <div className="min-w-0 text-left">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-300 border border-indigo-400/30">
+                  Referral Privilege Rewards
+                </span>
+                <span className="text-[10px] font-bold text-amber-400">Earn up to ₹40,000</span>
+              </div>
+              <h3 className="mt-1 text-base font-extrabold tracking-tight text-white group-hover:text-indigo-200 transition-colors">
+                Refer Friends &amp; Get Monthly Payouts
+              </h3>
+              <p className="text-xs text-slate-300 truncate mt-0.5">
+                Share your unique code {profile?.referralCode ? <code className="font-mono text-amber-300 font-bold px-1 py-0.5 bg-white/10 rounded">{profile.referralCode}</code> : 'EV20-XXXXXX'} &amp; unlock 16 monthly installments!
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="rounded-xl bg-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-md group-hover:bg-indigo-400 transition-colors flex items-center gap-1.5">
+              Open Referral Pass <ArrowUpRight className="h-3.5 w-3.5" />
+            </span>
+          </div>
+        </Link>
       </motion.div>
 
       {/* Main feed + sidebar */}

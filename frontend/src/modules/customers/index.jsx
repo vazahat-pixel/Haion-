@@ -71,6 +71,14 @@ const schema = z.object({
 
   assignedSalesMember: z.string().optional(),
 
+  // KYC Fields (optional)
+  aadhaarNo: z.string().optional().or(z.literal('')),
+  panNo: z.string().optional().or(z.literal('')),
+  bankAccountNo: z.string().optional().or(z.literal('')),
+  bankIFSC: z.string().optional().or(z.literal('')),
+  bankName: z.string().optional().or(z.literal('')),
+  bankAccountHolder: z.string().optional().or(z.literal('')),
+
 });
 
 
@@ -103,11 +111,11 @@ export function CustomerDrawer({ open, onOpenChange }) {
 
       title="Add Customer"
 
-      description="Register a new customer"
+      description="Register a new customer with KYC details"
 
       schema={schema}
 
-      defaultValues={{ name: '', phone: '', email: '', city: '', gstin: '', assignedSalesMember: '' }}
+      defaultValues={{ name: '', phone: '', email: '', city: '', gstin: '', assignedSalesMember: '', aadhaarNo: '', panNo: '', bankAccountNo: '', bankIFSC: '', bankName: '', bankAccountHolder: '' }}
 
       fields={[
 
@@ -133,6 +141,14 @@ export function CustomerDrawer({ open, onOpenChange }) {
 
         },
 
+        // ── KYC Fields ──────────────────────────────────────────────────────
+        { name: 'aadhaarNo', label: 'Aadhaar Number (optional)', placeholder: 'XXXX-XXXX-XXXX' },
+        { name: 'panNo', label: 'PAN Number (optional)', placeholder: 'ABCDE1234F' },
+        { name: 'bankAccountNo', label: 'Bank Account Number (optional)' },
+        { name: 'bankIFSC', label: 'Bank IFSC Code (optional)', placeholder: 'e.g. HDFC0001234' },
+        { name: 'bankName', label: 'Bank Name (optional)', placeholder: 'e.g. HDFC Bank' },
+        { name: 'bankAccountHolder', label: 'Account Holder Name (optional)' },
+
       ]}
 
       onSubmit={async (data) => {
@@ -142,6 +158,7 @@ export function CustomerDrawer({ open, onOpenChange }) {
           ...data,
 
           assignedSalesMember: data.assignedSalesMember || undefined,
+          panNo: data.panNo ? data.panNo.toUpperCase() : undefined,
 
         };
 

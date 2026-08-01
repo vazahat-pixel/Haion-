@@ -31,9 +31,16 @@ function setRefreshCookie(res, token) {
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const loginInput = email ? email.toLowerCase().trim() : '';
+  const digitsOnly = loginInput.replace(/\D/g, '');
 
-  let user = await User.findOne({ email: email.toLowerCase() })
-    .select('+password +refreshTokens +failedLoginAttempts +lockedUntil');
+  let user = await User.findOne({
+    $or: [
+      { email: loginInput },
+      { phone: loginInput },
+      ...(digitsOnly ? [{ phone: digitsOnly }] : []),
+    ],
+  }).select('+password +refreshTokens +failedLoginAttempts +lockedUntil');
 
   // ── Generic error for both "not found" and "wrong password" (same message) ──
   // This prevents user enumeration

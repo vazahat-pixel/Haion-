@@ -19,6 +19,8 @@ const ServiceRequestListPage = lazy(() => import('@/pages/customer/service-reque
 const ServiceRequestNewPage = lazy(() => import('@/pages/customer/service-requests/ServiceRequestNewPage'));
 const ServiceRequestDetailPage = lazy(() => import('@/pages/customer/service-requests/ServiceRequestDetailPage'));
 const CustomerNotificationsPage = lazy(() => import('@/pages/customer/CustomerNotificationsPage'));
+const CustomerComplaintPage = lazy(() => import('@/pages/customer/complaints/CustomerComplaintPage'));
+const CustomerReferralPage = lazy(() => import('@/pages/customer/CustomerReferralPage'));
 
 const PANEL_ROLES = [ROLES.CUSTOMER];
 
@@ -37,10 +39,12 @@ export default function CustomerRoutes() {
               <Route path="warranty" element={<CustomerWarrantyListPage />} />
               <Route path="warranty/lookup" element={<CustomerWarrantyLookupPage />} />
               <Route path="warranty/:id" element={<CustomerWarrantyDetailPage />} />
+              <Route path="complaints" element={<CustomerComplaintPage />} />
               <Route path="service-requests" element={<ServiceRequestListPage />} />
               <Route path="service-requests/new" element={<PermissionGuard require={PERMISSIONS.SERVICE_REQUESTS_CREATE} redirectTo="/unauthorized"><ServiceRequestNewPage /></PermissionGuard>} />
               <Route path="service-requests/:id" element={<ServiceRequestDetailPage />} />
               <Route path="notifications" element={<CustomerNotificationsPage />} />
+              <Route path="referral" element={<CustomerReferralPage />} />
             </Route>
           </Routes>
       </PanelGuard>

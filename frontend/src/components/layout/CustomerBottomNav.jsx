@@ -1,9 +1,10 @@
-import { LayoutDashboard, Shield, Headphones, Package } from 'lucide-react';
+import { LayoutDashboard, Shield, Headphones, Package, Gift } from 'lucide-react';
 import { CustomerGlassBottomNav } from '@/components/customer/CustomerGlassBottomNav';
 import { useCustomerHub } from '@/hooks/useCustomerHub';
 
 const LINKS = [
   { to: '/customer/dashboard', label: 'Home', icon: LayoutDashboard, end: true },
+  { to: '/customer/referral', label: 'Referral', icon: Gift },
   { to: '/customer/products', label: 'Products', icon: Package },
   { to: '/customer/warranty', label: 'Warranty', icon: Shield },
   { to: '/customer/service-requests', label: 'Service', icon: Headphones },

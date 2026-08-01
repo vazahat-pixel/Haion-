@@ -80,12 +80,22 @@ export function ComplaintDetailPanel({ id }) {
       <DetailView
         fields={[
           { key: 'customer', label: 'Customer' },
+          { key: 'phone', label: 'Phone' },
           { key: 'product', label: 'Product' },
+          { key: 'serialNo', label: 'Serial Number' },
+          { key: 'source', label: 'Complaint Channel' },
+          { key: 'costType', label: 'Service Cost Type' },
+          { key: 'serviceCenterName', label: 'Assigned Service Center' },
           { key: 'priority', label: 'Priority', format: 'badge' },
           { key: 'assignedTo', label: 'Assigned To' },
           { key: 'createdAt', label: 'Created', format: 'datetime' },
         ]}
-        data={data}
+        data={{
+          ...data,
+          source: data.source ? data.source.replace(/_/g, ' ') : 'Customer Panel',
+          costType: data.costType || (data.warrantyEligible ? 'FOC (Free of Cost)' : 'PAID Service'),
+          serviceCenterName: data.serviceCenterName || 'Unassigned (Assign from Service Console)',
+        }}
       />
 
       {timeline.length > 0 && (

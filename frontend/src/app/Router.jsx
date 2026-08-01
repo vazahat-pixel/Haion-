@@ -22,6 +22,7 @@ const LandingPage = lazy(() => import('@/pages/public/LandingPage'));
 const PublicComplaintPage = lazy(() => import('@/pages/public/PublicComplaintPage'));
 const PublicWarrantyCheckPage = lazy(() => import('@/pages/public/PublicWarrantyCheckPage'));
 const CustomerAccessPage = lazy(() => import('@/pages/public/CustomerAccessPage'));
+const CustomerLoginPage = lazy(() => import('@/pages/public/CustomerLoginPage'));
 const CustomerAccessHubPage = lazy(() => import('@/pages/public/CustomerAccessHubPage'));
 const PublicCustomerProductsPage = lazy(() => import('@/pages/public/PublicCustomerProductsPage'));
 const SessionExpiredPage = lazy(() => import('@/pages/auth/SessionExpiredPage'));
@@ -58,6 +59,7 @@ export function Router() {
 
         <Route element={<AuthLayout />}>
           <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/customer/login" element={<CustomerLoginPage />} />
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/session-expired" element={<SessionExpiredPage />} />

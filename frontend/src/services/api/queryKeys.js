@@ -263,4 +263,34 @@ export const queryKeys = {
     list: (filters) => ['dealer-orders', 'list', filters],
     detail: (id) => ['dealer-orders', 'detail', id],
   },
+  payments: {
+    all: ['payments'],
+    list: (filters) => ['payments', 'list', filters],
+    detail: (id) => ['payments', 'detail', id],
+    nextNumber: (type) => ['payments', 'next-number', type],
+    ledger: (partyId, filters) => ['payments', 'ledger', partyId, filters],
+    pendingInvoices: (partyId) => ['payments', 'pending-invoices', partyId],
+    pendingPurchases: (partyId) => ['payments', 'pending-purchases', partyId],
+  },
+  insuranceWallets: {
+    all: ['insurance-wallets'],
+    list: (filters) => ['insurance-wallets', 'list', filters],
+    detail: (dealerId) => ['insurance-wallets', 'detail', dealerId],
+  },
+  insuranceClaims: {
+    all: ['insurance-claims'],
+    list: (filters) => ['insurance-claims', 'list', filters],
+    detail: (id) => ['insurance-claims', 'detail', id],
+  },
+  saleReturns: {
+    all: ['sale-returns'],
+    list: (filters) => ['sale-returns', 'list', filters],
+    detail: (id) => ['sale-returns', 'detail', id],
+  },
+  purchaseReturns: {
+    all: ['purchase-returns'],
+    list: (filters) => ['purchase-returns', 'list', filters],
+    detail: (id) => ['purchase-returns', 'detail', id],
+  },
 };
+

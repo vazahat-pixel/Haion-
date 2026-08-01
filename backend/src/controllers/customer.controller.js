@@ -50,6 +50,13 @@ export const createCustomer = asyncHandler(async (req, res) => {
     gstin: req.body.gstin || '',
     status: req.body.status || 'ACTIVE',
     assignedSalesMember: req.body.assignedSalesMember || undefined,
+    // KYC fields
+    aadhaarNo: req.body.aadhaarNo || '',
+    panNo: req.body.panNo ? req.body.panNo.toUpperCase() : '',
+    bankAccountNo: req.body.bankAccountNo || '',
+    bankIFSC: req.body.bankIFSC ? req.body.bankIFSC.toUpperCase() : '',
+    bankName: req.body.bankName || '',
+    bankAccountHolder: req.body.bankAccountHolder || '',
   });
   const populated = await Customer.findById(customer._id).populate('assignedSalesMember', 'name role').lean();
   return sendCreated(res, { data: mapCustomer(populated), message: 'Customer created' });

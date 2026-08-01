@@ -33,6 +33,7 @@ export function Topbar({ panel, className }) {
   const { data: unread } = useQuery({
     queryKey: queryKeys.notifications.unreadCount(),
     queryFn: () => notificationsService.getUnreadCount(),
+    enabled: !!user,
     refetchInterval: 60_000,
   });
   const unreadCount = unread?.count ?? 0;
@@ -59,17 +60,21 @@ export function Topbar({ panel, className }) {
         <Button variant="ghost" size="icon" className="hidden h-8 w-8 lg:flex" onClick={toggleCollapse}>
           <Menu className="h-4 w-4" />
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden md:flex h-7 gap-1.5 text-[var(--color-text-tertiary)]"
+        <button
+          type="button"
           onClick={() => setSearchOpen(true)}
+          className="relative hidden sm:flex items-center gap-2.5 h-8 w-60 md:w-80 lg:w-96 rounded-xl border border-surface-3/80 bg-surface-2/60 px-3 text-xs text-[var(--color-text-tertiary)] hover:border-brand-500/50 hover:bg-surface-2 transition-all duration-200 shadow-inner group cursor-pointer"
         >
-          <Search className="h-3 w-3" />
-          <span className="text-[11px]">Search</span>
-          <kbd className="ml-1 rounded border border-surface-3 bg-surface-2 px-1 py-px text-[9px] font-mono">⌘K</kbd>
+          <Search className="h-3.5 w-3.5 text-brand-500 group-hover:scale-110 transition-transform" />
+          <span className="flex-1 text-left truncate font-medium">Search modules, pages, dealers, orders...</span>
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded-md border border-surface-3 bg-surface-1 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--color-text-secondary)] shadow-xs">
+            <span className="text-[9px]">Ctrl</span> K
+          </kbd>
+        </button>
+        <Button variant="ghost" size="icon" className="sm:hidden h-8 w-8 text-[var(--color-text-secondary)]" onClick={() => setSearchOpen(true)}>
+          <Search className="h-4 w-4 text-brand-500" />
         </Button>
-        <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+        <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} panel={panel} />
       </div>
       <div className="flex items-center gap-1">
         <ThemeToggle />

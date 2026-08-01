@@ -2,13 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bell, LogOut, ChevronUp, User, Shield, Headphones,
+  Bell, LogOut, ChevronUp, User, Shield, Headphones, Gift,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { customerSpring } from '@/animations/customer.motion';
 import { cn } from '@/utils/cn';
 
 const QUICK_LINKS = [
+  { to: '/customer/referral', icon: Gift, label: 'Referral Rewards (Earn ₹40k)' },
   { to: '/customer/notifications', icon: Bell, label: 'Notifications' },
   { to: '/customer/warranty', icon: Shield, label: 'Warranty' },
   { to: '/customer/service-requests', icon: Headphones, label: 'Service' },

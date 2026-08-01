@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { DealerBottomNav } from '@/components/layout/DealerBottomNav';
 import { RouteErrorBoundary } from '@/components/error-boundaries/RouteErrorBoundary';
 import { LoadingState } from '@/components/feedback/LoadingState';
+import { AmbientMeshCanvas } from '@/components/ui/AmbientMeshCanvas';
 import { motion } from 'framer-motion';
 
 function PageFallback() {
@@ -19,6 +20,7 @@ export default function DealerLayout() {
 
   return (
     <RouteErrorBoundary panel="dealer" resetKey={location.pathname}>
+      <AmbientMeshCanvas />
       <AppShell panel="dealer">
         <Suspense fallback={<PageFallback />}>
           <motion.div

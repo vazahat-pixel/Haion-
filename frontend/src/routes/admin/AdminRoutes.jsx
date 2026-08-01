@@ -83,6 +83,37 @@ const SalePODetailPage = lazy(() => import('@/pages/admin/purchases/SalePODetail
 const DealerInvoiceListPage = lazy(() => import('@/pages/admin/dealers/DealerInvoiceListPage'));
 const DealerInvoiceDetailPage = lazy(() => import('@/pages/admin/dealers/DealerInvoiceDetailPage'));
 
+// Payment In
+const PaymentInListPage = lazy(() => import('@/pages/admin/sales/PaymentInListPage'));
+const PaymentInNewPage = lazy(() => import('@/pages/admin/sales/PaymentInNewPage'));
+const PaymentInDetailPage = lazy(() => import('@/pages/admin/sales/PaymentInDetailPage'));
+
+// Payment Out
+const PaymentOutListPage = lazy(() => import('@/pages/admin/purchases/PaymentOutListPage'));
+const PaymentOutNewPage = lazy(() => import('@/pages/admin/purchases/PaymentOutNewPage'));
+const PaymentOutDetailPage = lazy(() => import('@/pages/admin/purchases/PaymentOutDetailPage'));
+
+// Party Ledger
+const LedgerPage = lazy(() => import('@/pages/admin/reports/LedgerPage'));
+
+// Service Management Admin
+const AdminComplaintsPage = lazy(() => import('@/pages/admin/complaints/AdminComplaintsPage'));
+const AdminServiceCenterListPage = lazy(() => import('@/pages/admin/service-centers/AdminServiceCenterListPage'));
+const JobCardListPage = lazy(() => import('@/pages/service/job-cards/JobCardListPage'));
+
+// Insurance
+const AdminInsurancePage = lazy(() => import('@/pages/admin/insurance/AdminInsurancePage'));
+const AdminInsuranceClaimDetailPage = lazy(() => import('@/pages/admin/insurance/AdminInsuranceClaimDetailPage'));
+
+// Dealer Sale Returns / Purchase Returns
+const AdminSaleReturnListPage = lazy(() => import('@/pages/admin/sale-returns/AdminSaleReturnListPage'));
+const AdminSaleReturnDetailPage = lazy(() => import('@/pages/admin/sale-returns/AdminSaleReturnDetailPage'));
+const AdminPurchaseReturnListPage = lazy(() => import('@/pages/admin/purchase-returns/AdminPurchaseReturnListPage'));
+const AdminPurchaseReturnDetailPage = lazy(() => import('@/pages/admin/purchase-returns/AdminPurchaseReturnDetailPage'));
+
+// Referrals
+const AdminReferralsPage = lazy(() => import('@/pages/admin/referrals/AdminReferralsPage'));
+
 const ADMIN_ROLES = [ROLES.MASTER_ADMIN, ROLES.WAREHOUSE_MANAGER];
 
 export default function AdminRoutes() {
@@ -215,6 +246,39 @@ export default function AdminRoutes() {
               <Route path="cms/collections" element={<PermissionGuard require={PERMISSIONS.CMS_READ} redirectTo="/unauthorized"><CmsCollectionsHubPage /></PermissionGuard>} />
               <Route path="cms/collections/:collection" element={<PermissionGuard require={PERMISSIONS.CMS_READ} redirectTo="/unauthorized"><CmsCollectionPage /></PermissionGuard>} />
               <Route path="store-orders" element={<PermissionGuard require={PERMISSIONS.STORE_ORDERS_READ} redirectTo="/unauthorized"><StoreOrdersPage /></PermissionGuard>} />
+
+              {/* Payment In */}
+              <Route path="sales/payment-in" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PaymentInListPage /></PermissionGuard>} />
+              <Route path="sales/payment-in/new" element={<PermissionGuard require={PERMISSIONS.PURCHASES_CREATE} redirectTo="/unauthorized"><PaymentInNewPage /></PermissionGuard>} />
+              <Route path="sales/payment-in/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PaymentInDetailPage /></PermissionGuard>} />
+
+              {/* Payment Out */}
+              <Route path="purchases/payment-out" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PaymentOutListPage /></PermissionGuard>} />
+              <Route path="purchases/payment-out/new" element={<PermissionGuard require={PERMISSIONS.PURCHASES_CREATE} redirectTo="/unauthorized"><PaymentOutNewPage /></PermissionGuard>} />
+              <Route path="purchases/payment-out/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASES_READ} redirectTo="/unauthorized"><PaymentOutDetailPage /></PermissionGuard>} />
+
+              {/* Service Management Admin */}
+              <Route path="complaints" element={<PermissionGuard require={PERMISSIONS.COMPLAINTS_READ} redirectTo="/unauthorized"><AdminComplaintsPage /></PermissionGuard>} />
+              <Route path="service-centers" element={<PermissionGuard require={PERMISSIONS.COMPLAINTS_READ} redirectTo="/unauthorized"><AdminServiceCenterListPage /></PermissionGuard>} />
+              <Route path="job-cards" element={<PermissionGuard require={PERMISSIONS.COMPLAINTS_READ} redirectTo="/unauthorized"><JobCardListPage /></PermissionGuard>} />
+
+              {/* Insurance */}
+              <Route path="insurance" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_READ} redirectTo="/unauthorized"><AdminInsurancePage /></PermissionGuard>} />
+              <Route path="insurance/claims/:id" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_READ} redirectTo="/unauthorized"><AdminInsuranceClaimDetailPage /></PermissionGuard>} />
+
+              {/* Dealer Sale Returns */}
+              <Route path="dealer-sale-returns" element={<PermissionGuard require={PERMISSIONS.SALE_RETURNS_READ} redirectTo="/unauthorized"><AdminSaleReturnListPage /></PermissionGuard>} />
+              <Route path="dealer-sale-returns/:id" element={<PermissionGuard require={PERMISSIONS.SALE_RETURNS_READ} redirectTo="/unauthorized"><AdminSaleReturnDetailPage /></PermissionGuard>} />
+
+              {/* Dealer Purchase Returns */}
+              <Route path="dealer-purchase-returns" element={<PermissionGuard require={PERMISSIONS.PURCHASE_RETURNS_READ} redirectTo="/unauthorized"><AdminPurchaseReturnListPage /></PermissionGuard>} />
+              <Route path="dealer-purchase-returns/:id" element={<PermissionGuard require={PERMISSIONS.PURCHASE_RETURNS_READ} redirectTo="/unauthorized"><AdminPurchaseReturnDetailPage /></PermissionGuard>} />
+
+              {/* Party Ledger */}
+              <Route path="reports/ledger" element={<PermissionGuard require={PERMISSIONS.REPORTS_READ} redirectTo="/unauthorized"><LedgerPage /></PermissionGuard>} />
+
+              {/* Referral Rewards */}
+              <Route path="referrals" element={<AdminReferralsPage />} />
             </Route>
           </Routes>
       </PanelGuard>

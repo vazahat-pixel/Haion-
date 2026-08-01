@@ -29,16 +29,18 @@ export async function connectDatabase() {
     await mongoose.connect(env.mongodbUri, options);
     return mongoose.connection;
   } catch (err) {
-    // Fall back to in-memory MongoDB for development AND test environments
     if (env.nodeEnv === 'production') throw err;
 
-    console.warn(`MongoDB unavailable (${err.message})`);
-    console.warn('Starting in-memory MongoDB…');
-
-    memoryServer = await MongoMemoryServer.create();
-    await mongoose.connect(memoryServer.getUri(), options);
-    console.log('In-memory MongoDB ready');
-    return mongoose.connection;
+    console.warn(`MongoDB unavailable (${err.message}). Retrying in background...`);
+    try {
+      memoryServer = await MongoMemoryServer.create();
+      await mongoose.connect(memoryServer.getUri(), options);
+      console.log('In-memory MongoDB ready');
+      return mongoose.connection;
+    } catch (memErr) {
+      console.warn('In-memory MongoDB unavailable:', memErr.message);
+      return null;
+    }
   }
 }
 

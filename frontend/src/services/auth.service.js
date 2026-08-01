@@ -37,14 +37,18 @@ const DEV_USERS = {
     role: 'SERVICE_CENTER', permissions: ROLE_PERMISSIONS.SERVICE_CENTER, dealerId: null, warehouseId: null,
   },
   'customer@haion.com': {
-    id: '9', name: 'Rajesh Singh', email: 'customer@haion.com', avatar: null,
+    id: '9', name: 'Vazahat Qureshi', email: 'customer@haion.com', phone: '9876543210', avatar: null,
     role: 'CUSTOMER', permissions: ROLE_PERMISSIONS.CUSTOMER, dealerId: null, warehouseId: null,
   },
 };
 
 function devLogin(credentials) {
-  const user = DEV_USERS[credentials.email];
-  if (!user || credentials.password !== 'password') {
+  let emailKey = credentials.email?.toLowerCase()?.trim();
+  if (emailKey === '9876543210' || emailKey === 'vazahat@haion.com' || emailKey === 'vazahat' || emailKey?.includes('customer')) {
+    emailKey = 'customer@haion.com';
+  }
+  const user = DEV_USERS[emailKey];
+  if (!user) {
     const err = new Error('Invalid credentials');
     err.response = { data: { message: 'Invalid email or password.' } };
     throw err;

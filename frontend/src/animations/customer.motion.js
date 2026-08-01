@@ -15,11 +15,10 @@ export const customerStagger = {
     },
   },
   item: {
-    hidden: { opacity: 0, y: 14, filter: 'blur(6px)' },
+    hidden: { opacity: 0, y: 14 },
     show: {
       opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
       transition: { ...customerSpring.smooth },
     },
   },

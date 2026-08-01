@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ROLE_HOME_ROUTE } from '@/constants/roles';
+import { ROLE_HOME_ROUTE, ROLE_PANEL_MAP } from '@/constants/roles';
 import { ROUTES } from '@/constants/routes';
 import { MESSAGES } from '@/constants/messages';
 import { toast } from '@/utils/toast';
@@ -32,7 +32,12 @@ export function LoginForm() {
       const user = await login(data);
       toast.success(MESSAGES.LOGIN_SUCCESS);
       const from = location.state?.from?.pathname;
-      navigate(from || ROLE_HOME_ROUTE[user?.role] || ROUTES.ADMIN_DASHBOARD);
+      const targetHome = ROLE_HOME_ROUTE[user?.role] || ROUTES.ADMIN_DASHBOARD;
+      
+      const userPanel = ROLE_PANEL_MAP[user?.role];
+      const isValidFrom = from && userPanel && from.startsWith(`/${userPanel}`);
+      
+      navigate(isValidFrom ? from : targetHome, { replace: true });
     } catch {
       toast.error(MESSAGES.LOGIN_FAILED);
     } finally {
@@ -76,8 +81,8 @@ export function LoginForm() {
 
         <p className="mt-4 text-center text-xs text-[var(--color-text-secondary)]">
           Customer?{' '}
-          <Link to={ROUTES.CUSTOMER_ACCESS} className="font-medium text-brand-600 hover:text-brand-700">
-            View account without login
+          <Link to="/customer/login" className="font-medium text-brand-600 hover:text-brand-700">
+            Customer Sign In
           </Link>
         </p>
 

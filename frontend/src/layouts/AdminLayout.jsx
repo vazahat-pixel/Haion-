@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { RouteErrorBoundary } from '@/components/error-boundaries/RouteErrorBoundary';
 import { LoadingState } from '@/components/feedback/LoadingState';
+import { AmbientMeshCanvas } from '@/components/ui/AmbientMeshCanvas';
 import { motion } from 'framer-motion';
 
 function PageFallback() {
@@ -18,6 +19,7 @@ export default function AdminLayout() {
 
   return (
     <RouteErrorBoundary panel="admin" resetKey={location.pathname}>
+      <AmbientMeshCanvas />
       <AppShell panel="admin">
         <Suspense fallback={<PageFallback />}>
           <motion.div

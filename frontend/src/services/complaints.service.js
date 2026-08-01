@@ -11,4 +11,6 @@ export const complaintsService = {
   createPublic: async (data) => (await client.post('/complaints/public', data)).normalized.data,
   validateBill: async (params) => (await client.get('/complaints/public/validate-bill', { params })).normalized.data,
   lookupContact: async (params) => (await client.get('/complaints/public/lookup-contact', { params })).normalized.data,
+  search360: async (params) => (await client.get('/complaints/search-360', { params })).normalized.data,
+  assignCenter: async (id, data) => (await client.post(`/complaints/${id}/assign-center`, data)).normalized.data,
 };

@@ -28,6 +28,7 @@ const dealerSchema = new mongoose.Schema(
     gstExpiryDate: { type: Date, default: null },
     logoUrl: { type: String, default: null },
     onboardedAt: { type: Date, default: Date.now },
+    insuranceWalletBalance: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

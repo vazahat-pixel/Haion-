@@ -11,9 +11,15 @@ export const strongPasswordSchema = z
   .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character (e.g. @, #, !, $)');
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address').max(254),
-  // Login keeps min-8 only; lockout + rate limit protect against brute force
-  password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+  email: z
+    .string()
+    .min(1, 'Email or mobile number is required')
+    .max(254)
+    .refine(
+      (val) => z.string().email().safeParse(val).success || /^\d{10}$/.test(val.trim()) || val.trim().length >= 3,
+      { message: 'Enter a valid email or 10-digit mobile number' }
+    ),
+  password: z.string().min(1, 'Password is required').max(128),
   rememberMe: z.boolean().optional(),
 });
 

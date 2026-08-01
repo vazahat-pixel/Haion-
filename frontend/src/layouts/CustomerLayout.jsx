@@ -5,6 +5,7 @@ import { CustomerBottomNav } from '@/components/layout/CustomerBottomNav';
 import { RouteErrorBoundary } from '@/components/error-boundaries/RouteErrorBoundary';
 import { CustomerPortalProvider } from '@/providers/CustomerPortalProvider';
 import { LoadingState } from '@/components/feedback/LoadingState';
+import { AmbientMeshCanvas } from '@/components/ui/AmbientMeshCanvas';
 import { motion } from 'framer-motion';
 
 function PageFallback() {
@@ -21,6 +22,7 @@ export default function CustomerLayout() {
   return (
     <RouteErrorBoundary panel="customer" resetKey={location.pathname}>
       <CustomerPortalProvider>
+        <AmbientMeshCanvas />
         <AppShell panel="customer" mobileMinimal>
           <Suspense fallback={<PageFallback />}>
             <motion.div
