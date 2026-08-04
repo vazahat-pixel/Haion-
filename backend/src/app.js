@@ -59,6 +59,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import insuranceRoutes from './routes/insurance.routes.js';
 import saleReturnRoutes from './routes/saleReturn.routes.js';
 import purchaseReturnRoutes from './routes/purchaseReturn.routes.js';
+import referralRoutes from './routes/referral.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -201,6 +202,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/insurance', insuranceRoutes);
 app.use('/api/sale-returns', saleReturnRoutes);
 app.use('/api/purchase-returns', purchaseReturnRoutes);
+app.use('/api/referrals', referralRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -19,6 +19,7 @@ import { assertDealerCanTransact } from '../services/dealerCompliance.service.js
 import Dealer from '../models/Dealer.model.js';
 import DealerTeamMember from '../models/DealerTeamMember.model.js';
 import { ROLES } from '../config/constants.js';
+import { ensureReferralCode, applyReferralCode } from '../services/referral.service.js';
 
 function dealerFilter(req) {
   if (req.user.dealerId) return { dealer: req.user.dealerId };
@@ -167,6 +168,45 @@ export const createBill = asyncHandler(async (req, res) => {
         teamMember,
       }], { session });
       bill = created;
+
+      // ── Referral hooks ───────────────────────────────────────────────────
+      // 1. Auto-generate referral code for the purchasing customer (first bill)
+      if (customerId) {
+        const customerDoc = await Customer.findById(customerId).session(session).lean();
+        if (customerDoc && !customerDoc.referralCode) {
+          try {
+            await ensureReferralCode(customerDoc, session);
+          } catch (refErr) {
+            console.warn('[Referral] Could not generate code:', refErr.message);
+          }
+        }
+
+        // 2. Apply referral code if provided in bill body
+        if (req.body.appliedReferralCode && customerDoc) {
+          try {
+            const referralResult = await applyReferralCode({
+              referralCode: req.body.appliedReferralCode,
+              newCustomer: customerDoc,
+              bill: created,
+              session,
+            });
+            if (!referralResult?.error) {
+              // Update bill with referral tracking
+              await Bill.findByIdAndUpdate(
+                created._id,
+                {
+                  appliedReferralCode: req.body.appliedReferralCode.toUpperCase().trim(),
+                  referredByCustomer: referralResult?.referrer?._id || null,
+                },
+                { session }
+              );
+            }
+          } catch (refErr) {
+            console.warn('[Referral] Could not apply referral code:', refErr.message);
+          }
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────
 
       if (status === 'SENT') {
         const dealer = await Dealer.findById(dealerId).session(session).lean();
