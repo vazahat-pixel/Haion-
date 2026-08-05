@@ -106,6 +106,7 @@ export const PANELS = {
       { id: 'billing', label: 'Billing', icon: Receipt, path: ROUTES.DEALER_BILLING, permission: PERMISSIONS.BILLING_READ },
       { id: 'invoices', label: 'Invoices', icon: FileText, path: ROUTES.DEALER_INVOICES, permission: PERMISSIONS.INVOICES_READ },
       { id: 'warranty', label: 'Warranty', icon: Shield, path: ROUTES.DEALER_WARRANTY, permission: PERMISSIONS.WARRANTY_READ },
+      { id: 'insurance', label: 'Insurance', icon: Shield, path: ROUTES.DEALER_INSURANCE, permission: PERMISSIONS.INSURANCE_CLAIMS_READ },
       { id: 'sale-returns', label: 'Sale Returns', icon: RotateCcw, path: ROUTES.DEALER_SALE_RETURNS, permission: PERMISSIONS.SALE_RETURNS_READ },
       { id: 'purchase-returns', label: 'Purchase Returns', icon: Undo2, path: ROUTES.DEALER_PURCHASE_RETURNS, permission: PERMISSIONS.PURCHASE_RETURNS_READ },
       { id: 'reports', label: 'Reports', icon: BarChart3, path: ROUTES.DEALER_REPORTS, permission: PERMISSIONS.DEALER_REPORTS_READ },
