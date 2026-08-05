@@ -103,6 +103,8 @@ export const PERMISSION_CATALOG = [
   { key: 'purchase-returns.read', label: 'View Purchase Returns', module: 'Returns' },
   { key: 'purchase-returns.create', label: 'Request/Ship Purchase Returns', module: 'Returns' },
   { key: 'purchase-returns.manage', label: 'Receive/Reject Purchase Returns', module: 'Returns' },
+  { key: 'admin.referrals.read', label: 'View Referral Rewards', module: 'Referrals' },
+  { key: 'admin.referrals.manage', label: 'Manage Referral Rewards', module: 'Referrals' },
 ];
 
 export const ALL_PERMISSION_KEYS = PERMISSION_CATALOG.map((p) => p.key);
