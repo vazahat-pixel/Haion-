@@ -18,6 +18,7 @@ import {
 import { assertDealerCanTransact } from '../services/dealerCompliance.service.js';
 import Dealer from '../models/Dealer.model.js';
 import DealerTeamMember from '../models/DealerTeamMember.model.js';
+import SalesInvoice from '../models/SalesInvoice.model.js';
 import { ROLES } from '../config/constants.js';
 import { ensureReferralCode, applyReferralCode } from '../services/referral.service.js';
 
@@ -121,6 +122,32 @@ export const createBill = asyncHandler(async (req, res) => {
   const status = req.body.status === 'SENT' ? 'SENT' : 'DRAFT';
   if (status === 'SENT') {
     await validateDealerStock(dealerId, totals.lineItems);
+
+    // ── Validate serial/controller/battery numbers against dealer's received stock ──
+    const itemsWithNumbers = (req.body.lineItems || []).filter(
+      (item) => (item.serialNos?.length || item.controllerNos?.length || item.batteryNos?.length)
+    );
+    if (itemsWithNumbers.length > 0) {
+      // Collect all numbers entered by dealer
+      const allSerials = itemsWithNumbers.flatMap((i) => (i.serialNos || []).map((s) => s.toUpperCase().trim()));
+      const allControllers = itemsWithNumbers.flatMap((i) => (i.controllerNos || []).map((s) => s.toUpperCase().trim()));
+      const allBatteries = itemsWithNumbers.flatMap((i) => (i.batteryNos || []).map((s) => s.toUpperCase().trim()));
+
+      // Check against SalesInvoices sent to this dealer
+      const dealerInvoices = await SalesInvoice.find({ dealer: dealerId }).select('lineItems').lean();
+      const validSerials = new Set(dealerInvoices.flatMap((inv) => inv.lineItems.flatMap((li) => (li.serialNumbers || []).map((s) => s.toUpperCase().trim()))));
+      const validControllers = new Set(dealerInvoices.flatMap((inv) => inv.lineItems.flatMap((li) => (li.controllerNumbers || []).map((s) => s.toUpperCase().trim()))));
+      const validBatteries = new Set(dealerInvoices.flatMap((inv) => inv.lineItems.flatMap((li) => (li.batteryNumbers || []).map((s) => s.toUpperCase().trim()))));
+
+      const invalidSerial = allSerials.find((s) => s && !validSerials.has(s));
+      if (invalidSerial) return sendError(res, { message: `Serial number "${invalidSerial}" not found in your received stock. Please verify.`, statusCode: 422 });
+
+      const invalidCtrl = allControllers.find((s) => s && !validControllers.has(s));
+      if (invalidCtrl) return sendError(res, { message: `Controller number "${invalidCtrl}" not found in your received stock. Please verify.`, statusCode: 422 });
+
+      const invalidBatt = allBatteries.find((s) => s && !validBatteries.has(s));
+      if (invalidBatt) return sendError(res, { message: `Battery number "${invalidBatt}" not found in your received stock. Please verify.`, statusCode: 422 });
+    }
   }
 
   const billNo = req.body.billNo || nextSequence('BILL');
@@ -151,6 +178,8 @@ export const createBill = asyncHandler(async (req, res) => {
           sgst: item.sgst,
           igst: item.igst,
           serialNos: item.serialNos || [],
+          controllerNos: item.controllerNos || [],
+          batteryNos: item.batteryNos || [],
           warrantyMonths: item.warrantyMonths || 12,
         })),
         amount: totals.subtotal,

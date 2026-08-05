@@ -12,6 +12,14 @@ const lineItemSchema = new mongoose.Schema(
     amount: { type: Number, required: true, min: 0 },
     taxAmount: { type: Number, default: 0 },
     lineTotal: { type: Number, required: true, min: 0 },
+    // ── Unit identification numbers (per vehicle sold) ─────────────────────
+    serialNumbers: { type: [String], default: [] },
+    controllerNumbers: { type: [String], default: [] },
+    batteryNumbers: { type: [String], default: [] },
+    // ── Warranty durations (months) ───────────────────────────────────────
+    vehicleWarrantyMonths: { type: Number, default: 12 },
+    batteryWarrantyMonths: { type: Number, default: 36 },
+    controllerWarrantyMonths: { type: Number, default: 24 },
   },
   { _id: false }
 );

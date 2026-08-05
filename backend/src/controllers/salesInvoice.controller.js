@@ -6,6 +6,7 @@ import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/api
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
 import { env } from '../config/env.js';
+import { addCompanyLedgerEntry } from '../services/companyLedger.service.js';
 
 function mapSalesInvoice(doc) {
   if (!doc) return doc;
@@ -94,6 +95,14 @@ export const createSalesInvoice = asyncHandler(async (req, res) => {
       amount: amt,
       taxAmount: taxAmt,
       lineTotal: amt + taxAmt,
+      // Unit identification numbers
+      serialNumbers: item.serialNumbers || [],
+      controllerNumbers: item.controllerNumbers || [],
+      batteryNumbers: item.batteryNumbers || [],
+      // Warranty durations
+      vehicleWarrantyMonths: item.vehicleWarrantyMonths ?? 12,
+      batteryWarrantyMonths: item.batteryWarrantyMonths ?? 36,
+      controllerWarrantyMonths: item.controllerWarrantyMonths ?? 24,
     };
   });
 
@@ -161,6 +170,23 @@ export const createSalesInvoice = asyncHandler(async (req, res) => {
     }
   } catch (err) {
     console.error('Failed to auto-create dispatch for invoice:', err);
+  }
+
+  // ── Company ledger: record sale as credit ──────────────────────────────────
+  try {
+    await addCompanyLedgerEntry({
+      txnType: 'SALE_TO_DEALER',
+      date: doc.invoiceDate || new Date(),
+      credit: totals.total,
+      description: `Sale Invoice ${doc.invoiceNo} to ${dealer.name}`,
+      partyName: dealer.name,
+      referenceNo: doc.invoiceNo,
+      sourceRef: doc._id,
+      sourceModel: 'SalesInvoice',
+      createdBy: req.user._id,
+    });
+  } catch (ledgerErr) {
+    console.error('[CompanyLedger] Failed to record sale entry:', ledgerErr);
   }
 
   return sendCreated(res, { data: mapSalesInvoice(doc.toObject()), message: 'Sales invoice created' });

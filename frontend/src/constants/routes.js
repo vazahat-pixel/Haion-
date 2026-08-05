@@ -104,7 +104,7 @@ export const ROUTES = {
   ADMIN_PAYMENT_OUT_DETAIL: '/admin/purchases/payment-out/:id',
   // Ledger
   ADMIN_LEDGER: '/admin/reports/ledger',
-
+  ADMIN_COMPANY_LEDGER: '/admin/company-ledger',
 
   // Dealer
   DEALER_DASHBOARD: '/dealer/dashboard',

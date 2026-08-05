@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  Plus, Trash2, Search, Barcode, X, Printer, FileDown, Eye,
+  Plus, Trash2, Search, Barcode, X, Printer, FileDown, Eye, Shield,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet } from '@/components/ui/sheet';
+import { NumberTagInput } from '@/components/shared/NumberTagInput';
 import { dealersService } from '@/services/dealers.service';
 import { productsService } from '@/services/products.service';
 import { salesInvoicesService } from '@/services/sales-invoices.service';
@@ -59,6 +60,14 @@ const schema = z.object({
     unitPrice: z.coerce.number().min(0),
     discount: z.coerce.number().min(0).optional(),
     gstRate: z.coerce.number().min(0).max(28),
+    // Unit identification numbers
+    serialNumbers: z.array(z.string()).optional().default([]),
+    controllerNumbers: z.array(z.string()).optional().default([]),
+    batteryNumbers: z.array(z.string()).optional().default([]),
+    // Warranty durations (months)
+    vehicleWarrantyMonths: z.coerce.number().min(0).optional().default(12),
+    batteryWarrantyMonths: z.coerce.number().min(0).optional().default(36),
+    controllerWarrantyMonths: z.coerce.number().min(0).optional().default(24),
   })).min(1, 'Add at least one item'),
   additionalCharges: z.array(z.object({
     label: z.string().min(1),
@@ -248,6 +257,12 @@ export function SalesInvoiceForm({ initialData, isEdit = false }) {
       unitPrice: product.mrp || product.basePrice || 0,
       discount: 0,
       gstRate: product.gstRate ?? 18,
+      serialNumbers: [],
+      controllerNumbers: [],
+      batteryNumbers: [],
+      vehicleWarrantyMonths: 12,
+      batteryWarrantyMonths: 36,
+      controllerWarrantyMonths: 24,
     });
   };
 
@@ -440,7 +455,7 @@ export function SalesInvoiceForm({ initialData, isEdit = false }) {
                 <Button type="button" variant="outline" size="sm" onClick={scanBarcode}><Barcode className="h-4 w-4" /> Scan</Button>
               </div>
               <Button type="button" variant="outline" size="sm"
-                onClick={() => append({ sku: '', name: '', hsn: '', quantity: 1, unitPrice: 0, discount: 0, gstRate: 18 })}>
+                onClick={() => append({ sku: '', name: '', hsn: '', quantity: 1, unitPrice: 0, discount: 0, gstRate: 18, serialNumbers: [], controllerNumbers: [], batteryNumbers: [], vehicleWarrantyMonths: 12, batteryWarrantyMonths: 36, controllerWarrantyMonths: 24 })}>
                 <Plus className="h-4 w-4" /> Add Item
               </Button>
             </div>
@@ -475,27 +490,93 @@ export function SalesInvoiceForm({ initialData, isEdit = false }) {
                   ) : fields.map((field, i) => {
                     const item = watchItems[i] || {};
                     const line = calcLine(item);
+                    const qty = Number(item.quantity) || 1;
                     return (
-                      <tr key={field.id} className="border-b border-surface-3">
-                        <td className="px-3 py-2">
-                          <Input placeholder="Item name" {...form.register(`lineItems.${i}.name`)} className="min-w-[140px]" />
-                          <Input placeholder="SKU (optional)" {...form.register(`lineItems.${i}.sku`)} className="mt-1 text-xs" />
-                        </td>
-                        <td className="px-3 py-2"><Input placeholder="HSN" {...form.register(`lineItems.${i}.hsn`)} className="w-24" /></td>
-                        <td className="px-3 py-2 text-right"><Input type="number" min="1" className="ml-auto w-16 text-right" {...form.register(`lineItems.${i}.quantity`)} /></td>
-                        <td className="px-3 py-2 text-right"><Input type="number" min="0" step="0.01" className="ml-auto w-24 text-right" {...form.register(`lineItems.${i}.unitPrice`)} /></td>
-                        <td className="px-3 py-2 text-right"><Input type="number" min="0" step="0.01" className="ml-auto w-20 text-right" placeholder="₹0" {...form.register(`lineItems.${i}.discount`)} /></td>
-                        <td className="px-3 py-2 text-right tabular-nums text-xs">
-                          <Input type="number" min="0" max="28" className="ml-auto w-14 text-right" {...form.register(`lineItems.${i}.gstRate`)} />
-                          <span className="block mt-0.5 text-[var(--color-text-secondary)]">{formatCurrency(line.tax)}</span>
-                        </td>
-                        <td className="px-3 py-2 text-right tabular-nums font-medium">{formatCurrency(line.total)}</td>
-                        <td className="px-3 py-2">
-                          <Button type="button" variant="ghost" size="sm" onClick={() => remove(i)}>
-                            <Trash2 className="h-4 w-4 text-[var(--color-danger)]" />
-                          </Button>
-                        </td>
-                      </tr>
+                      <>
+                        <tr key={field.id} className="border-b border-surface-3">
+                          <td className="px-3 py-2">
+                            <Input placeholder="Item name" {...form.register(`lineItems.${i}.name`)} className="min-w-[140px]" />
+                            <Input placeholder="SKU (optional)" {...form.register(`lineItems.${i}.sku`)} className="mt-1 text-xs" />
+                          </td>
+                          <td className="px-3 py-2"><Input placeholder="HSN" {...form.register(`lineItems.${i}.hsn`)} className="w-24" /></td>
+                          <td className="px-3 py-2 text-right"><Input type="number" min="1" className="ml-auto w-16 text-right" {...form.register(`lineItems.${i}.quantity`)} /></td>
+                          <td className="px-3 py-2 text-right"><Input type="number" min="0" step="0.01" className="ml-auto w-24 text-right" {...form.register(`lineItems.${i}.unitPrice`)} /></td>
+                          <td className="px-3 py-2 text-right"><Input type="number" min="0" step="0.01" className="ml-auto w-20 text-right" placeholder="₹0" {...form.register(`lineItems.${i}.discount`)} /></td>
+                          <td className="px-3 py-2 text-right tabular-nums text-xs">
+                            <Input type="number" min="0" max="28" className="ml-auto w-14 text-right" {...form.register(`lineItems.${i}.gstRate`)} />
+                            <span className="block mt-0.5 text-[var(--color-text-secondary)]">{formatCurrency(line.tax)}</span>
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums font-medium">{formatCurrency(line.total)}</td>
+                          <td className="px-3 py-2">
+                            <Button type="button" variant="ghost" size="sm" onClick={() => remove(i)}>
+                              <Trash2 className="h-4 w-4 text-[var(--color-danger)]" />
+                            </Button>
+                          </td>
+                        </tr>
+                        {/* ── Serial / Controller / Battery Numbers + Warranty ── */}
+                        <tr key={`${field.id}-nums`} className="border-b border-dashed border-blue-100 bg-blue-50/40">
+                          <td colSpan={8} className="px-4 py-3">
+                            <div className="grid gap-4 sm:grid-cols-3">
+                              <div>
+                                <Label className="mb-1 flex items-center gap-1 text-xs font-semibold text-blue-700">
+                                  🔢 Serial Numbers
+                                </Label>
+                                <NumberTagInput
+                                  value={item.serialNumbers || []}
+                                  onChange={(v) => form.setValue(`lineItems.${i}.serialNumbers`, v)}
+                                  placeholder="e.g. SN001, Enter…"
+                                  expectedCount={qty}
+                                  label="serial number"
+                                />
+                              </div>
+                              <div>
+                                <Label className="mb-1 flex items-center gap-1 text-xs font-semibold text-purple-700">
+                                  ⚙️ Controller Numbers
+                                </Label>
+                                <NumberTagInput
+                                  value={item.controllerNumbers || []}
+                                  onChange={(v) => form.setValue(`lineItems.${i}.controllerNumbers`, v)}
+                                  placeholder="e.g. CTRL001, Enter…"
+                                  expectedCount={qty}
+                                  label="controller number"
+                                />
+                              </div>
+                              <div>
+                                <Label className="mb-1 flex items-center gap-1 text-xs font-semibold text-green-700">
+                                  🔋 Battery Numbers
+                                </Label>
+                                <NumberTagInput
+                                  value={item.batteryNumbers || []}
+                                  onChange={(v) => form.setValue(`lineItems.${i}.batteryNumbers`, v)}
+                                  placeholder="e.g. BAT001, Enter…"
+                                  expectedCount={qty}
+                                  label="battery number"
+                                />
+                              </div>
+                            </div>
+                            {/* Warranty durations */}
+                            <div className="mt-3 flex flex-wrap items-center gap-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                              <Shield className="h-4 w-4 text-amber-600" />
+                              <span className="text-xs font-semibold text-amber-700">Warranty</span>
+                              <label className="flex items-center gap-1 text-xs">
+                                <span className="text-amber-700">Vehicle</span>
+                                <Input type="number" min="0" className="h-7 w-16 text-center text-xs" {...form.register(`lineItems.${i}.vehicleWarrantyMonths`)} />
+                                <span className="text-gray-500">mo</span>
+                              </label>
+                              <label className="flex items-center gap-1 text-xs">
+                                <span className="text-amber-700">Battery</span>
+                                <Input type="number" min="0" className="h-7 w-16 text-center text-xs" {...form.register(`lineItems.${i}.batteryWarrantyMonths`)} />
+                                <span className="text-gray-500">mo</span>
+                              </label>
+                              <label className="flex items-center gap-1 text-xs">
+                                <span className="text-amber-700">Controller</span>
+                                <Input type="number" min="0" className="h-7 w-16 text-center text-xs" {...form.register(`lineItems.${i}.controllerWarrantyMonths`)} />
+                                <span className="text-gray-500">mo</span>
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                      </>
                     );
                   })}
                 </tbody>

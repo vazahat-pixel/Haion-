@@ -60,6 +60,8 @@ import insuranceRoutes from './routes/insurance.routes.js';
 import saleReturnRoutes from './routes/saleReturn.routes.js';
 import purchaseReturnRoutes from './routes/purchaseReturn.routes.js';
 import referralRoutes from './routes/referral.routes.js';
+import ocrRoutes from './routes/ocr.routes.js';
+import companyLedgerRoutes from './routes/companyLedger.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -203,6 +205,8 @@ app.use('/api/insurance', insuranceRoutes);
 app.use('/api/sale-returns', saleReturnRoutes);
 app.use('/api/purchase-returns', purchaseReturnRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/ocr', ocrRoutes);
+app.use('/api/company-ledger', companyLedgerRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

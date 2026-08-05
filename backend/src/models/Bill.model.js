@@ -13,6 +13,8 @@ const lineItemSchema = new mongoose.Schema(
     sgst: { type: Number, default: 0 },
     igst: { type: Number, default: 0 },
     serialNos: { type: [String], default: [] },
+    controllerNos: { type: [String], default: [] },
+    batteryNos: { type: [String], default: [] },
     warrantyMonths: { type: Number, default: 12 },
   },
   { _id: false }

@@ -43,3 +43,18 @@ export function optionalAuth(req, res, next) {
     next();
   });
 }
+
+/**
+ * Middleware: only allow requests from users with one of the specified roles.
+ * Usage: router.post('/path', authorize([ROLES.SERVICE_CENTER, ROLES.MASTER_ADMIN]), handler)
+ */
+export function authorize(allowedRoles = []) {
+  return (req, res, next) => {
+    if (!req.user) return sendError(res, { message: 'Authentication required', statusCode: 401 });
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    if (!roles.includes(req.user.role)) {
+      return sendError(res, { message: 'You do not have permission for this action', statusCode: 403 });
+    }
+    next();
+  };
+}

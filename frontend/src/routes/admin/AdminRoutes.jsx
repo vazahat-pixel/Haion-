@@ -114,6 +114,9 @@ const AdminPurchaseReturnDetailPage = lazy(() => import('@/pages/admin/purchase-
 // Referrals
 const AdminReferralsPage = lazy(() => import('@/pages/admin/referrals/AdminReferralsPage'));
 
+// Company Ledger
+const CompanyLedgerPageWrapper = lazy(() => import('@/pages/admin/ledger/CompanyLedgerPageWrapper'));
+
 const ADMIN_ROLES = [ROLES.MASTER_ADMIN, ROLES.WAREHOUSE_MANAGER];
 
 export default function AdminRoutes() {
@@ -279,6 +282,9 @@ export default function AdminRoutes() {
 
               {/* Referral Rewards */}
               <Route path="referrals" element={<AdminReferralsPage />} />
+
+              {/* Company Ledger */}
+              <Route path="company-ledger" element={<PermissionGuard require={PERMISSIONS.REPORTS_READ} redirectTo="/unauthorized"><CompanyLedgerPageWrapper /></PermissionGuard>} />
             </Route>
           </Routes>
       </PanelGuard>

@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Stepper } from '@/components/data-display/Stepper';
+import { NumberTagInput } from '@/components/shared/NumberTagInput';
 import { billingService } from '@/services/billing.service';
 import { customersService } from '@/services/customers.service';
 import { dealerTeamService } from '@/services/dealer-team.service';
@@ -327,7 +328,7 @@ export function BillingInvoiceBuilder() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-base">Line Items</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ sku: '', product: '', hsn: '', quantity: 1, unitPrice: 0, basePrice: 0, gstRate: 18, warrantyMonths: 12, serialNos: [], appliedRules: [] })}>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ sku: '', product: '', hsn: '', quantity: 1, unitPrice: 0, basePrice: 0, gstRate: 18, warrantyMonths: 12, serialNos: [], controllerNos: [], batteryNos: [], appliedRules: [] })}>
               <Plus className="h-3.5 w-3.5" /> Add Row
             </Button>
           </CardHeader>
@@ -390,29 +391,48 @@ export function BillingInvoiceBuilder() {
                 </div>
 
                 {watchItems[i]?.sku && (
-                  <div className="sm:col-span-6 border-t border-dashed pt-3 mt-1">
-                    <Label className="text-xs font-semibold text-[var(--color-text-secondary)] flex justify-between">
-                      <span>Enter Serial Numbers for Warranty tracking *</span>
-                      <span className="text-[10px] font-normal">Please input {Number(watchItems[i].quantity) || 1} serial number(s)</span>
-                    </Label>
-                    <div className="grid gap-2 mt-1.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                      {Array.from({ length: Number(watchItems[i].quantity) || 1 }).map((_, sIdx) => (
-                        <div key={sIdx}>
-                          <Input
-                            placeholder={`Serial Number #${sIdx + 1}`}
-                            className="text-xs"
-                            required
-                            value={watchItems[i]?.serialNos?.[sIdx] || ''}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              const curr = [...(watchItems[i]?.serialNos || [])];
-                              curr[sIdx] = val;
-                              form.setValue(`lineItems.${i}.serialNos`, curr);
-                            }}
-                          />
-                        </div>
-                      ))}
+                  <div className="sm:col-span-6 border-t border-dashed border-blue-200 pt-3 mt-1">
+                    <p className="mb-2 text-xs font-semibold text-blue-700">
+                      📋 Unit Identification Numbers
+                      <span className="ml-2 text-[10px] font-normal text-gray-500">
+                        (Enter {Number(watchItems[i].quantity) || 1} number(s) each — use OCR to scan)
+                      </span>
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div>
+                        <Label className="mb-1 text-xs text-blue-700">🔢 Serial Nos *</Label>
+                        <NumberTagInput
+                          value={watchItems[i]?.serialNos || []}
+                          onChange={(v) => form.setValue(`lineItems.${i}.serialNos`, v)}
+                          placeholder="e.g. SN001…"
+                          expectedCount={Number(watchItems[i].quantity) || 1}
+                          label="serial number"
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1 text-xs text-purple-700">⚙️ Controller Nos</Label>
+                        <NumberTagInput
+                          value={watchItems[i]?.controllerNos || []}
+                          onChange={(v) => form.setValue(`lineItems.${i}.controllerNos`, v)}
+                          placeholder="e.g. CTRL001…"
+                          expectedCount={Number(watchItems[i].quantity) || 1}
+                          label="controller number"
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1 text-xs text-green-700">🔋 Battery Nos</Label>
+                        <NumberTagInput
+                          value={watchItems[i]?.batteryNos || []}
+                          onChange={(v) => form.setValue(`lineItems.${i}.batteryNos`, v)}
+                          placeholder="e.g. BAT001…"
+                          expectedCount={Number(watchItems[i].quantity) || 1}
+                          label="battery number"
+                        />
+                      </div>
                     </div>
+                    <p className="mt-2 text-[10px] text-amber-600">
+                      💡 Tip: Click "OCR Scan" to auto-fill by taking a clear, close-up photo of the number sticker in good lighting.
+                    </p>
                   </div>
                 )}
               </div>
