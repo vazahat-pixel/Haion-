@@ -6,6 +6,7 @@ import { LoadingState } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { formatRelative } from '@/utils/format';
+import { PushSettingsCard } from '@/components/notifications/PushSettingsCard';
 import { Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/utils/cn';
@@ -30,6 +31,7 @@ export default function CustomerNotificationsPage() {
 
   return (
     <CustomerPageShell title="Notifications" subtitle="Updates on orders, warranty & service">
+      <PushSettingsCard />
       {isLoading && <LoadingState message="Loading notifications…" />}
       {isError && <ErrorState message="Could not load notifications" onRetry={refetch} />}
       {!isLoading && !isError && items.length === 0 && (

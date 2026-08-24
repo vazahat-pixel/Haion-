@@ -9,6 +9,7 @@ import { toPublicDoc } from '../utils/serialize.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
 import { calculateLineGST } from '../utils/gst.util.js';
 import { upsertWarehouseStock } from '../services/inventory.service.js';
+import { addCompanyLedgerEntry } from '../services/companyLedger.service.js';
 
 const DEFAULT_TERMS = `1. Goods once sold will not be taken back or exchanged
 2. All disputes are subject to jurisdiction only`;
@@ -165,6 +166,24 @@ export const createPurchase = asyncHandler(async (req, res) => {
     { path: 'party', select: 'name code type' },
     { path: 'warehouse', select: 'code name' },
   ]);
+
+  // Record in company ledger as debit (purchase)
+  try {
+    await addCompanyLedgerEntry({
+      txnType: 'PURCHASE',
+      date: purchase.purchaseInvDate || new Date(),
+      credit: 0,
+      debit: purchase.total,
+      description: `Purchase Bill ${purchase.billNo || purchase.purchaseNo} from ${party.name}`,
+      partyName: party.name,
+      referenceNo: purchase.billNo || purchase.purchaseNo,
+      sourceRef: purchase._id,
+      sourceModel: 'Purchase',
+      createdBy: req.user._id,
+    });
+  } catch (ledgerErr) {
+    console.error('[CompanyLedger] Failed to record purchase entry:', ledgerErr);
+  }
 
   return sendCreated(res, { data: mapPurchase(purchase.toObject()), message: 'Purchase saved' });
 });

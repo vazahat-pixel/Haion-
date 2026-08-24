@@ -4,10 +4,21 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
+import { notifyUsers } from '../services/notification.service.js';
+import { dealerUserIds, adminUserIds } from '../services/notificationTargets.service.js';
 
 function mapDealerOrder(doc) {
   if (!doc) return doc;
   return toPublicDoc(doc);
+}
+
+/** Notifications are a side effect — never let one fail the request. */
+async function safeNotify(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error(`[Notification] ${label} failed:`, err.message);
+  }
 }
 
 export async function generateOrderNo(prefix = 'PO') {
@@ -109,6 +120,18 @@ export const createDealerOrder = asyncHandler(async (req, res) => {
     createdBy: req.user._id,
   });
 
+  await safeNotify('dealer order placed', async () => {
+    const admins = await adminUserIds();
+    await notifyUsers(admins, {
+      title: 'New dealer order',
+      message: `${doc.orderNo} — ₹${Number(doc.total || 0).toLocaleString('en-IN')} from ${doc.dealerName || 'dealer'}`,
+      type: 'DEALER',
+      module: 'DealerOrders',
+      resourceId: doc.orderNo,
+      link: '/admin/dealer-orders',
+    });
+  });
+
   return sendCreated(res, { data: mapDealerOrder(doc.toObject()), message: 'Order placed successfully' });
 });
 
@@ -131,6 +154,23 @@ export const updateDealerOrderStatus = asyncHandler(async (req, res) => {
   doc.reviewedBy = req.user._id;
   doc.reviewedAt = new Date();
   await doc.save();
+
+  await safeNotify('dealer order status', async () => {
+    const dealers = await dealerUserIds(doc.dealer);
+    const wording = {
+      APPROVED: 'has been approved and is being prepared',
+      REJECTED: 'was rejected',
+      FULFILLED: 'has been fulfilled',
+    }[status];
+    await notifyUsers(dealers, {
+      title: `Order ${doc.orderNo} ${status.toLowerCase()}`,
+      message: `Your order ${wording}. ${doc.adminNotes || ''}`.trim(),
+      type: 'DEALER',
+      module: 'DealerOrders',
+      resourceId: doc.orderNo,
+      link: '/dealer/orders',
+    });
+  });
 
   return sendSuccess(res, { data: mapDealerOrder(doc.toObject()), message: `Order ${status.toLowerCase()}` });
 });

@@ -1,0 +1,48 @@
+# Nginx server block for Haion ERP
+# Copy to /etc/nginx/sites-available/haion, edit the placeholders, then:
+#   sudo ln -s /etc/nginx/sites-available/haion /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# Replace:
+#   YOURDOMAIN.COM      -> your real domain (e.g. haion.com)
+#   /var/www/haion/frontend/dist -> path where you copied the built frontend
+#   3000                -> the PORT your backend is actually running on (check ecosystem.config.js / .env)
+
+server {
+    listen 80;
+    server_name YOURDOMAIN.COM www.YOURDOMAIN.COM;
+
+    # Frontend static build
+    root /var/www/haion/frontend/dist;
+    index index.html;
+
+    # API -> Node backend (PM2 process on PORT below)
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Uploaded files served by backend (matches app.js '/uploads' static route)
+    location /uploads/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+    }
+
+    # React Router — always fall back to index.html for client-side routes
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache hashed static assets aggressively
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}

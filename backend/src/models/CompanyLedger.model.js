@@ -27,6 +27,11 @@ const companyLedgerSchema = new mongoose.Schema(
     balance: { type: Number, default: 0 },
     description: { type: String, trim: true, default: '' },
     partyName: { type: String, trim: true, default: '' },  // dealer / vendor name
+    // Hard link to the Party master. Null means the entry is internal (no
+    // counterparty) or predates party linking — partyName is then free text.
+    party: { type: mongoose.Schema.Types.ObjectId, ref: 'Party', default: null },
+    // The mirrored party-ledger row, so both sides can be voided together.
+    partyLedgerRef: { type: mongoose.Schema.Types.ObjectId, ref: 'LedgerEntry', default: null },
     referenceNo: { type: String, trim: true, default: '' }, // invoice / bill / expense no
     // Polymorphic ref to source document
     sourceRef: { type: mongoose.Schema.Types.ObjectId, refPath: 'sourceModel', default: null },
@@ -46,6 +51,7 @@ const companyLedgerSchema = new mongoose.Schema(
 companyLedgerSchema.index({ date: -1 });
 companyLedgerSchema.index({ txnType: 1, date: -1 });
 companyLedgerSchema.index({ sourceRef: 1 });
+companyLedgerSchema.index({ party: 1, date: -1 });
 
 const CompanyLedger = mongoose.model('CompanyLedger', companyLedgerSchema);
 export default CompanyLedger;

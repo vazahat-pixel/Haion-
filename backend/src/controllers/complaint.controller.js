@@ -7,6 +7,29 @@ import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/api
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
+import { notifyUsers } from '../services/notification.service.js';
+import {
+  customerUserIds,
+  contactUserIds,
+  supportUserIds,
+  serviceCenterUserIds,
+} from '../services/notificationTargets.service.js';
+
+/** Who is this complaint's customer, on the login side? */
+async function complaintCustomerUsers(doc) {
+  const byCustomer = await customerUserIds(doc.customerId);
+  if (byCustomer.length) return byCustomer;
+  return contactUserIds({ email: doc.email, phone: doc.phone });
+}
+
+/** Notifications are a side effect — never let one fail the request. */
+async function safeNotify(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error(`[Notification] ${label} failed:`, err.message);
+  }
+}
 
 function mapComplaint(doc) {
   const d = toPublicDoc(doc);
@@ -287,6 +310,28 @@ export const createComplaint = asyncHandler(async (req, res) => {
     console.error('JobCard auto-creation notice:', err.message);
   }
 
+  await safeNotify('complaint created', async () => {
+    const [customers, support] = await Promise.all([complaintCustomerUsers(doc), supportUserIds()]);
+    await Promise.all([
+      notifyUsers(customers, {
+        title: 'Complaint registered',
+        message: `Ticket ${doc.ticketNo} for ${doc.product} has been registered. We will update you shortly.`,
+        type: 'CUSTOMER',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/customer/complaints',
+      }),
+      notifyUsers(support, {
+        title: 'New complaint',
+        message: `${doc.ticketNo} — ${doc.product} from ${doc.customer} (${doc.priority})`,
+        type: 'SERVICE',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/admin/complaints',
+      }),
+    ]);
+  });
+
   return sendCreated(res, { data: mapComplaint(doc.toObject()), message: 'Complaint created successfully' });
 });
 
@@ -312,6 +357,31 @@ export const assignServiceCenter = asyncHandler(async (req, res) => {
       await jobCard.save();
     }
   } catch {}
+
+  await safeNotify('complaint assigned', async () => {
+    const [customers, centre] = await Promise.all([
+      complaintCustomerUsers(doc),
+      serviceCenterUserIds(doc.serviceCenter),
+    ]);
+    await Promise.all([
+      notifyUsers(customers, {
+        title: 'Service centre assigned',
+        message: `Ticket ${doc.ticketNo} is now with ${doc.serviceCenterName || 'a service centre'}.`,
+        type: 'CUSTOMER',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/customer/complaints',
+      }),
+      notifyUsers(centre, {
+        title: 'Complaint assigned to you',
+        message: `${doc.ticketNo} — ${doc.product} for ${doc.customer}`,
+        type: 'SERVICE',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/service/complaints',
+      }),
+    ]);
+  });
 
   return sendSuccess(res, { data: mapComplaint(doc.toObject()), message: 'Service Center assigned successfully' });
 });
@@ -390,6 +460,18 @@ export const createPublicComplaint = asyncHandler(async (req, res) => {
     await doc.save();
   } catch {}
 
+  await safeNotify('public complaint created', async () => {
+    const support = await supportUserIds();
+    await notifyUsers(support, {
+      title: 'New complaint from website',
+      message: `${doc.ticketNo} — ${doc.product} from ${doc.customer}`,
+      type: 'SERVICE',
+      module: 'Complaint',
+      resourceId: doc.ticketNo,
+      link: '/admin/complaints',
+    });
+  });
+
   return sendCreated(res, { data: mapComplaint(doc.toObject()), message: 'Complaint submitted successfully' });
 });
 
@@ -397,6 +479,7 @@ export const updateComplaint = asyncHandler(async (req, res) => {
   const doc = await Complaint.findById(req.params.id);
   if (!doc) return sendError(res, { message: 'Complaint not found', statusCode: 404 });
 
+  const previousStatus = doc.status;
   const allowed = ['status', 'priority', 'assignedTo', 'description', 'resolution'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) doc[key] = req.body[key];
@@ -405,6 +488,21 @@ export const updateComplaint = asyncHandler(async (req, res) => {
     doc.timeline.push({ title: `Status → ${req.body.status}`, at: new Date(), by: req.user?.email });
   }
   await doc.save();
+
+  if (req.body.status && req.body.status !== previousStatus) {
+    await safeNotify('complaint status change', async () => {
+      const customers = await complaintCustomerUsers(doc);
+      await notifyUsers(customers, {
+        title: `Complaint ${doc.ticketNo} updated`,
+        message: `Your complaint is now ${String(doc.status).replace(/_/g, ' ').toLowerCase()}.`,
+        type: 'CUSTOMER',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/customer/complaints',
+      });
+    });
+  }
+
   return sendSuccess(res, { data: mapComplaint(doc.toObject()), message: 'Complaint updated' });
 });
 
@@ -415,6 +513,29 @@ export const escalateComplaint = asyncHandler(async (req, res) => {
   doc.priority = 'CRITICAL';
   doc.timeline.push({ title: 'Escalated', description: req.body.reason, variant: 'danger', at: new Date(), by: req.user?.email });
   await doc.save();
+
+  await safeNotify('complaint escalated', async () => {
+    const [customers, support] = await Promise.all([complaintCustomerUsers(doc), supportUserIds()]);
+    await Promise.all([
+      notifyUsers(customers, {
+        title: 'Complaint escalated',
+        message: `Ticket ${doc.ticketNo} has been escalated and is now top priority.`,
+        type: 'CUSTOMER',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/customer/complaints',
+      }),
+      notifyUsers(support, {
+        title: 'Complaint escalated',
+        message: `${doc.ticketNo} — ${doc.product} for ${doc.customer}. ${req.body.reason || ''}`.trim(),
+        type: 'SERVICE',
+        module: 'Complaint',
+        resourceId: doc.ticketNo,
+        link: '/admin/complaints',
+      }),
+    ]);
+  });
+
   return sendSuccess(res, { data: mapComplaint(doc.toObject()), message: 'Complaint escalated' });
 });
 
@@ -426,5 +547,18 @@ export const resolveComplaint = asyncHandler(async (req, res) => {
   doc.resolvedAt = new Date();
   doc.timeline.push({ title: 'Resolved', variant: 'success', at: new Date(), by: req.user?.email });
   await doc.save();
+
+  await safeNotify('complaint resolved', async () => {
+    const customers = await complaintCustomerUsers(doc);
+    await notifyUsers(customers, {
+      title: 'Complaint resolved',
+      message: `Ticket ${doc.ticketNo} has been resolved. ${doc.resolution || ''}`.trim(),
+      type: 'CUSTOMER',
+      module: 'Complaint',
+      resourceId: doc.ticketNo,
+      link: '/customer/complaints',
+    });
+  });
+
   return sendSuccess(res, { data: mapComplaint(doc.toObject()), message: 'Complaint resolved' });
 });

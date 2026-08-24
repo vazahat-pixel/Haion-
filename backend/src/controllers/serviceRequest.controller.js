@@ -7,7 +7,17 @@ import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js'
 import { toPublicDoc } from '../utils/serialize.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
 import { logAudit } from '../services/audit.service.js';
-import { notifyCustomerStatusChange } from '../services/notification.service.js';
+import { notifyCustomerStatusChange, notifyUser, notifyUsers } from '../services/notification.service.js';
+import { supportUserIds } from '../services/notificationTargets.service.js';
+
+/** Notifications are a side effect — never let one fail the request. */
+async function safeNotify(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error(`[Notification] ${label} failed:`, err.message);
+  }
+}
 
 function mapSR(doc) {
   const d = toPublicDoc(doc);
@@ -95,6 +105,27 @@ export const createServiceRequest = asyncHandler(async (req, res) => {
       by: `${req.user.firstName} ${req.user.lastName}`,
     }],
   });
+  await safeNotify('service request created', async () => {
+    const support = await supportUserIds();
+    await Promise.all([
+      notifyCustomerStatusChange({
+        userId: doc.customer,
+        title: 'Service request submitted',
+        message: `${doc.requestNo} for ${doc.product} has been received. We will assign a technician shortly.`,
+        resourceId: doc.requestNo,
+        link: `/customer/service-requests/${doc._id}`,
+      }),
+      notifyUsers(support, {
+        title: 'New service request',
+        message: `${doc.requestNo} — ${doc.product} from ${doc.customerName} (${doc.priority})`,
+        type: 'SERVICE',
+        module: 'ServiceRequests',
+        resourceId: doc.requestNo,
+        link: '/admin/service-requests',
+      }),
+    ]);
+  });
+
   return sendCreated(res, { data: mapSR(doc.toObject()), message: 'Service request submitted' });
 });
 
@@ -133,6 +164,27 @@ export const assignServiceRequest = asyncHandler(async (req, res) => {
     module: 'ServiceRequests',
     ip: req.ip,
     resourceId: doc.requestNo,
+  });
+
+  await safeNotify('service request assigned', async () => {
+    await Promise.all([
+      notifyCustomerStatusChange({
+        userId: doc.customer,
+        title: 'Technician assigned',
+        message: `${techName} is now handling your service request ${doc.requestNo}.`,
+        resourceId: doc.requestNo,
+        link: `/customer/service-requests/${doc._id}`,
+      }),
+      notifyUser({
+        userId: doc.assignedTo,
+        title: 'Service request assigned to you',
+        message: `${doc.requestNo} — ${doc.product} for ${doc.customerName}`,
+        type: 'SERVICE',
+        module: 'ServiceRequests',
+        resourceId: doc.requestNo,
+        link: `/service/requests/${doc._id}`,
+      }),
+    ]);
   });
 
   return sendSuccess(res, { data: mapSR(doc.toObject()), message: 'Service request assigned' });
@@ -221,6 +273,35 @@ export const addServiceNote = asyncHandler(async (req, res) => {
     by: req.user?.email,
   });
   await doc.save();
+
+  // A note is a message on the ticket — tell the other side about it. A
+  // customer's own note goes to staff, anyone else's goes to the customer.
+  await safeNotify('service note added', async () => {
+    const preview = String(req.body.text || '').slice(0, 120);
+    const authorIsCustomer = String(req.user._id) === String(doc.customer);
+
+    if (authorIsCustomer) {
+      const recipients = doc.assignedTo ? [doc.assignedTo] : await supportUserIds();
+      await notifyUsers(recipients, {
+        title: `New message on ${doc.requestNo}`,
+        message: `${doc.customerName}: ${preview}`,
+        type: 'SERVICE',
+        module: 'ServiceRequests',
+        resourceId: doc.requestNo,
+        link: `/service/requests/${doc._id}`,
+      });
+      return;
+    }
+
+    await notifyCustomerStatusChange({
+      userId: doc.customer,
+      title: `New message on ${doc.requestNo}`,
+      message: preview,
+      resourceId: doc.requestNo,
+      link: `/customer/service-requests/${doc._id}`,
+    });
+  });
+
   return sendSuccess(res, { data: mapSR(doc.toObject()), message: 'Note added' });
 });
 

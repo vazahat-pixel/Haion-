@@ -4,6 +4,7 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
+import { PushNotificationBridge } from '@/components/notifications/PushNotificationBridge';
 
 export function Providers({ children }) {
   return (
@@ -13,6 +14,7 @@ export function Providers({ children }) {
           <ThemeProvider>
             <MotionConfig reducedMotion="user">
               {children}
+              <PushNotificationBridge />
               <Toaster />
             </MotionConfig>
           </ThemeProvider>

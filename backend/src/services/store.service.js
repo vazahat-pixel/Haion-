@@ -4,7 +4,8 @@ import WebsiteOrder from '../models/WebsiteOrder.model.js';
 import User from '../models/User.model.js';
 import { parsePrice, toPaise } from '../utils/price.util.js';
 import { createRazorpayOrder, isRazorpayConfigured } from './razorpay.service.js';
-import { notifyUser } from './notification.service.js';
+import { notifyUser, notifyUsers } from './notification.service.js';
+import { contactUserIds } from './notificationTargets.service.js';
 import { env } from '../config/env.js';
 
 function generateOrderNo(prefix = 'HAION-') {
@@ -301,6 +302,23 @@ export async function updateWebsiteOrderStatus(id, { status, notes, trackingNo, 
     at: new Date(),
   });
   await doc.save();
+
+  // Keep the buyer in the loop. They may have shopped as a guest, so the login
+  // is matched on the contact details captured with the order.
+  try {
+    const recipients = await contactUserIds({ email: doc.email, phone: doc.phone });
+    await notifyUsers(recipients, {
+      title: titleMap[status] || `Order ${doc.orderNo} updated`,
+      message: `Order ${doc.orderNo}: ${(titleMap[status] || status).toLowerCase()}.${trackingNo ? ` Tracking ${trackingNo}.` : ''}${notes ? ` ${notes}` : ''}`,
+      type: 'CUSTOMER',
+      module: 'Store',
+      resourceId: doc.orderNo,
+      link: '/customer/orders',
+    });
+  } catch (err) {
+    console.error('[Notification] website order status failed:', err.message);
+  }
+
   return doc.toObject();
 }
 

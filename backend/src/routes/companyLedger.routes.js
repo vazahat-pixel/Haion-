@@ -13,6 +13,9 @@ router.use(authenticate, authorize(adminRoles));
 router.get('/', ctrl.listCompanyLedger);
 router.get('/summary', ctrl.getCompanyLedgerSummary);
 router.get('/types', ctrl.getTxnTypes);
+router.get('/reconciliation', ctrl.getReconciliation);
+router.get('/party/:partyId', ctrl.getPartyLinkedEntries);
 router.post('/', ctrl.createManualEntry);
+router.patch('/:id/void', ctrl.voidEntry);
 
 export default router;

@@ -5,6 +5,7 @@ import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/api
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { mapExpense } from '../utils/docMapper.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
+import { addCompanyLedgerEntry } from '../services/companyLedger.service.js';
 
 function buildExpenseDedupeKey({ category, description, amount, vendor, submittedByUser }) {
   return [
@@ -90,6 +91,7 @@ export const updateExpenseStatus = asyncHandler(async (req, res) => {
     return sendError(res, { message: 'Invalid status', statusCode: 400 });
   }
 
+  const prevStatus = doc.status;
   doc.status = req.body.status;
   doc.reviewedBy = req.user._id;
   doc.reviewedAt = new Date();
@@ -99,6 +101,25 @@ export const updateExpenseStatus = asyncHandler(async (req, res) => {
     note: req.body.note || '',
   });
   await doc.save();
+
+  if (req.body.status === 'APPROVED' && prevStatus !== 'APPROVED') {
+    try {
+      await addCompanyLedgerEntry({
+        txnType: 'EXPENSE',
+        date: doc.submittedAt || new Date(),
+        credit: 0,
+        debit: doc.amount,
+        description: doc.description || `Expense: ${doc.category}`,
+        partyName: doc.vendor || doc.submittedBy || '',
+        referenceNo: doc.expenseNo,
+        sourceRef: doc._id,
+        sourceModel: 'Expense',
+        createdBy: req.user._id,
+      });
+    } catch (ledgerErr) {
+      console.error('[CompanyLedger] Failed to record approved expense:', ledgerErr);
+    }
+  }
 
   return sendSuccess(res, { data: mapExpense(doc.toObject()), message: `Expense ${doc.status.toLowerCase()}` });
 });

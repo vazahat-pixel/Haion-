@@ -1,16 +1,22 @@
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ROLE_HOME_ROUTE } from '@/constants/roles';
+import { ROUTES } from '@/constants/routes';
 import { Package } from 'lucide-react';
 import { appConfig } from '@/config/app.config';
 
 export default function AuthLayout() {
   const { isAuthenticated, user, isInitializing } = useAuth();
+  const location = useLocation();
 
   if (isInitializing) return null;
 
   if (isAuthenticated && user) {
-    return <Navigate to={ROLE_HOME_ROUTE[user.role]} replace />;
+    return <Navigate to={ROLE_HOME_ROUTE[user.role] || ROUTES.ADMIN_DASHBOARD} replace />;
+  }
+
+  if (location.pathname === '/auth/login' || location.pathname === '/customer/login') {
+    return <Outlet />;
   }
 
   return (

@@ -5,6 +5,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { formatRelative } from '@/utils/format';
 import { notificationsService } from '@/services/notifications.service';
 import { queryKeys } from '@/services/api/queryKeys';
+import { PushSettingsCard } from '@/components/notifications/PushSettingsCard';
 import { cn } from '@/utils/cn';
 
 export function NotificationPanel({ open, onOpenChange }) {
@@ -23,6 +24,7 @@ export function NotificationPanel({ open, onOpenChange }) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Notifications" description="System alerts and updates">
+      <PushSettingsCard />
       <div className="mb-4 flex justify-end">
         <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => markAll.mutate()} disabled={markAll.isPending}>
           <CheckCheck className="h-3.5 w-3.5" />

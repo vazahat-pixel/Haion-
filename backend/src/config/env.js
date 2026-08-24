@@ -27,6 +27,15 @@ const envSchema = z.object({
   RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
   /** Dev only: charge this amount (INR) via Razorpay when catalog total exceeds test limits */
   RAZORPAY_DEV_TEST_AMOUNT: z.coerce.number().optional(),
+  /**
+   * Firebase Cloud Messaging. All optional — without them push is simply
+   * disabled and in-app notifications carry on working unchanged.
+   * Supply the service account either base64-encoded (easiest for PM2/Vercel)
+   * or as a path to the downloaded JSON file.
+   */
+  FIREBASE_SERVICE_ACCOUNT_BASE64: z.string().optional(),
+  FIREBASE_SERVICE_ACCOUNT_PATH: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -62,4 +71,7 @@ export const env = {
   razorpayKeySecret: parsed.data.RAZORPAY_KEY_SECRET,
   razorpayWebhookSecret: parsed.data.RAZORPAY_WEBHOOK_SECRET,
   razorpayDevTestAmount: parsed.data.RAZORPAY_DEV_TEST_AMOUNT,
+  firebaseServiceAccountBase64: parsed.data.FIREBASE_SERVICE_ACCOUNT_BASE64,
+  firebaseServiceAccountPath: parsed.data.FIREBASE_SERVICE_ACCOUNT_PATH,
+  firebaseProjectId: parsed.data.FIREBASE_PROJECT_ID,
 };

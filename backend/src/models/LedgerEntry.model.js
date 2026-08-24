@@ -18,7 +18,7 @@ const ledgerEntrySchema = new mongoose.Schema(
     voucherRef: { type: mongoose.Schema.Types.ObjectId, refPath: 'voucherModel' },
     voucherModel: {
       type: String,
-      enum: ['Payment', 'SalesInvoice', 'Purchase'],
+      enum: ['Payment', 'SalesInvoice', 'Purchase', 'CompanyLedger'],
       default: null,
     },
     voucherNo: { type: String, trim: true, default: '' },

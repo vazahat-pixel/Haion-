@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Payment from '../models/Payment.model.js';
 import LedgerEntry from '../models/LedgerEntry.model.js';
+import CompanyLedger from '../models/CompanyLedger.model.js';
 import SalesInvoice from '../models/SalesInvoice.model.js';
 import Purchase from '../models/Purchase.model.js';
 import Party from '../models/Party.model.js';
@@ -8,6 +9,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
+import { addCompanyLedgerEntry } from '../services/companyLedger.service.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -156,6 +158,23 @@ export const createPaymentIn = asyncHandler(async (req, res) => {
         }],
         { session }
       );
+
+      // Company ledger — record money received as incoming credit
+      await addCompanyLedgerEntry({
+        txnType: 'PAYMENT_FROM_DEALER',
+        date: paymentDate ? new Date(paymentDate) : new Date(),
+        credit: netAmount,
+        debit: 0,
+        description: `Payment received from ${party.name}`,
+        partyName: party.name,
+        referenceNo: paymentNo,
+        sourceRef: payment._id,
+        sourceModel: 'Payment',
+        paymentMode,
+        notes,
+        createdBy: req.user._id,
+        session,
+      });
     });
 
     return sendCreated(res, { data: mapPayment(payment.toObject()), message: 'Payment In recorded' });
@@ -249,6 +268,23 @@ export const createPaymentOut = asyncHandler(async (req, res) => {
         }],
         { session }
       );
+
+      // Company ledger — record payment out as outgoing debit
+      await addCompanyLedgerEntry({
+        txnType: 'PURCHASE',
+        date: paymentDate ? new Date(paymentDate) : new Date(),
+        credit: 0,
+        debit: netAmount,
+        description: `Payment made to ${party.name}`,
+        partyName: party.name,
+        referenceNo: paymentNo,
+        sourceRef: payment._id,
+        sourceModel: 'Payment',
+        paymentMode,
+        notes,
+        createdBy: req.user._id,
+        session,
+      });
     });
 
     return sendCreated(res, { data: mapPayment(payment.toObject()), message: 'Payment Out recorded' });
@@ -293,9 +329,16 @@ export const cancelPayment = asyncHandler(async (req, res) => {
       payment.status = 'CANCELLED';
       await payment.save({ session });
 
-      // Void the ledger entry
+      // Void the party ledger entry
       await LedgerEntry.updateOne(
         { voucherRef: payment._id, voucherModel: 'Payment' },
+        { $set: { isVoided: true } },
+        { session }
+      );
+
+      // Void the company ledger entry
+      await CompanyLedger.updateOne(
+        { sourceRef: payment._id, sourceModel: 'Payment' },
         { $set: { isVoided: true } },
         { session }
       );

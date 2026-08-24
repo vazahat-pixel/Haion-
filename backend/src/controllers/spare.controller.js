@@ -10,6 +10,32 @@ import { deductWarehouseStock } from '../services/inventory.service.js';
 import { logAudit } from '../services/audit.service.js';
 import StockMovement from '../models/StockMovement.model.js';
 import Inventory from '../models/Inventory.model.js';
+import { notifyUser, notifyUsers } from '../services/notification.service.js';
+import { adminUserIds } from '../services/notificationTargets.service.js';
+
+/** Notifications are a side effect — never let one fail the request. */
+async function safeNotify(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error(`[Notification] ${label} failed:`, err.message);
+  }
+}
+
+/** Tell the service centre that raised the request what happened to it. */
+function notifyRequester(doc, title, message) {
+  return safeNotify('spare request update', () =>
+    notifyUser({
+      userId: doc.requestedUser,
+      title,
+      message,
+      type: 'SERVICE',
+      module: 'SpareRequests',
+      resourceId: doc.requestNo,
+      link: '/service/spare-requests',
+    })
+  );
+}
 
 function mapSpare(doc) {
   return toPublicDoc(doc);
@@ -76,6 +102,18 @@ export const createSpareRequest = asyncHandler(async (req, res) => {
     status: 'PENDING',
     timeline: [{ title: 'Spare request submitted', variant: 'info', at: new Date(), by: req.user?.email }],
   });
+  await safeNotify('spare request created', async () => {
+    const admins = await adminUserIds();
+    await notifyUsers(admins, {
+      title: 'Spare part requested',
+      message: `${doc.requestNo} — ${doc.quantity} × ${doc.partName} requested by ${doc.requestedBy}`,
+      type: 'INVENTORY',
+      module: 'SpareRequests',
+      resourceId: doc.requestNo,
+      link: '/admin/spare-requests',
+    });
+  });
+
   return sendCreated(res, { data: mapSpare(doc.toObject()), message: 'Spare request submitted' });
 });
 
@@ -93,6 +131,12 @@ export const approveSpare = asyncHandler(async (req, res) => {
 
   await logAudit({ action: 'APPROVE', user: req.user?.email, userId: req.user?._id, module: 'SpareRequests', ip: req.ip, resourceId: doc.requestNo });
 
+  await notifyRequester(
+    doc,
+    'Spare request approved',
+    `${doc.requestNo} — ${doc.quantity} × ${doc.partName} approved and queued for dispatch.`
+  );
+
   return sendSuccess(res, { data: mapSpare(doc.toObject()), message: 'Spare request approved' });
 });
 
@@ -106,6 +150,8 @@ export const rejectSpare = asyncHandler(async (req, res) => {
   doc.rejectionReason = req.body.reason || 'Rejected by administrator';
   doc.timeline.push({ title: 'Request rejected', description: doc.rejectionReason, variant: 'danger', at: new Date(), by: req.user?.email });
   await doc.save();
+  await notifyRequester(doc, 'Spare request rejected', `${doc.requestNo} — ${doc.rejectionReason}`);
+
   return sendSuccess(res, { data: mapSpare(doc.toObject()), message: 'Spare request rejected' });
 });
 
@@ -179,6 +225,12 @@ export const dispatchSpare = asyncHandler(async (req, res) => {
         }], { session });
       }
     });
+
+    await notifyRequester(
+      doc,
+      'Spare parts dispatched',
+      `${doc.requestNo} — ${doc.quantity} × ${doc.partName} is on its way. A defective return is expected.`
+    );
 
     return sendSuccess(res, { data: mapSpare(doc.toObject()), message: 'Spare parts dispatched — defective return expected' });
   } catch (err) {

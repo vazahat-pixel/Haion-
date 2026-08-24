@@ -6,9 +6,20 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
+import { notifyUsers } from '../services/notification.service.js';
+import { dealerUserIds, adminUserIds } from '../services/notificationTargets.service.js';
 
 function mapClaim(doc) {
   return toPublicDoc(doc);
+}
+
+/** Notifications are a side effect — never let one fail the request. */
+async function safeNotify(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error(`[Notification] ${label} failed:`, err.message);
+  }
 }
 
 function mapDealerWallet(doc) {
@@ -178,6 +189,18 @@ export const createClaim = asyncHandler(async (req, res) => {
     createdBy: req.user._id,
   });
 
+  await safeNotify('insurance claim submitted', async () => {
+    const admins = await adminUserIds();
+    await notifyUsers(admins, {
+      title: 'New insurance claim',
+      message: `${doc.claimNo} — ₹${Number(doc.claimAmount).toLocaleString('en-IN')} for ${doc.customerName} (${doc.dealerName})`,
+      type: 'BILLING',
+      module: 'Insurance',
+      resourceId: doc.claimNo,
+      link: '/admin/insurance/claims',
+    });
+  });
+
   return sendCreated(res, { data: mapClaim(doc.toObject()), message: 'Insurance claim submitted' });
 });
 
@@ -206,6 +229,20 @@ export const reviewClaim = asyncHandler(async (req, res) => {
     by: req.user.name || 'Admin',
   });
   await doc.save();
+
+  await safeNotify('insurance claim reviewed', async () => {
+    const dealers = await dealerUserIds(doc.dealer);
+    await notifyUsers(dealers, {
+      title: `Claim ${doc.claimNo} ${newStatus.toLowerCase()}`,
+      message: newStatus === 'APPROVED'
+        ? `₹${Number(doc.claimAmount).toLocaleString('en-IN')} approved for ${doc.customerName}. ${notes}`.trim()
+        : `Claim for ${doc.customerName} was rejected. ${notes}`.trim(),
+      type: 'BILLING',
+      module: 'Insurance',
+      resourceId: doc.claimNo,
+      link: '/dealer/insurance',
+    });
+  });
 
   return sendSuccess(res, { data: mapClaim(doc.toObject()), message: `Claim ${newStatus.toLowerCase()}` });
 });

@@ -8,9 +8,27 @@ import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/api
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
+import { notifyUsers } from '../services/notification.service.js';
+import { customerUserIds, contactUserIds, serviceCenterUserIds } from '../services/notificationTargets.service.js';
 
 function mapJobCard(doc) {
   return toPublicDoc(doc);
+}
+
+/** The customer's login for a job card, by linked record then by contact details. */
+async function jobCardCustomerUsers(jobCard) {
+  const byCustomer = await customerUserIds(jobCard.customer?.customerId);
+  if (byCustomer.length) return byCustomer;
+  return contactUserIds({ email: jobCard.customer?.email, phone: jobCard.customer?.phone });
+}
+
+/** Notifications are a side effect — never let one fail the request. */
+async function safeNotify(label, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    console.error(`[Notification] ${label} failed:`, err.message);
+  }
 }
 
 export const listJobCards = asyncHandler(async (req, res) => {
@@ -93,6 +111,31 @@ export const createJobCard = asyncHandler(async (req, res) => {
 
   complaint.jobCard = doc._id;
   await complaint.save();
+
+  await safeNotify('job card created', async () => {
+    const [customers, centre] = await Promise.all([
+      jobCardCustomerUsers(doc),
+      serviceCenterUserIds(doc.serviceCenter),
+    ]);
+    await Promise.all([
+      notifyUsers(customers, {
+        title: 'Repair job opened',
+        message: `Job card ${doc.jobCardNo} has been opened for your ${doc.product?.name || 'product'}.`,
+        type: 'CUSTOMER',
+        module: 'JobCard',
+        resourceId: doc.jobCardNo,
+        link: '/customer/complaints',
+      }),
+      notifyUsers(centre, {
+        title: 'New job card assigned',
+        message: `${doc.jobCardNo} — ${doc.product?.name || 'product'} for ${doc.customer?.name || 'customer'}`,
+        type: 'SERVICE',
+        module: 'JobCard',
+        resourceId: doc.jobCardNo,
+        link: '/service/job-cards',
+      }),
+    ]);
+  });
 
   return sendCreated(res, { data: mapJobCard(doc.toObject()), message: 'Job Card created successfully' });
 });
@@ -255,6 +298,20 @@ export const updateJobCardStatus = asyncHandler(async (req, res) => {
         await complaint.save();
       }
     }
+  }
+
+  if (status) {
+    await safeNotify('job card status', async () => {
+      const customers = await jobCardCustomerUsers(jobCard);
+      await notifyUsers(customers, {
+        title: `Repair update: ${jobCard.jobCardNo}`,
+        message: `Your ${jobCard.product?.name || 'product'} is now ${String(status).replace(/_/g, ' ').toLowerCase()}.`,
+        type: 'CUSTOMER',
+        module: 'JobCard',
+        resourceId: jobCard.jobCardNo,
+        link: '/customer/complaints',
+      });
+    });
   }
 
   return sendSuccess(res, { data: mapJobCard(jobCard.toObject()), message: 'Job Card status updated' });

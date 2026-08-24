@@ -1,8 +1,8 @@
 import Dispatch from '../models/Dispatch.model.js';
 import Dealer from '../models/Dealer.model.js';
 import User from '../models/User.model.js';
-import Notification from '../models/Notification.model.js';
 import mongoose from 'mongoose';
+import { notifyUsers } from '../services/notification.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
@@ -64,17 +64,16 @@ async function notifyDealerOfDispatch(dispatch, actionTitle) {
     const dealerUsers = await User.find({ dealerId, isActive: true }).select('_id');
     if (!dealerUsers.length) return;
 
-    const notifications = dealerUsers.map((u) => ({
-      user: u._id,
+    // Routed through the notification service so each dealer user gets the
+    // in-app row *and* a push on their registered devices.
+    await notifyUsers(dealerUsers.map((u) => u._id), {
       title: `📦 Incoming GRN / Stock Dispatch: ${dispatch.dispatchNo}`,
       message: `${actionTitle}. ${dispatch.lineItems?.length || 0} line item(s) awaiting GRN verification.`,
       type: 'GRN',
       module: 'GRN',
       resourceId: String(dispatch._id),
       link: '/dealer/grn',
-      read: false,
-    }));
-    await Notification.insertMany(notifications);
+    });
   } catch (err) {
     console.error('Failed to send dealer dispatch notification:', err);
   }

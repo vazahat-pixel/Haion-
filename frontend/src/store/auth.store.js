@@ -59,6 +59,15 @@ export const useAuthStore = create(
       },
 
       logout: async () => {
+        // Release this device's push token first — it needs the session that is
+        // about to be torn down, and leaving it behind would send the next
+        // person's notifications to whoever logged out.
+        try {
+          const { disablePush } = await import('@/services/push.service');
+          await disablePush();
+        } catch {
+          /* push is optional — never block logout on it */
+        }
         try {
           await authService.logout();
         } finally {
