@@ -101,9 +101,11 @@ const AdminComplaintsPage = lazy(() => import('@/pages/admin/complaints/AdminCom
 const AdminServiceCenterListPage = lazy(() => import('@/pages/admin/service-centers/AdminServiceCenterListPage'));
 const JobCardListPage = lazy(() => import('@/pages/service/job-cards/JobCardListPage'));
 
-// Insurance
+// Insurance & Warranty
 const AdminInsurancePage = lazy(() => import('@/pages/admin/insurance/AdminInsurancePage'));
 const AdminInsuranceClaimDetailPage = lazy(() => import('@/pages/admin/insurance/AdminInsuranceClaimDetailPage'));
+const AdminWarrantyPage = lazy(() => import('@/pages/admin/warranty/AdminWarrantyPage'));
+const AdminWarrantyDetailPage = lazy(() => import('@/pages/admin/warranty/AdminWarrantyDetailPage'));
 
 // Dealer Sale Returns / Purchase Returns
 const AdminSaleReturnListPage = lazy(() => import('@/pages/admin/sale-returns/AdminSaleReturnListPage'));
@@ -198,6 +200,16 @@ export default function AdminRoutes() {
                   <DealerInvoiceDetailPage />
                 </PermissionGuard>
               } />
+              <Route path="customer-invoices" element={
+                <PermissionGuard require={PERMISSIONS.DEALERS_READ} redirectTo="/unauthorized">
+                  <DealerInvoiceListPage />
+                </PermissionGuard>
+              } />
+              <Route path="customer-invoices/:id" element={
+                <PermissionGuard require={PERMISSIONS.DEALERS_READ} redirectTo="/unauthorized">
+                  <DealerInvoiceDetailPage />
+                </PermissionGuard>
+              } />
               <Route path="employees" element={
                 <PermissionGuard require={PERMISSIONS.EMPLOYEES_READ} redirectTo="/unauthorized">
                   <EmployeeListPage />
@@ -265,9 +277,11 @@ export default function AdminRoutes() {
               <Route path="service-centers" element={<PermissionGuard require={PERMISSIONS.COMPLAINTS_READ} redirectTo="/unauthorized"><AdminServiceCenterListPage /></PermissionGuard>} />
               <Route path="job-cards" element={<PermissionGuard require={PERMISSIONS.COMPLAINTS_READ} redirectTo="/unauthorized"><JobCardListPage /></PermissionGuard>} />
 
-              {/* Insurance */}
+              {/* Insurance & Warranty */}
               <Route path="insurance" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_READ} redirectTo="/unauthorized"><AdminInsurancePage /></PermissionGuard>} />
               <Route path="insurance/claims/:id" element={<PermissionGuard require={PERMISSIONS.INSURANCE_CLAIMS_READ} redirectTo="/unauthorized"><AdminInsuranceClaimDetailPage /></PermissionGuard>} />
+              <Route path="warranty" element={<PermissionGuard require={PERMISSIONS.WARRANTY_READ} redirectTo="/unauthorized"><AdminWarrantyPage /></PermissionGuard>} />
+              <Route path="warranty/:id" element={<PermissionGuard require={PERMISSIONS.WARRANTY_READ} redirectTo="/unauthorized"><AdminWarrantyDetailPage /></PermissionGuard>} />
 
               {/* Dealer Sale Returns */}
               <Route path="dealer-sale-returns" element={<PermissionGuard require={PERMISSIONS.SALE_RETURNS_READ} redirectTo="/unauthorized"><AdminSaleReturnListPage /></PermissionGuard>} />

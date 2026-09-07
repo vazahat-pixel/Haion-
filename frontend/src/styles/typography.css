@@ -1,19 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 .text-heading-page {
-  @apply text-xl font-bold uppercase tracking-tight text-[var(--color-text-primary)] sm:text-2xl;
+  @apply text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--color-text-primary)];
+  letter-spacing: -0.025em;
 }
 
 .text-heading-section {
-  @apply text-lg font-bold uppercase tracking-tight text-[var(--color-text-primary)];
+  @apply text-base sm:text-lg font-bold tracking-tight text-[var(--color-text-primary)];
+  letter-spacing: -0.015em;
 }
 
 .text-label {
-  @apply text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-secondary)];
+  @apply text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-secondary)];
+  letter-spacing: 0.05em;
 }
 
 .text-body {
-  @apply text-sm text-[var(--color-text-primary)] leading-relaxed;
+  @apply text-[13.5px] text-[var(--color-text-primary)] leading-normal font-normal;
 }
 
 .text-caption {
-  @apply text-xs text-[var(--color-text-tertiary)];
+  @apply text-xs text-[var(--color-text-tertiary)] font-normal;
 }

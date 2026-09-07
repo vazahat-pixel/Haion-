@@ -29,3 +29,17 @@ export const CustomerWarrantyDetail = createDetailView({
   queryKey: queryKeys.warranty.detail,
   fields: warrantyDetailFields,
 });
+
+export const AdminWarrantyTable = createListTable({
+  service: warrantyService,
+  queryKey: queryKeys.warranty.list,
+  columns: warrantyColumns,
+  basePath: '/admin/warranty',
+});
+
+export const AdminWarrantyDetail = createDetailView({
+  service: warrantyService,
+  queryKey: queryKeys.warranty.detail,
+  fields: warrantyDetailFields,
+});
+

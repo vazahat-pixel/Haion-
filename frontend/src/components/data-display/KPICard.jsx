@@ -19,11 +19,11 @@ function KpiBody({ label, value, trend, trendLabel, Icon, SvgIcon, accent, iconS
   return (
     <div className="flex items-start justify-between gap-2">
       <div className="min-w-0">
-        <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
           {label}
         </span>
         <motion.p
-          className="erp-kpi-value mt-0.5"
+          className="erp-kpi-value mt-1"
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

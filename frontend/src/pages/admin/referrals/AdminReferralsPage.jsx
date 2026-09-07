@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
@@ -378,8 +379,22 @@ function WithdrawalsTab() {
 
 // ── Main Admin Page ───────────────────────────────────────────────────────────
 export default function AdminReferralsPage() {
-  const [activeTab, setActiveTab] = useState('bonuses');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab') === 'withdrawals' ? 'withdrawals' : 'bonuses';
+  const [activeTab, setActiveTab] = useState(urlTab);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const currentParam = searchParams.get('tab') === 'withdrawals' ? 'withdrawals' : 'bonuses';
+    if (currentParam !== activeTab) {
+      setActiveTab(currentParam);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setSearchParams(key === 'bonuses' ? {} : { tab: key });
+  };
 
   const { data: stats, isLoading: isStatsLoading } = useQuery({
     queryKey: ['admin', 'referrals', 'stats'],
@@ -408,11 +423,11 @@ export default function AdminReferralsPage() {
         <div className="flex gap-2">
           {[
             { key: 'bonuses', label: 'Referral Bonuses', icon: Gift },
-            { key: 'withdrawals', label: 'Withdrawals', icon: Wallet },
+            { key: 'withdrawals', label: 'Withdrawals & Payouts', icon: Wallet },
           ].map(({ key, label, icon: Icon }) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => handleTabChange(key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
                 activeTab === key
                   ? 'bg-brand-500 text-white shadow-md'

@@ -20,7 +20,7 @@ export function QuickActions({ actions = [], className }) {
                 <Icon className="h-3.5 w-3.5" />
               </motion.span>
             )}
-            <span className="text-[11px] font-medium">{action.label}</span>
+            <span className="text-xs font-semibold tracking-tight">{action.label}</span>
           </>
         );
 

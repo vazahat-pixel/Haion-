@@ -78,11 +78,21 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'https://checkout.razorpay.com',
+        'https://static.cloudflareinsights.com',
+      ],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'"],
+      connectSrc: [
+        "'self'",
+        'https://cloudflareinsights.com',
+        'https://checkout.razorpay.com',
+        'https://api.razorpay.com',
+      ],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: env.isDev ? null : [],
@@ -134,12 +144,12 @@ app.use(mongoSanitize({ replaceWith: '_', allowDots: false }));
 // ── HTTP Parameter Pollution prevention ───────────────────────────────────────
 app.use(hpp());
 
-// ── Uploaded files — force download, prevent script execution ────────────────
+// ── Uploaded files — allow images inline, force download for non-images ─────────
 app.use('/uploads', (req, res, next) => {
-  // Prevent browsers from executing uploaded files as scripts
-  res.setHeader('Content-Disposition', 'attachment');
+  const isImage = /\.(jpe?g|png|webp|gif|svg)$/i.test(req.path);
+  res.setHeader('Content-Disposition', isImage ? 'inline' : 'attachment');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.join(__dirname, '../uploads')));
 

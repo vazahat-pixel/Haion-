@@ -16,7 +16,7 @@ export default function AdminDashboardPage() {
           <DashboardMeshBg className="pointer-events-none absolute inset-0 h-full w-full opacity-80" />
           <div className="relative flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-widest text-brand-600">Overview</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-brand-600">Overview</p>
               <h1 className="erp-page-title mt-0.5">Dashboard</h1>
               <p className="erp-page-subtitle mt-0.5">System metrics, revenue &amp; operations at a glance</p>
             </div>

@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const reactRoot = path.resolve(__dirname, 'node_modules/react');
@@ -18,10 +20,17 @@ const reactAliases = {
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    postcss: {
+      plugins: [tailwindcss, autoprefixer],
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,
     watch: {
+      usePolling: true,
+      interval: 100,
       ignored: ['**/*.mp4', '**/public/**/*.mp4'],
     },
     proxy: {

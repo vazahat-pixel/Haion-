@@ -18,9 +18,9 @@
   --color-sidebar-bg: #16131a;
   --color-sidebar-surface: #1f1b26;
   --color-sidebar-border: #2e2836;
-  --color-sidebar-text: #9a919e;
-  --color-sidebar-text-hover: #f2ebe6;
-  --color-sidebar-active-bg: rgba(196, 113, 79, 0.14);
+  --color-sidebar-text: #b8b0bd;
+  --color-sidebar-text-hover: #ffffff;
+  --color-sidebar-active-bg: rgba(196, 113, 79, 0.16);
   --color-sidebar-active-border: #d4845f;
 
   --color-surface-0: #f7f4f1;
@@ -108,8 +108,14 @@
   }
 
   body {
-    @apply bg-surface-0 text-[var(--color-text-primary)] font-sans text-[13px] leading-snug antialiased;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    @apply bg-surface-0 text-[var(--color-text-primary)] font-sans text-[13.5px] leading-relaxed antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight text-[var(--color-text-primary)];
   }
 
   button,
@@ -128,7 +134,7 @@
   }
 
   .erp-card {
-    @apply rounded-lg border border-surface-3 bg-surface-1 shadow-sm;
+    @apply rounded-xl border border-surface-3 bg-surface-1 shadow-sm;
     transition: box-shadow var(--transition-base), border-color var(--transition-fast), transform var(--transition-fast);
   }
 
@@ -137,19 +143,22 @@
   }
 
   .erp-kpi-value {
-    @apply text-xl font-bold tracking-tight tabular-nums text-[var(--color-text-primary)];
+    @apply text-2xl sm:text-[26px] font-extrabold tracking-tight tabular-nums text-[var(--color-text-primary)] leading-tight;
+    letter-spacing: -0.03em;
   }
 
   .erp-page-title {
-    @apply text-base font-semibold tracking-tight text-[var(--color-text-primary)];
+    @apply text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--color-text-primary)];
+    letter-spacing: -0.025em;
   }
 
   .erp-page-subtitle {
-    @apply text-[10px] font-medium text-[var(--color-text-tertiary)];
+    @apply text-xs sm:text-[12.5px] font-medium text-[var(--color-text-secondary)];
   }
 
   .erp-table-header {
-    @apply text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)];
+    @apply text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)];
+    letter-spacing: 0.05em;
   }
 
   .interactive-smooth {
