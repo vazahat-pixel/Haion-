@@ -457,6 +457,296 @@
     "order": 12,
     "isVisible": true,
     "data": {
+      "id": "bat_48v",
+      "name": "B1-48V PowerPack",
+      "price": "₹28,999",
+      "subtitle": "48V 24Ah Lithium Iron Phosphate (LFP) Battery Pack with Smart BMS",
+      "images": [
+        "/battery2-removebg-preview.webp",
+        "/battery2-removebg-preview.webp",
+        "/battery2-removebg-preview.webp"
+      ],
+      "colors": [
+        "Metal Black"
+      ],
+      "specs": {
+        "CHEMISTRY": "LITHIUM IRON PHOSPHATE (LFP)",
+        "CAPACITY": "24 Ah (1.15 kWh)",
+        "NOMINAL VOLTAGE": "48 V",
+        "CYCLE LIFE": "3000+ CYCLES @ 80% DOD",
+        "BMS FEATURES": "CELL BALANCING, OVERCHARGE & OVERDISCHARGE SHIELD",
+        "WARRANTY": "3 YEARS MANUFACTURER WARRANTY",
+        "DIMENSIONS": "240 x 180 x 150 mm",
+        "WEIGHT": "9.5 K.G."
+      },
+      "category": "battery",
+      "tag": "Best Seller",
+      "image": "/haion-battery.webp",
+      "link": "#product-detail-bat_48v"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 13,
+    "isVisible": true,
+    "data": {
+      "id": "bat_60v",
+      "name": "B2-60V EnergyMax",
+      "price": "₹36,999",
+      "subtitle": "60V 30Ah High-Performance Lithium Battery Pack for Long Commutes",
+      "images": [
+        "/battrey3-removebg-preview.webp",
+        "/battrey3-removebg-preview.webp",
+        "/battrey3-removebg-preview.webp"
+      ],
+      "colors": [
+        "Metal Black"
+      ],
+      "specs": {
+        "CHEMISTRY": "LITHIUM ION / NMC",
+        "CAPACITY": "30 Ah (1.8 kWh)",
+        "NOMINAL VOLTAGE": "60 V",
+        "CYCLE LIFE": "2500+ CYCLES @ 80% DOD",
+        "BMS FEATURES": "SMART CELL MONITORING & TEMPERATURE SHIELD",
+        "WARRANTY": "3 YEARS MANUFACTURER WARRANTY",
+        "DIMENSIONS": "280 x 200 x 165 mm",
+        "WEIGHT": "13.2 K.G."
+      },
+      "category": "battery",
+      "tag": "Long Range",
+      "image": "/battrey3-removebg-preview.webp",
+      "link": "#product-detail-bat_60v"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 14,
+    "isVisible": true,
+    "data": {
+      "id": "bat_72v",
+      "name": "B3-72V UltraPower",
+      "price": "₹45,999",
+      "subtitle": "72V 35Ah Heavy-Duty Long-Range Lithium-Ion Battery Pack with App BMS",
+      "images": [
+        "/battery2-removebg-preview.webp",
+        "/battery2-removebg-preview.webp",
+        "/battery2-removebg-preview.webp"
+      ],
+      "colors": [
+        "Metal Black"
+      ],
+      "specs": {
+        "CHEMISTRY": "LITHIUM ION / NMC PREMIUM CELLS",
+        "CAPACITY": "35 Ah (2.52 kWh)",
+        "NOMINAL VOLTAGE": "72 V",
+        "CYCLE LIFE": "2500+ CYCLES",
+        "BMS FEATURES": "APP INTEGRATED SMART BMS, DYNAMIC CELL BALANCING",
+        "WARRANTY": "3 YEARS EXTENDED WARRANTY",
+        "DIMENSIONS": "320 x 220 x 180 mm",
+        "WEIGHT": "16.5 K.G."
+      },
+      "category": "battery",
+      "tag": "Ultra Power",
+      "image": "/haion-battery.webp",
+      "link": "#product-detail-bat_72v"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 15,
+    "isVisible": true,
+    "data": {
+      "id": "chg_standard",
+      "name": "C1-Standard Charger",
+      "price": "₹4,999",
+      "subtitle": "48V-72V Auto-Detect Smart EV Charger with Dual Safety Fuse",
+      "images": [
+        "/charger-removebg-preview.webp",
+        "/charger-removebg-preview.webp",
+        "/charger-removebg-preview.webp"
+      ],
+      "colors": [
+        "Brushed Gold/Black"
+      ],
+      "specs": {
+        "INPUT VOLTAGE": "180V - 260V AC, 50Hz",
+        "OUTPUT CURRENT": "5A MAX",
+        "COMPATIBILITY": "48V, 60V, 72V LITHIUM ION BATTERIES",
+        "EFFICIENCY": "> 88%",
+        "PROTECTIONS": "SHORT CIRCUIT, OVER-TEMPERATURE, REVERSE POLARITY",
+        "COOLING": "SILENT ACTIVE FAN",
+        "WARRANTY": "1 YEAR WARRANTY"
+      },
+      "category": "charger",
+      "tag": "Auto Cut-off",
+      "image": "/haion-charger.webp",
+      "link": "#product-detail-chg_standard"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 16,
+    "isVisible": true,
+    "data": {
+      "id": "chg_fast",
+      "name": "C2-Fast Charger",
+      "price": "₹7,999",
+      "subtitle": "10A Express Quick Charging Support for EV Scooters (0-80% in 1.5h)",
+      "images": [
+        "/charger3-removebg-preview.webp",
+        "/charger3-removebg-preview.webp",
+        "/charger3-removebg-preview.webp"
+      ],
+      "colors": [
+        "Brushed Gold/Black"
+      ],
+      "specs": {
+        "INPUT VOLTAGE": "180V - 260V AC, 50-60Hz",
+        "OUTPUT CURRENT": "10A EXPRESS CHARGING",
+        "COMPATIBILITY": "60V & 72V LITHIUM PACKS",
+        "CHARGING SPEED": "0 TO 80% IN 1.5 HOURS",
+        "SAFETY FEATURES": "AUTO POWER-CUTOFF ON FULL CHARGE, DUAL FUSE",
+        "COOLING": "HIGH-RPM DUAL COOLING FANS",
+        "WARRANTY": "1 YEAR COMPREHENSIVE WARRANTY"
+      },
+      "category": "charger",
+      "tag": "Fast Charge",
+      "image": "/charger3-removebg-preview.webp",
+      "link": "#product-detail-chg_fast"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 17,
+    "isVisible": true,
+    "data": {
+      "id": "chg_smart",
+      "name": "C3-Smart IoT Charger",
+      "price": "₹11,999",
+      "subtitle": "App-Connected Smart Charger with Live Telemetry & Auto Thermal Cut-off",
+      "images": [
+        "/charger-removebg-preview.webp",
+        "/charger-removebg-preview.webp",
+        "/charger-removebg-preview.webp"
+      ],
+      "colors": [
+        "Brushed Gold/Black"
+      ],
+      "specs": {
+        "INPUT VOLTAGE": "100V - 260V WIDE INPUT range",
+        "OUTPUT CURRENT": "12A SMART ADAPTIVE",
+        "CONNECTIVITY": "WI-FI & BLUETOOTH (HAION SMART MOBILE APP)",
+        "IOT FEATURES": "REMOTE POWER CONTROL, LIVE TEMPERATURE & CHARGING TELEMETRY",
+        "PROTECTIONS": "IP65 WEATHERPROOF, AUTO TEMPERATURE THROTTLING",
+        "WARRANTY": "2 YEARS DIRECT MANUFACTURER WARRANTY"
+      },
+      "category": "charger",
+      "tag": "Smart IoT",
+      "image": "/haion-charger.webp",
+      "link": "#product-detail-chg_smart"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 18,
+    "isVisible": true,
+    "data": {
+      "id": "er_passenger",
+      "name": "R1-Passenger E-Rickshaw",
+      "price": "₹1,24,999",
+      "subtitle": "Heavy-Duty 4-Passenger Commercial EV for Indian Urban Transit",
+      "images": [
+        "/haion-rickshaw.webp",
+        "/haion-rickshaw.webp",
+        "/haion-rickshaw.webp"
+      ],
+      "colors": [
+        "Royal Gold/Black"
+      ],
+      "specs": {
+        "MOTOR": "1200W BRUSHLESS HEAVY DUTY GEAR MOTOR",
+        "ROOF COVER": "FIBER GLASS REINFORCED RIGID ROOF",
+        "CAPACITY": "4 PASSENGERS + 1 DRIVER",
+        "MAX SPEED": "25 KM/H (GOVERNMENT SPEED COMPLIANT)",
+        "RANGE/CHARGE": "120 KM TO 140 KM",
+        "SUSPENSION": "REINFORCED TELESCOPIC FRONT, LEAF SPRING REAR",
+        "WARRANTY": "1 YEAR COMPREHENSIVE VEHICLE WARRANTY"
+      },
+      "category": "rickshaw",
+      "tag": "Passenger EV",
+      "image": "/haion-rickshaw.webp",
+      "link": "#product-detail-er_passenger"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 19,
+    "isVisible": true,
+    "data": {
+      "id": "er_cargo",
+      "name": "R2-Cargo E-Rickshaw",
+      "price": "₹1,34,999",
+      "subtitle": "500 KG Loading Capacity Open-Loader Commercial Goods Carrier",
+      "images": [
+        "/haion-rickshaw.webp",
+        "/haion-rickshaw.webp",
+        "/haion-rickshaw.webp"
+      ],
+      "colors": [
+        "Royal Gold/Black"
+      ],
+      "specs": {
+        "MOTOR": "1500W HIGH TORQUE BRUSHLESS DIFFERENTIAL MOTOR",
+        "CARGO BED SIZE": "1500 x 1000 x 450 mm OPEN LOADER",
+        "LOADING CAPACITY": "500 K.G. TESTED WEIGHT",
+        "RANGE/CHARGE": "100 KM TO 120 KM",
+        "TYRE": "3.75 - 12 heavy duty",
+        "BRAKING SYSTEM": "DUAL MECHANICAL DRUM BRAKE + HAND PARKING LEVER",
+        "WARRANTY": "1 YEAR COMPREHENSIVE WARRANTY"
+      },
+      "category": "rickshaw",
+      "tag": "Cargo Carrier",
+      "image": "/haion-rickshaw.webp",
+      "link": "#product-detail-er_cargo"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 20,
+    "isVisible": true,
+    "data": {
+      "id": "er_loader",
+      "name": "R3-Loader E-Rickshaw",
+      "price": "₹1,44,999",
+      "subtitle": "Reinforced Closed Cabin Delivery E-Rickshaw with 600 KG Payload",
+      "images": [
+        "/haion-rickshaw.webp",
+        "/haion-rickshaw.webp",
+        "/haion-rickshaw.webp"
+      ],
+      "colors": [
+        "Royal Gold/Black"
+      ],
+      "specs": {
+        "MOTOR": "1800W PEAK SMART DIFFERENTIAL GEAR MOTOR",
+        "CABIN TYPE": "CLOSED WATERPROOF CONTAINER STEEL CABIN",
+        "LOADING CAPACITY": "600 K.G.",
+        "RANGE/CHARGE": "130 KM TO 150 KM",
+        "BATTERY COMPATIBILITY": "DUAL LITHIUM PACK DOCKS SUPPORT",
+        "SAFETY": "FRONT SHIELD GLASS WIPERS, HAZARD WARNINGS",
+        "WARRANTY": "1 YEAR WARRANTY"
+      },
+      "category": "rickshaw",
+      "tag": "Heavy Duty",
+      "image": "/haion-rickshaw.webp",
+      "link": "#product-detail-er_loader"
+    }
+  },
+  {
+    "collection": "products",
+    "order": 21,
+    "isVisible": true,
+    "data": {
       "id": "refri1",
       "name": "SmartChill Pro 450L",
       "price": "₹54,999",
@@ -479,7 +769,7 @@
         "KEY FEATURE": "IOT TEMPERATURE CONTROL, AUTO-DEFROST, DOOR ALARM",
         "WARRANTY": "10 YEARS WARRANTY ON COMPRESSOR"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/refri-removebg-preview.webp",
       "link": "#product-detail-refri1"
@@ -487,7 +777,7 @@
   },
   {
     "collection": "products",
-    "order": 13,
+    "order": 22,
     "isVisible": true,
     "data": {
       "id": "refri2",
@@ -512,7 +802,7 @@
         "KEY FEATURE": "DUAL FREEZER ZONES, SMART CONSOLE, HYGIENE FRESH FILTER",
         "WARRANTY": "10 YEARS WARRANTY ON COMPRESSOR"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/refri2-removebg-preview.webp",
       "link": "#product-detail-refri2"
@@ -520,7 +810,7 @@
   },
   {
     "collection": "products",
-    "order": 14,
+    "order": 23,
     "isVisible": true,
     "data": {
       "id": "mixer1",
@@ -544,7 +834,7 @@
         "KEY FEATURE": "AUTO-CLEAN TECHNOLOGY, OVERLOAD PROTECTION",
         "WARRANTY": "2 YEARS PRODUCT & 5 YEARS MOTOR WARRANTY"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/mixer1-removebg-preview.webp",
       "link": "#product-detail-mixer1"
@@ -552,7 +842,7 @@
   },
   {
     "collection": "products",
-    "order": 15,
+    "order": 24,
     "isVisible": true,
     "data": {
       "id": "mixer2",
@@ -576,7 +866,7 @@
         "KEY FEATURE": "PULSE FUNCTION, ONE-TOUCH SMOOTHIE MODE, BPA-FREE TRITAN JARS",
         "WARRANTY": "2 YEARS COMPREHENSIVE WARRANTY"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/mixer2-removebg-preview.webp",
       "link": "#product-detail-mixer2"
@@ -584,7 +874,7 @@
   },
   {
     "collection": "products",
-    "order": 16,
+    "order": 25,
     "isVisible": true,
     "data": {
       "id": "tv2",
@@ -608,7 +898,7 @@
         "CONNECTIVITY": "HDMI 2.0 x 3, USB x 2",
         "WARRANTY": "1 YEAR WARRANTY"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/tv2.webp",
       "link": "#product-detail-tv2"
@@ -616,7 +906,7 @@
   },
   {
     "collection": "products",
-    "order": 17,
+    "order": 26,
     "isVisible": true,
     "data": {
       "id": "tv3",
@@ -640,7 +930,7 @@
         "CONNECTIVITY": "HDMI 2.1 x 3, DUAL-BAND WI-FI",
         "WARRANTY": "2 YEARS WARRANTY"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/tv3.webp",
       "link": "#product-detail-tv3"
@@ -648,7 +938,7 @@
   },
   {
     "collection": "products",
-    "order": 18,
+    "order": 27,
     "isVisible": true,
     "data": {
       "id": "tv4",
@@ -672,7 +962,7 @@
         "CONNECTIVITY": "WI-FI 6, BLUETOOTH 5.2",
         "WARRANTY": "2 YEARS COMPREHENSIVE WARRANTY"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/tv4.webp",
       "link": "#product-detail-tv4"
@@ -680,7 +970,7 @@
   },
   {
     "collection": "products",
-    "order": 19,
+    "order": 28,
     "isVisible": true,
     "data": {
       "id": "ac",
@@ -704,7 +994,7 @@
         "KEY FEATURE": "PM2.5 DUST FILTER, 4-WAY AIR SWING, TURBO COOLING",
         "WARRANTY": "1 YEAR PRODUCT, 10 YEARS COMPRESSOR WARRANTY"
       },
-      "category": "evs",
+      "category": "appliances",
       "tag": "New",
       "image": "/ac-removebg-preview.webp",
       "link": "#product-detail-ac"
@@ -712,59 +1002,97 @@
   },
   {
     "collection": "products",
-    "order": 20,
+    "order": 29,
     "isVisible": true,
     "data": {
-      "id": "inv1",
-      "name": "Haion PowerGuard 1100",
-      "subtitle": "Smart Sine Wave Home UPS Inverter with IoT Battery Monitoring",
-      "image": "/haion_inverter.webp",
-      "price": "₹ 6,999",
-      "tag": "Best Seller",
+      "id": "inv_hybrid",
+      "name": "Haion Smart Hybrid Inverter 3.5kVA",
+      "price": "₹28,999",
+      "subtitle": "Pure Sine Wave Hybrid Solar Inverter with App Control & Fast Charging",
+      "images": [
+        "/haion_inverter.webp",
+        "/haion_inverter.webp",
+        "/haion_inverter.webp"
+      ],
+      "colors": [
+        "Titanium Grey/Black"
+      ],
+      "specs": {
+        "RATED CAPACITY": "3500 VA / 2800 W",
+        "WAVEFORM": "PURE SINE WAVE (ZERO NOISE)",
+        "SOLAR COMPATIBILITY": "MPPT SOLAR CHARGE CONTROLLER INTEGRATED",
+        "BATTERY SUPPORT": "24V / 48V LITHIUM & LEAD-ACID COMPATIBLE",
+        "TRANSFER TIME": "< 10 MS (UPS CLASS)",
+        "SMART CONNECT": "HAION IOT MOBILE APP VIA WI-FI / BLUETOOTH",
+        "WARRANTY": "3 YEARS COMPREHENSIVE WARRANTY"
+      },
       "category": "inverters",
-      "features": [
-        "Pure Sine Wave Output",
-        "Smart WiFi App Tracking",
-        "Turbo Charging (Fast recovery)"
-      ]
+      "tag": "Solar Hybrid",
+      "image": "/haion_inverter.webp",
+      "link": "#product-detail-inv_hybrid"
     }
   },
   {
     "collection": "products",
-    "order": 21,
+    "order": 30,
     "isVisible": true,
     "data": {
-      "id": "inv2",
-      "name": "Haion SuperCharge 1500",
-      "subtitle": "Heavy-Duty Smart Inverter with Eco & UPS Dual Mode Toggle",
-      "image": "/haion_inverter.webp",
-      "price": "₹ 9,499",
-      "tag": "New Launch",
+      "id": "inv_solar",
+      "name": "Haion Solar Heavy Duty Inverter 5kVA",
+      "price": "₹42,999",
+      "subtitle": "High-Capacity Industrial & Home Solar Inverter with Dual Battery Support",
+      "images": [
+        "/haion_inverter.webp",
+        "/haion_inverter.webp",
+        "/haion_inverter.webp"
+      ],
+      "colors": [
+        "Titanium Grey/Black"
+      ],
+      "specs": {
+        "RATED CAPACITY": "5000 VA / 4000 W",
+        "PEAK SURGE": "10,000 VA DYNAMIC SURGE HANDLING",
+        "EFFICIENCY": "> 94% ADVANCED GRID EFFICIENCY",
+        "DISPLAY": "LCD COLOR TELEMETRY TOUCH CONSOLE",
+        "PROTECTIONS": "OVERLOAD, SHORT CIRCUIT, OVER TEMPERATURE, REVERSE BATTERY",
+        "CHARGING SPEED": "TURBO FAST CHARGING (UP TO 50A)",
+        "WARRANTY": "3 YEARS ON-SITE REPLACEMENT WARRANTY"
+      },
       "category": "inverters",
-      "features": [
-        "High Load Capacity",
-        "Eco & UPS Dual Mode",
-        "Short Circuit & Overload protection"
-      ]
+      "tag": "Heavy Duty",
+      "image": "/haion_inverter.webp",
+      "link": "#product-detail-inv_solar"
     }
   },
   {
     "collection": "products",
-    "order": 22,
+    "order": 31,
     "isVisible": true,
     "data": {
-      "id": "inv3",
-      "name": "Haion Solar Hybrid 2000",
-      "subtitle": "Advanced Solar Hybrid Inverter with Intelligent Grid Sharing",
-      "image": "/haion_inverter.webp",
-      "price": "₹ 14,999",
-      "tag": "Solar Tech",
+      "id": "inv_pure",
+      "name": "Haion Pure Sine Wave Inverter 1100VA",
+      "price": "₹14,999",
+      "subtitle": "Silent Home UPS Inverter with Instant Switchover & Battery Shield",
+      "images": [
+        "/haion_inverter.webp",
+        "/haion_inverter.webp",
+        "/haion_inverter.webp"
+      ],
+      "colors": [
+        "Classic White/Black"
+      ],
+      "specs": {
+        "RATED CAPACITY": "1100 VA / 900 W",
+        "OUTPUT": "230V AC PURE SINE WAVE",
+        "TOPOLOGY": "MICRO-CONTROLLER BASED PWM TECHNOLOGY",
+        "MODES": "ECO MODE / UPS MODE SELECTOR",
+        "BATTERY TYPE": "TUBULAR, FLAT PLATE, LITHIUM COMPATIBLE",
+        "WARRANTY": "3 YEARS WARRANTY"
+      },
       "category": "inverters",
-      "features": [
-        "High Efficiency MPPT Charger",
-        "Solar Grid Intelligent Sharing",
-        "Digital LCD Status Display"
-      ]
+      "tag": "Home UPS",
+      "image": "/haion_inverter.webp",
+      "link": "#product-detail-inv_pure"
     }
   }
 ]
