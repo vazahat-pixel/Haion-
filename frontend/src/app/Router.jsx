@@ -31,6 +31,10 @@ const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 const MaintenancePage = lazy(() => import('@/pages/shared/MaintenancePage'));
 const ServerErrorPage = lazy(() => import('@/pages/shared/ServerErrorPage'));
 
+function IsLandingDomain() {
+  return window.location.hostname === "haion.co.in" || window.location.hostname === "www.haion.co.in";
+}
+
 function RootRedirect() {
   const { isAuthenticated, user, isInitializing } = useAuth();
 
