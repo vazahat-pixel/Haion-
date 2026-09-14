@@ -14,7 +14,7 @@ const POLL_MS = 5_000;
 
 function buildProductsFallback() {
   const items = [];
-  for (const category of ['evs', 'appliances']) {
+  for (const category of ['evs', 'battery', 'charger', 'rickshaw', 'inverters', 'appliances']) {
     for (const row of productsCatalogFallback[category] || []) {
       const detail = productDetailsFallback[row.id] || {};
       items.push({

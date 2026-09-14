@@ -11,7 +11,34 @@ import { appConfig } from '@/config/app.config';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Package, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  LogOut,
+  Package,
+  Settings,
+  ChevronDown,
+  Factory,
+  ShoppingBag,
+  Users,
+  Truck,
+  Receipt,
+  Gift,
+  ShieldCheck,
+  Wrench,
+  BarChart3,
+  FolderClosed,
+} from 'lucide-react';
+
+const SECTION_ICONS = {
+  '1. PRIMARY / PURCHASE & MANUFACTURING': Factory,
+  '2. SALES': ShoppingBag,
+  '3. ONBOARDING': Users,
+  '4. DISPATCH & LOGISTICS': Truck,
+  '5. BILLING & FINANCIALS': Receipt,
+  '6. REFERRALS & TARGETS': Gift,
+  '7. INSURANCE & WARRANTY': ShieldCheck,
+  '8. SERVICE CENTRE': Wrench,
+  '9. SYSTEM & REPORTS': BarChart3,
+};
 
 export function Sidebar({ panel, className }) {
   const { isCollapsed, isMobileOpen, setMobileOpen } = useSidebar();
@@ -47,21 +74,11 @@ export function Sidebar({ panel, className }) {
     };
   }, [navItems]);
 
-  // Section collapse state (true = collapsed)
-  const [collapsedSections, setCollapsedSections] = useState({});
-
-  // Auto-expand section containing active route
-  useEffect(() => {
-    sections.forEach(({ title, items }) => {
-      const hasActive = items.some((item) => location.pathname.startsWith(item.path));
-      if (hasActive) {
-        setCollapsedSections((prev) => ({ ...prev, [title]: false }));
-      }
-    });
-  }, [location.pathname, sections]);
+  // Section dropdown state (all collapsed by default on load/login)
+  const [openSections, setOpenSections] = useState({});
 
   const toggleSection = (title) => {
-    setCollapsedSections((prev) => ({
+    setOpenSections((prev) => ({
       ...prev,
       [title]: !prev[title],
     }));
@@ -164,12 +181,13 @@ export function Sidebar({ panel, className }) {
             {topItems.map((item) => renderNavItem(item, false))}
 
             {/* Sections */}
-            {sections.map(({ title, items }, sIdx) => {
-              const isSectionCollapsed = !!collapsedSections[title];
+            {sections.map(({ title, items }) => {
+              const isSectionOpen = !!openSections[title];
               const sectionBadgeTotal = items.reduce((acc, it) => {
                 return acc + (it.badgeKey ? badges[it.badgeKey] || 0 : 0);
               }, 0);
               const hasActiveChild = items.some((it) => location.pathname.startsWith(it.path));
+              const SectionIcon = SECTION_ICONS[title] || FolderClosed;
 
               if (isCollapsed) {
                 return (
@@ -181,56 +199,67 @@ export function Sidebar({ panel, className }) {
               }
 
               return (
-                <div key={title} className="mt-2.5 first:mt-1 flex flex-col">
-                  {/* Section Header */}
+                <div key={title} className="mt-1.5 flex flex-col">
+                  {/* Section Dropdown Trigger */}
                   <button
                     type="button"
                     onClick={() => toggleSection(title)}
                     className={cn(
-                      'group flex w-full items-center justify-between rounded px-2 py-1.5 text-left transition-colors cursor-pointer',
-                      'hover:bg-white/[0.04]',
-                      hasActiveChild ? 'text-brand-400' : 'text-[#c2bcc7]'
+                      'group flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left transition-all duration-150 cursor-pointer select-none',
+                      hasActiveChild
+                        ? 'bg-brand-500/[0.08] text-brand-400 font-semibold border border-brand-500/20 shadow-sm'
+                        : isSectionOpen
+                          ? 'bg-white/[0.05] text-white'
+                          : 'text-[#a89fad] hover:bg-white/[0.03] hover:text-white'
                     )}
                   >
-                    <span className={cn(
-                      'text-[10px] font-bold tracking-wider uppercase transition-colors truncate',
-                      hasActiveChild
-                        ? 'text-brand-400 font-extrabold'
-                        : 'text-[#a89fad] group-hover:text-white'
-                    )}>
-                      {title}
-                    </span>
-                    <div className="flex items-center gap-1 shrink-0 ml-1">
-                      {sectionBadgeTotal > 0 && isSectionCollapsed && (
-                        <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-brand-500/20 px-1 text-[8px] font-bold text-brand-400">
+                    <div className="flex items-center gap-2 min-w-0 pr-1">
+                      <span
+                        className={cn(
+                          'flex h-5 w-5 items-center justify-center rounded transition-colors shrink-0',
+                          hasActiveChild
+                            ? 'bg-brand-500/20 text-brand-400'
+                            : isSectionOpen
+                              ? 'bg-white/10 text-white'
+                              : 'bg-white/[0.04] text-[#8e8594] group-hover:text-white group-hover:bg-white/10'
+                        )}
+                      >
+                        <SectionIcon className="h-3 w-3" strokeWidth={2.2} />
+                      </span>
+                      <span className="text-[11px] font-semibold tracking-wide truncate">
+                        {title}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                      {sectionBadgeTotal > 0 && !isSectionOpen && (
+                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500/20 px-1 text-[9px] font-bold text-brand-400">
                           {sectionBadgeTotal > 99 ? '99+' : sectionBadgeTotal}
                         </span>
                       )}
-                      {isSectionCollapsed ? (
-                        <ChevronRight className={cn(
-                          'h-3 w-3 transition-colors',
-                          hasActiveChild ? 'text-brand-400' : 'text-[#857a8a] group-hover:text-white'
-                        )} />
-                      ) : (
-                        <ChevronDown className={cn(
-                          'h-3 w-3 transition-colors',
-                          hasActiveChild ? 'text-brand-400' : 'text-[#857a8a] group-hover:text-white'
-                        )} />
-                      )}
+                      <ChevronDown
+                        className={cn(
+                          'h-3.5 w-3.5 transition-transform duration-200 shrink-0',
+                          isSectionOpen ? 'rotate-180 text-brand-400' : 'text-[#857a8a] group-hover:text-white',
+                          hasActiveChild && !isSectionOpen && 'text-brand-400'
+                        )}
+                      />
                     </div>
                   </button>
 
-                  {/* Section Items */}
+                  {/* Sub-Items Accordion Content */}
                   <AnimatePresence initial={false}>
-                    {!isSectionCollapsed && (
+                    {isSectionOpen && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.18, ease: 'easeInOut' }}
-                        className="overflow-hidden flex flex-col gap-0.5 pt-0.5"
+                        className="overflow-hidden"
                       >
-                        {items.map((item) => renderNavItem(item, true))}
+                        <div className="ml-3 pl-2.5 border-l border-white/10 flex flex-col gap-0.5 pt-1 pb-0.5 mt-0.5">
+                          {items.map((item) => renderNavItem(item, true))}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

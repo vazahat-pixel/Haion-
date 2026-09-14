@@ -9,8 +9,17 @@ import tvImg from '../../assets/tv2.webp';
 import washingImg from '../../assets/washing_machine_3-removebg-preview (1).webp';
 import refrigeratorImg from '../../assets/refri2-removebg-preview.webp';
 import mixerImg from '../../assets/mixer2-removebg-preview.webp';
+import scooterImg from '../../assets/hero-scooter.webp';
+import batteryImg from '../../assets/haion-battery.webp';
+import chargerImg from '../../assets/haion-charger.webp';
+import rickshawImg from '../../assets/haion-rickshaw.webp';
 
 const categoryImages = {
+  scooter: scooterImg,
+  battery: batteryImg,
+  charger: chargerImg,
+  rickshaw: rickshawImg,
+  inverter: '/haion_inverter.webp',
   ac: acImg,
   tv: tvImg,
   washing: washingImg,
@@ -20,6 +29,11 @@ const categoryImages = {
 
 // Custom brand-aligned colors for the background card blocks
 const categoryThemeColors = {
+  scooter: { bg: 'bg-gradient-to-b from-[#18181b] to-[#1e3a8a]/90', glow: 'shadow-blue-500/30', text: 'text-blue-100' },
+  battery: { bg: 'bg-gradient-to-b from-[#18181b] to-[#065f46]/90', glow: 'shadow-emerald-500/30', text: 'text-emerald-100' },
+  charger: { bg: 'bg-gradient-to-b from-[#18181b] to-[#b45309]/90', glow: 'shadow-amber-500/30', text: 'text-amber-100' },
+  rickshaw: { bg: 'bg-gradient-to-b from-[#18181b] to-[#581c87]/90', glow: 'shadow-purple-500/30', text: 'text-purple-100' },
+  inverter: { bg: 'bg-gradient-to-b from-[#18181b] to-[#831843]/90', glow: 'shadow-pink-500/30', text: 'text-pink-100' },
   ac: { bg: 'bg-gradient-to-b from-[#ab7e2c]/80 to-[#e88d01]/90', glow: 'shadow-[#e88d01]/30', text: 'text-amber-100' },
   tv: { bg: 'bg-gradient-to-b from-[#2b1d07]/90 to-[#7e5b1d]/90', glow: 'shadow-[#ab7e2c]/30', text: 'text-amber-200' },
   washing: { bg: 'bg-gradient-to-b from-[#ffd233]/80 to-[#ab7e2c]/90', glow: 'shadow-[#ffd233]/20', text: 'text-amber-950' },

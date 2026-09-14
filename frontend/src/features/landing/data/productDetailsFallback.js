@@ -630,5 +630,58 @@ export const productDetailsFallback = {
       'WARRANTY': '1 YEAR WARRANTY'
     },
     category: 'rickshaw'
+  },
+  inv_hybrid: {
+    id: 'inv_hybrid',
+    name: 'Haion Smart Hybrid Inverter 3.5kVA',
+    price: '₹28,999',
+    subtitle: 'Pure Sine Wave Hybrid Solar Inverter with App Control & Fast Charging',
+    images: ['/haion_inverter.webp', '/haion_inverter.webp', '/haion_inverter.webp'],
+    colors: ['Titanium Grey/Black'],
+    specs: {
+      'RATED CAPACITY': '3500 VA / 2800 W',
+      'WAVEFORM': 'PURE SINE WAVE (ZERO NOISE)',
+      'SOLAR COMPATIBILITY': 'MPPT SOLAR CHARGE CONTROLLER INTEGRATED',
+      'BATTERY SUPPORT': '24V / 48V LITHIUM & LEAD-ACID COMPATIBLE',
+      'TRANSFER TIME': '< 10 MS (UPS CLASS)',
+      'SMART CONNECT': 'HAION IOT MOBILE APP VIA WI-FI / BLUETOOTH',
+      'WARRANTY': '3 YEARS COMPREHENSIVE WARRANTY'
+    },
+    category: 'inverters'
+  },
+  inv_solar: {
+    id: 'inv_solar',
+    name: 'Haion Solar Heavy Duty Inverter 5kVA',
+    price: '₹42,999',
+    subtitle: 'High-Capacity Industrial & Home Solar Inverter with Dual Battery Support',
+    images: ['/haion_inverter.webp', '/haion_inverter.webp', '/haion_inverter.webp'],
+    colors: ['Titanium Grey/Black'],
+    specs: {
+      'RATED CAPACITY': '5000 VA / 4000 W',
+      'PEAK SURGE': '10,000 VA DYNAMIC SURGE HANDLING',
+      'EFFICIENCY': '> 94% ADVANCED GRID EFFICIENCY',
+      'DISPLAY': 'LCD COLOR TELEMETRY TOUCH CONSOLE',
+      'PROTECTIONS': 'OVERLOAD, SHORT CIRCUIT, OVER TEMPERATURE, REVERSE BATTERY',
+      'CHARGING SPEED': 'TURBO FAST CHARGING (UP TO 50A)',
+      'WARRANTY': '3 YEARS ON-SITE REPLACEMENT WARRANTY'
+    },
+    category: 'inverters'
+  },
+  inv_pure: {
+    id: 'inv_pure',
+    name: 'Haion Pure Sine Wave Inverter 1100VA',
+    price: '₹14,999',
+    subtitle: 'Silent Home UPS Inverter with Instant Switchover & Battery Shield',
+    images: ['/haion_inverter.webp', '/haion_inverter.webp', '/haion_inverter.webp'],
+    colors: ['Classic White/Black'],
+    specs: {
+      'RATED CAPACITY': '1100 VA / 900 W',
+      'OUTPUT': '230V AC PURE SINE WAVE',
+      'TOPOLOGY': 'MICRO-CONTROLLER BASED PWM TECHNOLOGY',
+      'MODES': 'ECO MODE / UPS MODE SELECTOR',
+      'BATTERY TYPE': 'TUBULAR, FLAT PLATE, LITHIUM COMPATIBLE',
+      'WARRANTY': '3 YEARS WARRANTY'
+    },
+    category: 'inverters'
   }
 };

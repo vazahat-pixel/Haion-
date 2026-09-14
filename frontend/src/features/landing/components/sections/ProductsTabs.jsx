@@ -14,10 +14,19 @@ export default function ProductsTabs({ onViewDetails }) {
   const section = getSection('products-tabs');
   const [activeTab, setActiveTab] = useState('evs');
 
-  const evTabLabel = section.tabEv || section.evTabLabel || 'Electric Vehicles (EVs)';
+  const evTabLabel = section.tabEv || section.evTabLabel || 'EV Scooters';
   const appliancesTabLabel = section.tabAppliances || section.appliancesTabLabel || 'Home Appliances';
   const specialPriceLabel = section.specialPriceLabel || 'Special Price';
   const viewDetailsLabel = section.viewDetailsLabel || 'View Details';
+
+  const availableTabs = [
+    { key: 'evs', label: evTabLabel, count: getCatalog('evs').length },
+    { key: 'battery', label: section.tabBattery || 'Lithium Batteries', count: getCatalog('battery').length },
+    { key: 'charger', label: section.tabCharger || 'Smart Chargers', count: getCatalog('charger').length },
+    { key: 'rickshaw', label: section.tabRickshaw || 'E-Rickshaws', count: getCatalog('rickshaw').length },
+    { key: 'appliances', label: appliancesTabLabel, count: getCatalog('appliances').length },
+    { key: 'inverters', label: section.tabInverter || 'Smart Inverters', count: getCatalog('inverters').length },
+  ].filter((t) => t.count > 0);
 
   const tabProducts = getCatalog(activeTab);
 
@@ -27,27 +36,31 @@ export default function ProductsTabs({ onViewDetails }) {
       <div className="absolute bottom-[20%] right-[-10%] w-[350px] h-[350px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="flex justify-center items-center gap-8 md:gap-12 mb-16 border-b border-zinc-200/60 pb-4 max-w-xl mx-auto">
-          <button
-            onClick={() => setActiveTab('evs')}
-            className="relative pb-4 text-xl md:text-2xl font-bold font-display transition-colors duration-300 focus:outline-none cursor-pointer"
-            style={{ color: activeTab === 'evs' ? '#18181b' : '#a1a1aa' }}
-          >
-            {evTabLabel}
-            {activeTab === 'evs' && (
-              <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" transition={{ type: 'spring', stiffness: 300, damping: 30 }} />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('appliances')}
-            className="relative pb-4 text-xl md:text-2xl font-bold font-display transition-colors duration-300 focus:outline-none cursor-pointer"
-            style={{ color: activeTab === 'appliances' ? '#18181b' : '#a1a1aa' }}
-          >
-            {appliancesTabLabel}
-            {activeTab === 'appliances' && (
-              <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" transition={{ type: 'spring', stiffness: 300, damping: 30 }} />
-            )}
-          </button>
+        <div className="flex justify-start md:justify-center items-center gap-4 md:gap-8 mb-12 overflow-x-auto no-scrollbar pb-3 border-b border-zinc-200/60 max-w-4xl mx-auto px-2">
+          {availableTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className="relative pb-3 text-sm md:text-lg font-bold font-display whitespace-nowrap transition-colors duration-300 focus:outline-none cursor-pointer flex items-center gap-2"
+              style={{ color: activeTab === tab.key ? '#18181b' : '#a1a1aa' }}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-colors ${
+                  activeTab === tab.key ? 'bg-purple-500 text-zinc-950 shadow-sm' : 'bg-zinc-200/70 text-zinc-600'
+                }`}
+              >
+                {tab.count}
+              </span>
+              {activeTab === tab.key && (
+                <motion.div
+                  layoutId="activeTabUnderline"
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-amber-500 rounded-full"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+            </button>
+          ))}
         </div>
 
         <div className="min-h-[500px]">

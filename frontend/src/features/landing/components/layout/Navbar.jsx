@@ -119,6 +119,7 @@ export default function Navbar({
 
   const evDropdownDesktop = (
     <div
+      key="ev-dropdown-desktop"
       className="relative py-1 cursor-pointer"
       onMouseEnter={() => setActiveDropdown(true)}
       onMouseLeave={() => setActiveDropdown(false)}
@@ -158,9 +159,10 @@ export default function Navbar({
   );
 
   const safeguardDesktop = safeguardLink ? (
-    renderNavLink(safeguardLink, linkClass)
+    <React.Fragment key="safeguard-desktop">{renderNavLink(safeguardLink, linkClass)}</React.Fragment>
   ) : safeguardConfig.isVisible !== false ? (
     <a
+      key="safeguard-desktop"
       href={`#service-${safeguardConfig.url?.replace('service-', '') || 'safeguard'}`}
       onClick={(e) => {
         e.preventDefault();

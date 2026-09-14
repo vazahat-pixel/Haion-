@@ -40,6 +40,91 @@ export const featuresData = [
 
 export const categoriesData = [
   {
+    id: "scooter",
+    title: "Electric Scooters",
+    emoji: "⚡",
+    description: "High-speed smart connected electric scooters",
+    count: "12 Models",
+    gradient: "from-blue-600/30 to-indigo-600/30",
+    color: "#3b82f6",
+    subtitle: "Clean Urban Mobility",
+    longDescription: "Engineered for superior acceleration, smart IoT app connectivity, high-torque BLDC motors, and extended commuting range. Haion EV scooters deliver a powerful, eco-friendly, and silent ride.",
+    features: ["Up to 200 KM IDC Range", "GPS Telemetry & App Sync", "Dual Disc Brakes & Alloy Wheels"],
+    subProducts: [
+      { name: "Haion X1", tag: "Best Seller", price: "₹70,000", rating: "4.9" },
+      { name: "Haion S Pro", tag: "High Speed", price: "₹1,15,000", rating: "4.9" },
+      { name: "Haion X4Plus", tag: "Ultra Range", price: "₹90,000", rating: "4.8" }
+    ]
+  },
+  {
+    id: "battery",
+    title: "Lithium Batteries",
+    emoji: "🔋",
+    description: "High-density smart battery packs with intelligent BMS",
+    count: "Grade-A Cells",
+    gradient: "from-emerald-600/30 to-teal-600/30",
+    color: "#10b981",
+    subtitle: "High-Performance Energy",
+    longDescription: "State-of-the-art Lithium Iron Phosphate (LFP) and NMC battery packs built with advanced active cell balancing, fire-resistant casing, and 3000+ charge cycles.",
+    features: ["Active Cell Balancing BMS", "3-Year Direct Warranty", "IP67 Water & Dust Resistance"],
+    subProducts: [
+      { name: "B1-48V PowerPack", tag: "48V 24Ah", price: "₹28,999", rating: "4.9" },
+      { name: "B2-60V EnergyMax", tag: "60V 30Ah", price: "₹36,999", rating: "4.8" },
+      { name: "B3-72V UltraPower", tag: "72V 35Ah", price: "₹45,999", rating: "4.9" }
+    ]
+  },
+  {
+    id: "charger",
+    title: "Smart Chargers",
+    emoji: "🔌",
+    description: "Intelligent fast chargers with auto cut-off mechanisms",
+    count: "Auto-Cut Tech",
+    gradient: "from-amber-600/30 to-yellow-600/30",
+    color: "#f59e0b",
+    subtitle: "Safe Rapid Charging",
+    longDescription: "Engineered with intelligent power disconnection on 100% capacity to protect battery longevity. Active dual fan cooling, short circuit protection, and auto voltage detection.",
+    features: ["Auto Cut-off on 100% Charge", "Dual Fuse Surge Protection", "0 to 80% in 1.5 Hours"],
+    subProducts: [
+      { name: "C1-Standard Charger", tag: "Auto Detect", price: "₹4,999", rating: "4.8" },
+      { name: "C2-Fast Charger", tag: "10A Express", price: "₹7,999", rating: "4.9" },
+      { name: "C3-Smart IoT Charger", tag: "App Connected", price: "₹11,999", rating: "4.9" }
+    ]
+  },
+  {
+    id: "rickshaw",
+    title: "E-Rickshaws",
+    emoji: "🛺",
+    description: "Heavy-duty commercial passenger & cargo electric rickshaws",
+    count: "Heavy Payload",
+    gradient: "from-purple-600/30 to-indigo-600/30",
+    color: "#8b5cf6",
+    subtitle: "Commercial EV Transit",
+    longDescription: "Purpose-built for Indian urban and commercial transit. High-torque differential motors, rigid fiberglass reinforced roof, and heavy-payload open loader or closed cabin options.",
+    features: ["Up to 600 KG Payload", "140 KM Per Charge", "Government Speed Compliant"],
+    subProducts: [
+      { name: "R1-Passenger E-Rickshaw", tag: "4+1 Passenger", price: "₹1,24,999", rating: "4.8" },
+      { name: "R2-Cargo Open Loader", tag: "500 KG Load", price: "₹1,34,999", rating: "4.9" },
+      { name: "R3-Loader Closed Cabin", tag: "Delivery EV", price: "₹1,44,999", rating: "4.8" }
+    ]
+  },
+  {
+    id: "inverter",
+    title: "Smart Inverters",
+    emoji: "☀️",
+    description: "Pure sine wave solar and hybrid home power backup systems",
+    count: "Solar Ready",
+    gradient: "from-pink-600/30 to-rose-600/30",
+    color: "#ec4899",
+    subtitle: "Uninterrupted Power Backup",
+    longDescription: "High-efficiency hybrid solar inverters and silent home UPS systems. Featuring MPPT solar charge controllers, dynamic surge handling, and app telemetry via Wi-Fi & Bluetooth.",
+    features: ["Pure Sine Wave Output", "Integrated MPPT Solar Controller", "Instant <10ms UPS Transfer"],
+    subProducts: [
+      { name: "Smart Hybrid 3.5kVA", tag: "Solar Hybrid", price: "₹28,999", rating: "4.9" },
+      { name: "Solar Heavy Duty 5kVA", tag: "5000 VA Load", price: "₹42,999", rating: "4.9" },
+      { name: "Pure Sine Wave 1100VA", tag: "Home UPS", price: "₹14,999", rating: "4.7" }
+    ]
+  },
+  {
     id: "ac",
     title: "Air Conditioners",
     emoji: "❄️",

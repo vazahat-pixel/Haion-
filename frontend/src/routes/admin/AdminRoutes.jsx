@@ -1,4 +1,3 @@
-import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -7,117 +6,117 @@ import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { ROLES } from '@/constants/roles';
 import { PERMISSIONS } from '@/constants/permissions';
 
-const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
-const ProductListPage = lazy(() => import('@/pages/admin/products/ProductListPage'));
-const ProductDetailPage = lazy(() => import('@/pages/admin/products/ProductDetailPage'));
-const CategoryListPage = lazy(() => import('@/pages/admin/categories/CategoryListPage'));
-const CategoryDetailPage = lazy(() => import('@/pages/admin/categories/CategoryDetailPage'));
-const BrandListPage = lazy(() => import('@/pages/admin/brands/BrandListPage'));
-const BrandDetailPage = lazy(() => import('@/pages/admin/brands/BrandDetailPage'));
-const ProductTierListPage = lazy(() => import('@/pages/admin/product-tiers/ProductTierListPage'));
-const ProductTierDetailPage = lazy(() => import('@/pages/admin/product-tiers/ProductTierDetailPage'));
-const PricingListPage = lazy(() => import('@/pages/admin/pricing/PricingListPage'));
-const PricingDetailPage = lazy(() => import('@/pages/admin/pricing/PricingDetailPage'));
-const WarehouseListPage = lazy(() => import('@/pages/admin/warehouses/WarehouseListPage'));
-const WarehouseDetailPage = lazy(() => import('@/pages/admin/warehouses/WarehouseDetailPage'));
-const GRNPage = lazy(() => import('@/pages/admin/warehouses/GRNPage'));
-const GRNMonitoringPage = lazy(() => import('@/pages/admin/grn/GRNMonitoringPage'));
-const GRNDetailPage = lazy(() => import('@/pages/admin/grn/GRNDetailPage'));
-const DispatchListPage = lazy(() => import('@/pages/admin/dispatch/DispatchListPage'));
-const DispatchDetailPage = lazy(() => import('@/pages/admin/dispatch/DispatchDetailPage'));
-const InventoryListPage = lazy(() => import('@/pages/admin/inventory/InventoryListPage'));
-const InventoryDetailPage = lazy(() => import('@/pages/admin/inventory/InventoryDetailPage'));
-const StockMovementListPage = lazy(() => import('@/pages/admin/stock-movements/StockMovementListPage'));
-const DealerListPage = lazy(() => import('@/pages/admin/dealers/DealerListPage'));
-const DealerDetailPage = lazy(() => import('@/pages/admin/dealers/DealerDetailPage'));
-const DealerOnboardingPage = lazy(() => import('@/pages/admin/dealers/DealerOnboardingPage'));
-const EmployeeListPage = lazy(() => import('@/pages/admin/employees/EmployeeListPage'));
-const EmployeeDetailPage = lazy(() => import('@/pages/admin/employees/EmployeeDetailPage'));
-const ExpenseListPage = lazy(() => import('@/pages/admin/expenses/ExpenseListPage'));
-const ExpenseDetailPage = lazy(() => import('@/pages/admin/expenses/ExpenseDetailPage'));
-const AdminReportsPage = lazy(() => import('@/pages/admin/reports/AdminReportsPage'));
-const ReportDetailPage = lazy(() => import('@/pages/admin/reports/ReportDetailPage'));
-const NotificationsPage = lazy(() => import('@/pages/admin/notifications/NotificationsPage'));
-const SettingsPage = lazy(() => import('@/pages/admin/settings/SettingsPage'));
-const GeneralSettingsPage = lazy(() => import('@/pages/admin/settings/GeneralSettingsPage'));
-const GstSettingsPage = lazy(() => import('@/pages/admin/settings/GstSettingsPage'));
-const NotificationSettingsPage = lazy(() => import('@/pages/admin/settings/NotificationSettingsPage'));
-const CustomerPortalSettingsPage = lazy(() => import('@/pages/admin/settings/CustomerPortalSettingsPage'));
-const CaReportsSharingPage = lazy(() => import('@/pages/admin/settings/CaReportsSharingPage'));
-const AuditLogPage = lazy(() => import('@/pages/admin/audit-logs/AuditLogPage'));
-const ApprovalListPage = lazy(() => import('@/pages/admin/approvals/ApprovalListPage'));
-const ApprovalDetailPage = lazy(() => import('@/pages/admin/approvals/ApprovalDetailPage'));
-const CmsHubPage = lazy(() => import('@/pages/admin/cms/CmsHubPage'));
-const CmsSettingsPage = lazy(() => import('@/pages/admin/cms/CmsSettingsPage'));
-const CmsPageManagerPage = lazy(() => import('@/pages/admin/cms/CmsPageManagerPage'));
-const CmsCollectionsHubPage = lazy(() => import('@/pages/admin/cms/CmsCollectionsHubPage'));
-const CmsCollectionPage = lazy(() => import('@/pages/admin/cms/CmsCollectionPage'));
-const StoreOrdersPage = lazy(() => import('@/pages/admin/store-orders/StoreOrdersPage'));
-const RolesPermissionsPage = lazy(() => import('@/pages/admin/settings/RolesPermissionsPage'));
-const PartyListPage = lazy(() => import('@/pages/admin/parties/PartyListPage'));
-const PartyNewPage = lazy(() => import('@/pages/admin/parties/PartyNewPage'));
-const PartyEditPage = lazy(() => import('@/pages/admin/parties/PartyEditPage'));
-const PartyDetailPage = lazy(() => import('@/pages/admin/parties/PartyDetailPage'));
-const PurchaseListPage = lazy(() => import('@/pages/admin/purchases/PurchaseListPage'));
-const PurchaseNewPage = lazy(() => import('@/pages/admin/purchases/PurchaseNewPage'));
-const PurchaseDetailPage = lazy(() => import('@/pages/admin/purchases/PurchaseDetailPage'));
-const ManufactureListPage = lazy(() => import('@/pages/admin/manufacture/ManufactureListPage'));
-const ManufactureNewPage = lazy(() => import('@/pages/admin/manufacture/ManufactureNewPage'));
-const ManufactureDetailPage = lazy(() => import('@/pages/admin/manufacture/ManufactureDetailPage'));
-const FinishedGoodsPage = lazy(() => import('@/pages/admin/manufacture/FinishedGoodsPage'));
-const ManageBusinessPage = lazy(() => import('@/pages/admin/business/ManageBusinessPage'));
-const InvoiceSettingsPage = lazy(() => import('@/pages/admin/business/InvoiceSettingsPage'));
-const PrintSettingsPage = lazy(() => import('@/pages/admin/business/PrintSettingsPage'));
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import ProductListPage from '@/pages/admin/products/ProductListPage';
+import ProductDetailPage from '@/pages/admin/products/ProductDetailPage';
+import CategoryListPage from '@/pages/admin/categories/CategoryListPage';
+import CategoryDetailPage from '@/pages/admin/categories/CategoryDetailPage';
+import BrandListPage from '@/pages/admin/brands/BrandListPage';
+import BrandDetailPage from '@/pages/admin/brands/BrandDetailPage';
+import ProductTierListPage from '@/pages/admin/product-tiers/ProductTierListPage';
+import ProductTierDetailPage from '@/pages/admin/product-tiers/ProductTierDetailPage';
+import PricingListPage from '@/pages/admin/pricing/PricingListPage';
+import PricingDetailPage from '@/pages/admin/pricing/PricingDetailPage';
+import WarehouseListPage from '@/pages/admin/warehouses/WarehouseListPage';
+import WarehouseDetailPage from '@/pages/admin/warehouses/WarehouseDetailPage';
+import GRNPage from '@/pages/admin/warehouses/GRNPage';
+import GRNMonitoringPage from '@/pages/admin/grn/GRNMonitoringPage';
+import GRNDetailPage from '@/pages/admin/grn/GRNDetailPage';
+import DispatchListPage from '@/pages/admin/dispatch/DispatchListPage';
+import DispatchDetailPage from '@/pages/admin/dispatch/DispatchDetailPage';
+import InventoryListPage from '@/pages/admin/inventory/InventoryListPage';
+import InventoryDetailPage from '@/pages/admin/inventory/InventoryDetailPage';
+import StockMovementListPage from '@/pages/admin/stock-movements/StockMovementListPage';
+import DealerListPage from '@/pages/admin/dealers/DealerListPage';
+import DealerDetailPage from '@/pages/admin/dealers/DealerDetailPage';
+import DealerOnboardingPage from '@/pages/admin/dealers/DealerOnboardingPage';
+import EmployeeListPage from '@/pages/admin/employees/EmployeeListPage';
+import EmployeeDetailPage from '@/pages/admin/employees/EmployeeDetailPage';
+import ExpenseListPage from '@/pages/admin/expenses/ExpenseListPage';
+import ExpenseDetailPage from '@/pages/admin/expenses/ExpenseDetailPage';
+import AdminReportsPage from '@/pages/admin/reports/AdminReportsPage';
+import ReportDetailPage from '@/pages/admin/reports/ReportDetailPage';
+import NotificationsPage from '@/pages/admin/notifications/NotificationsPage';
+import SettingsPage from '@/pages/admin/settings/SettingsPage';
+import GeneralSettingsPage from '@/pages/admin/settings/GeneralSettingsPage';
+import GstSettingsPage from '@/pages/admin/settings/GstSettingsPage';
+import NotificationSettingsPage from '@/pages/admin/settings/NotificationSettingsPage';
+import CustomerPortalSettingsPage from '@/pages/admin/settings/CustomerPortalSettingsPage';
+import CaReportsSharingPage from '@/pages/admin/settings/CaReportsSharingPage';
+import AuditLogPage from '@/pages/admin/audit-logs/AuditLogPage';
+import ApprovalListPage from '@/pages/admin/approvals/ApprovalListPage';
+import ApprovalDetailPage from '@/pages/admin/approvals/ApprovalDetailPage';
+import CmsHubPage from '@/pages/admin/cms/CmsHubPage';
+import CmsSettingsPage from '@/pages/admin/cms/CmsSettingsPage';
+import CmsPageManagerPage from '@/pages/admin/cms/CmsPageManagerPage';
+import CmsCollectionsHubPage from '@/pages/admin/cms/CmsCollectionsHubPage';
+import CmsCollectionPage from '@/pages/admin/cms/CmsCollectionPage';
+import StoreOrdersPage from '@/pages/admin/store-orders/StoreOrdersPage';
+import RolesPermissionsPage from '@/pages/admin/settings/RolesPermissionsPage';
+import PartyListPage from '@/pages/admin/parties/PartyListPage';
+import PartyNewPage from '@/pages/admin/parties/PartyNewPage';
+import PartyEditPage from '@/pages/admin/parties/PartyEditPage';
+import PartyDetailPage from '@/pages/admin/parties/PartyDetailPage';
+import PurchaseListPage from '@/pages/admin/purchases/PurchaseListPage';
+import PurchaseNewPage from '@/pages/admin/purchases/PurchaseNewPage';
+import PurchaseDetailPage from '@/pages/admin/purchases/PurchaseDetailPage';
+import ManufactureListPage from '@/pages/admin/manufacture/ManufactureListPage';
+import ManufactureNewPage from '@/pages/admin/manufacture/ManufactureNewPage';
+import ManufactureDetailPage from '@/pages/admin/manufacture/ManufactureDetailPage';
+import FinishedGoodsPage from '@/pages/admin/manufacture/FinishedGoodsPage';
+import ManageBusinessPage from '@/pages/admin/business/ManageBusinessPage';
+import InvoiceSettingsPage from '@/pages/admin/business/InvoiceSettingsPage';
+import PrintSettingsPage from '@/pages/admin/business/PrintSettingsPage';
 
 // Sales Invoices B2B
-const SalesInvoiceListPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceListPage'));
-const SalesInvoiceNewPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceNewPage'));
-const SalesInvoiceDetailPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceDetailPage'));
-const SalesInvoiceEditPage = lazy(() => import('@/pages/admin/sales-invoices/SalesInvoiceEditPage'));
+import SalesInvoiceListPage from '@/pages/admin/sales-invoices/SalesInvoiceListPage';
+import SalesInvoiceNewPage from '@/pages/admin/sales-invoices/SalesInvoiceNewPage';
+import SalesInvoiceDetailPage from '@/pages/admin/sales-invoices/SalesInvoiceDetailPage';
+import SalesInvoiceEditPage from '@/pages/admin/sales-invoices/SalesInvoiceEditPage';
 
 // Sale PO (Dealer Orders)
-const SalePOListPage = lazy(() => import('@/pages/admin/purchases/SalePOListPage'));
-const SalePODetailPage = lazy(() => import('@/pages/admin/purchases/SalePODetailPage'));
+import SalePOListPage from '@/pages/admin/purchases/SalePOListPage';
+import SalePODetailPage from '@/pages/admin/purchases/SalePODetailPage';
 
 // Dealer Retail Invoices (Dealer -> Customer)
-const DealerInvoiceListPage = lazy(() => import('@/pages/admin/dealers/DealerInvoiceListPage'));
-const DealerInvoiceDetailPage = lazy(() => import('@/pages/admin/dealers/DealerInvoiceDetailPage'));
+import DealerInvoiceListPage from '@/pages/admin/dealers/DealerInvoiceListPage';
+import DealerInvoiceDetailPage from '@/pages/admin/dealers/DealerInvoiceDetailPage';
 
 // Payment In
-const PaymentInListPage = lazy(() => import('@/pages/admin/sales/PaymentInListPage'));
-const PaymentInNewPage = lazy(() => import('@/pages/admin/sales/PaymentInNewPage'));
-const PaymentInDetailPage = lazy(() => import('@/pages/admin/sales/PaymentInDetailPage'));
+import PaymentInListPage from '@/pages/admin/sales/PaymentInListPage';
+import PaymentInNewPage from '@/pages/admin/sales/PaymentInNewPage';
+import PaymentInDetailPage from '@/pages/admin/sales/PaymentInDetailPage';
 
 // Payment Out
-const PaymentOutListPage = lazy(() => import('@/pages/admin/purchases/PaymentOutListPage'));
-const PaymentOutNewPage = lazy(() => import('@/pages/admin/purchases/PaymentOutNewPage'));
-const PaymentOutDetailPage = lazy(() => import('@/pages/admin/purchases/PaymentOutDetailPage'));
+import PaymentOutListPage from '@/pages/admin/purchases/PaymentOutListPage';
+import PaymentOutNewPage from '@/pages/admin/purchases/PaymentOutNewPage';
+import PaymentOutDetailPage from '@/pages/admin/purchases/PaymentOutDetailPage';
 
 // Party Ledger
-const LedgerPage = lazy(() => import('@/pages/admin/reports/LedgerPage'));
+import LedgerPage from '@/pages/admin/reports/LedgerPage';
 
 // Service Management Admin
-const AdminComplaintsPage = lazy(() => import('@/pages/admin/complaints/AdminComplaintsPage'));
-const AdminServiceCenterListPage = lazy(() => import('@/pages/admin/service-centers/AdminServiceCenterListPage'));
-const JobCardListPage = lazy(() => import('@/pages/service/job-cards/JobCardListPage'));
+import AdminComplaintsPage from '@/pages/admin/complaints/AdminComplaintsPage';
+import AdminServiceCenterListPage from '@/pages/admin/service-centers/AdminServiceCenterListPage';
+import JobCardListPage from '@/pages/service/job-cards/JobCardListPage';
 
 // Insurance & Warranty
-const AdminInsurancePage = lazy(() => import('@/pages/admin/insurance/AdminInsurancePage'));
-const AdminInsuranceClaimDetailPage = lazy(() => import('@/pages/admin/insurance/AdminInsuranceClaimDetailPage'));
-const AdminWarrantyPage = lazy(() => import('@/pages/admin/warranty/AdminWarrantyPage'));
-const AdminWarrantyDetailPage = lazy(() => import('@/pages/admin/warranty/AdminWarrantyDetailPage'));
+import AdminInsurancePage from '@/pages/admin/insurance/AdminInsurancePage';
+import AdminInsuranceClaimDetailPage from '@/pages/admin/insurance/AdminInsuranceClaimDetailPage';
+import AdminWarrantyPage from '@/pages/admin/warranty/AdminWarrantyPage';
+import AdminWarrantyDetailPage from '@/pages/admin/warranty/AdminWarrantyDetailPage';
 
 // Dealer Sale Returns / Purchase Returns
-const AdminSaleReturnListPage = lazy(() => import('@/pages/admin/sale-returns/AdminSaleReturnListPage'));
-const AdminSaleReturnDetailPage = lazy(() => import('@/pages/admin/sale-returns/AdminSaleReturnDetailPage'));
-const AdminPurchaseReturnListPage = lazy(() => import('@/pages/admin/purchase-returns/AdminPurchaseReturnListPage'));
-const AdminPurchaseReturnDetailPage = lazy(() => import('@/pages/admin/purchase-returns/AdminPurchaseReturnDetailPage'));
+import AdminSaleReturnListPage from '@/pages/admin/sale-returns/AdminSaleReturnListPage';
+import AdminSaleReturnDetailPage from '@/pages/admin/sale-returns/AdminSaleReturnDetailPage';
+import AdminPurchaseReturnListPage from '@/pages/admin/purchase-returns/AdminPurchaseReturnListPage';
+import AdminPurchaseReturnDetailPage from '@/pages/admin/purchase-returns/AdminPurchaseReturnDetailPage';
 
 // Referrals
-const AdminReferralsPage = lazy(() => import('@/pages/admin/referrals/AdminReferralsPage'));
+import AdminReferralsPage from '@/pages/admin/referrals/AdminReferralsPage';
 
 // Company Ledger
-const CompanyLedgerPageWrapper = lazy(() => import('@/pages/admin/ledger/CompanyLedgerPageWrapper'));
+import CompanyLedgerPageWrapper from '@/pages/admin/ledger/CompanyLedgerPageWrapper';
 
 const ADMIN_ROLES = [ROLES.MASTER_ADMIN, ROLES.WAREHOUSE_MANAGER];
 
@@ -299,6 +298,9 @@ export default function AdminRoutes() {
 
               {/* Company Ledger */}
               <Route path="company-ledger" element={<PermissionGuard require={PERMISSIONS.REPORTS_READ} redirectTo="/unauthorized"><CompanyLedgerPageWrapper /></PermissionGuard>} />
+
+              {/* Wildcard Fallback */}
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
             </Route>
           </Routes>
       </PanelGuard>

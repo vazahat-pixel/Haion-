@@ -22,12 +22,21 @@ export function useCMSProducts() {
 
   const getCatalog = useCallback(
     (category) => {
+      const normalizedCat = {
+        scooter: 'evs',
+        scooters: 'evs',
+        batteries: 'battery',
+        chargers: 'charger',
+        rickshaws: 'rickshaw',
+        inverter: 'inverters',
+      }[category] || category;
+
       const fromCms = activeCmsItems
-        .filter((p) => (p.category || 'evs') === category)
+        .filter((p) => (p.category || 'evs') === normalizedCat || (p.category === category))
         .map(normalizeCatalogItem);
-      if (apiOnline) return fromCms;
+      if (apiOnline && fromCms.length) return fromCms;
       if (fromCms.length) return fromCms;
-      return productsCatalogFallback[category] || [];
+      return productsCatalogFallback[normalizedCat] || productsCatalogFallback[category] || [];
     },
     [activeCmsItems, apiOnline]
   );
