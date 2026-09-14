@@ -33,12 +33,23 @@ const SECTION_ICONS = {
   '2. SALES': ShoppingBag,
   '3. ONBOARDING': Users,
   '4. DISPATCH & LOGISTICS': Truck,
+  '4. DISPATCH & WAREHOUSE': Truck,
   '5. BILLING & FINANCIALS': Receipt,
+  '5. CUSTOMER & DEALER BILLING': Receipt,
   '6. REFERRALS & TARGETS': Gift,
+  '6. REFERRAL SYSTEM': Gift,
   '7. INSURANCE & WARRANTY': ShieldCheck,
   '8. SERVICE CENTRE': Wrench,
   '9. SYSTEM & REPORTS': BarChart3,
 };
+
+function getSectionDisplayTitle(title) {
+  if (title.includes('PURCHASE')) return '1. PURCHASE & MFG';
+  if (title.includes('DISPATCH') || title.includes('WAREHOUSE')) return '4. DISPATCH & LOGISTICS';
+  if (title.includes('BILLING') || title.includes('CUSTOMER & DEALER')) return '5. BILLING & INVOICES';
+  if (title.includes('REFERRAL')) return '6. REFERRALS';
+  return title;
+}
 
 export function Sidebar({ panel, className }) {
   const { isCollapsed, isMobileOpen, setMobileOpen } = useSidebar();
@@ -105,32 +116,32 @@ export function Sidebar({ panel, className }) {
         to={item.path}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          'interactive-smooth group relative flex items-center gap-2 rounded-md py-1.5 text-[12px] font-medium transition-all duration-150',
-          isCollapsed ? 'justify-center px-2' : isInsideSection ? 'pl-3 pr-2.5' : 'px-2.5',
+          'interactive-smooth group relative flex items-center gap-1.5 rounded-md py-1 text-[11px] font-medium transition-all duration-150',
+          isCollapsed ? 'justify-center px-1.5' : isInsideSection ? 'pl-2 pr-1.5' : 'px-2',
           isActive
-            ? 'bg-[var(--color-sidebar-active-bg)] text-[var(--color-sidebar-text-hover)] font-semibold'
-            : 'text-[var(--color-sidebar-text)] hover:bg-white/[0.04] hover:text-[var(--color-sidebar-text-hover)]'
+            ? 'bg-amber-500/20 text-amber-300 font-bold shadow-sm'
+            : 'text-zinc-300 hover:bg-white/[0.05] hover:text-white'
         )}
         title={tooltipText}
       >
         {isActive && (
-          <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r bg-[var(--color-sidebar-active-border)] shadow-sm" />
+          <span className="absolute left-0 top-1/2 h-3.5 w-0.5 -translate-y-1/2 rounded-r bg-amber-400 shadow-sm" />
         )}
         <Icon
           className={cn(
-            'h-[15px] w-[15px] shrink-0 transition-colors duration-150',
+            'h-3.5 w-3.5 shrink-0 transition-colors duration-150',
             isActive
-              ? 'text-brand-500'
-              : 'text-[var(--color-sidebar-text)] group-hover:text-[var(--color-sidebar-text-hover)]'
+              ? 'text-amber-400'
+              : 'text-zinc-400 group-hover:text-white'
           )}
           strokeWidth={isActive ? 2.25 : 2}
         />
-        {!isCollapsed && <span className="flex-1 truncate">{item.label}</span>}
+        {!isCollapsed && <span className="flex-1 truncate leading-tight">{item.label}</span>}
         {!isCollapsed && badgeCount > 0 && (
           <span
             className={cn(
-              'ml-auto flex h-4 min-w-4 items-center justify-center rounded px-1 text-[9px] font-semibold tabular-nums',
-              isActive ? 'bg-brand-500/20 text-brand-500' : 'bg-white/10 text-[var(--color-sidebar-text-hover)]'
+              'ml-auto flex h-3.5 min-w-3.5 items-center justify-center rounded px-1 text-[8.5px] font-bold tabular-nums',
+              isActive ? 'bg-amber-500/30 text-amber-300' : 'bg-white/10 text-white'
             )}
           >
             {badgeCount > 99 ? '99+' : badgeCount}
@@ -157,17 +168,17 @@ export function Sidebar({ panel, className }) {
         )}
       >
         {/* Brand Header */}
-        <div className="relative flex h-[var(--topbar-height)] shrink-0 items-center gap-2.5 border-b border-[var(--color-sidebar-border)] px-3">
+        <div className="relative flex h-11 shrink-0 items-center gap-2 border-b border-[var(--color-sidebar-border)] px-2.5">
           <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--color-sidebar-active-border)] to-transparent opacity-70" />
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-brand-500 to-brand-600 text-white shrink-0 shadow-sm">
-            <Package className="h-3.5 w-3.5" strokeWidth={2.5} />
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-950 shrink-0 shadow-sm">
+            <Package className="h-3 w-3" strokeWidth={2.5} />
           </span>
           {!isCollapsed && (
             <div className="min-w-0">
-              <span className="block text-[13px] font-semibold tracking-tight text-[var(--color-sidebar-text-hover)] truncate">
+              <span className="block text-[12px] font-bold tracking-tight text-white truncate leading-tight">
                 {appConfig.name}
               </span>
-              <span className="block text-[9px] font-medium text-[var(--color-sidebar-text)] truncate">
+              <span className="block text-[9px] font-medium text-zinc-400 truncate leading-tight">
                 {panelConfig?.label || 'Enterprise'}
               </span>
             </div>
@@ -175,8 +186,8 @@ export function Sidebar({ panel, className }) {
         </div>
 
         {/* Scrollable Navigation */}
-        <ScrollArea className="flex-1 px-2 py-2.5">
-          <nav className="flex flex-col gap-1">
+        <ScrollArea className="flex-1 px-1.5 py-1.5">
+          <nav className="flex flex-col gap-0.5">
             {/* Top Level Items (Dashboard, etc.) */}
             {topItems.map((item) => renderNavItem(item, false))}
 
@@ -188,60 +199,61 @@ export function Sidebar({ panel, className }) {
               }, 0);
               const hasActiveChild = items.some((it) => location.pathname.startsWith(it.path));
               const SectionIcon = SECTION_ICONS[title] || FolderClosed;
+              const displayTitle = getSectionDisplayTitle(title);
 
               if (isCollapsed) {
                 return (
                   <div key={title} className="flex flex-col gap-0.5">
-                    <div className="my-1.5 border-t border-white/10" />
+                    <div className="my-1 border-t border-white/10" />
                     {items.map((item) => renderNavItem(item, false))}
                   </div>
                 );
               }
 
               return (
-                <div key={title} className="mt-1.5 flex flex-col">
+                <div key={title} className="mt-0.5 flex flex-col">
                   {/* Section Dropdown Trigger */}
                   <button
                     type="button"
                     onClick={() => toggleSection(title)}
                     className={cn(
-                      'group flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left transition-all duration-150 cursor-pointer select-none',
+                      'group flex w-full items-center justify-between rounded-md px-2 py-1 text-left transition-all duration-150 cursor-pointer select-none',
                       hasActiveChild
-                        ? 'bg-brand-500/[0.08] text-brand-400 font-semibold border border-brand-500/20 shadow-sm'
+                        ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/35 shadow-sm'
                         : isSectionOpen
-                          ? 'bg-white/[0.05] text-white'
-                          : 'text-[#a89fad] hover:bg-white/[0.03] hover:text-white'
+                          ? 'bg-white/[0.08] text-white font-semibold'
+                          : 'text-zinc-300 hover:bg-white/[0.04] hover:text-white'
                     )}
                   >
-                    <div className="flex items-center gap-2 min-w-0 pr-1">
+                    <div className="flex items-center gap-1.5 min-w-0 pr-1">
                       <span
                         className={cn(
-                          'flex h-5 w-5 items-center justify-center rounded transition-colors shrink-0',
+                          'flex h-4.5 w-4.5 items-center justify-center rounded transition-colors shrink-0',
                           hasActiveChild
-                            ? 'bg-brand-500/20 text-brand-400'
+                            ? 'bg-amber-500/30 text-amber-400'
                             : isSectionOpen
                               ? 'bg-white/10 text-white'
-                              : 'bg-white/[0.04] text-[#8e8594] group-hover:text-white group-hover:bg-white/10'
+                              : 'bg-white/[0.04] text-zinc-400 group-hover:text-white group-hover:bg-white/10'
                         )}
                       >
                         <SectionIcon className="h-3 w-3" strokeWidth={2.2} />
                       </span>
-                      <span className="text-[11px] font-semibold tracking-wide truncate">
-                        {title}
+                      <span className="text-[10.5px] font-bold tracking-tight truncate">
+                        {displayTitle}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                    <div className="flex items-center gap-1 shrink-0 ml-1">
                       {sectionBadgeTotal > 0 && !isSectionOpen && (
-                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500/20 px-1 text-[9px] font-bold text-brand-400">
+                        <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber-500/25 px-1 text-[8.5px] font-bold text-amber-300">
                           {sectionBadgeTotal > 99 ? '99+' : sectionBadgeTotal}
                         </span>
                       )}
                       <ChevronDown
                         className={cn(
-                          'h-3.5 w-3.5 transition-transform duration-200 shrink-0',
-                          isSectionOpen ? 'rotate-180 text-brand-400' : 'text-[#857a8a] group-hover:text-white',
-                          hasActiveChild && !isSectionOpen && 'text-brand-400'
+                          'h-3 w-3 transition-transform duration-200 shrink-0',
+                          isSectionOpen ? 'rotate-180 text-amber-400' : 'text-zinc-400 group-hover:text-white',
+                          hasActiveChild && !isSectionOpen && 'text-amber-400 font-bold'
                         )}
                       />
                     </div>
@@ -254,10 +266,10 @@ export function Sidebar({ panel, className }) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.18, ease: 'easeInOut' }}
+                        transition={{ duration: 0.15, ease: 'easeInOut' }}
                         className="overflow-hidden"
                       >
-                        <div className="ml-3 pl-2.5 border-l border-white/10 flex flex-col gap-0.5 pt-1 pb-0.5 mt-0.5">
+                        <div className="ml-2 pl-2 border-l border-white/15 flex flex-col gap-0.5 pt-0.5 pb-0.5 mt-0.5">
                           {items.map((item) => renderNavItem(item, true))}
                         </div>
                       </motion.div>
@@ -271,7 +283,7 @@ export function Sidebar({ panel, className }) {
 
         {/* Footer / User Profile */}
         {!isCollapsed && user && (
-          <div className="shrink-0 border-t border-[var(--color-sidebar-border)] p-2 space-y-1">
+          <div className="shrink-0 border-t border-[var(--color-sidebar-border)] p-1.5 space-y-1">
             <div
               role="button"
               tabIndex={0}
@@ -283,31 +295,31 @@ export function Sidebar({ panel, className }) {
               }}
               onKeyDown={(e) => e.key === 'Enter' && panel === 'admin' && navigate('/admin/business/manage')}
               className={cn(
-                'flex items-center gap-2 rounded-md bg-[var(--color-sidebar-surface)] px-2 py-1.5 group',
+                'flex items-center gap-1.5 rounded-md bg-[var(--color-sidebar-surface)] px-1.5 py-1 group',
                 panel === 'admin' && 'cursor-pointer transition-colors hover:bg-white/[0.06]'
               )}
               title="Profile & Settings"
             >
-              <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-brand-50/15 text-[10px] font-semibold text-brand-50">
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="bg-amber-500/20 text-[9px] font-bold text-amber-300">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[12px] font-medium text-[var(--color-sidebar-text-hover)]">
+                <p className="truncate text-[11px] font-semibold text-white">
                   {user.name}
                 </p>
-                <p className="truncate text-[10px] text-[var(--color-sidebar-text)]">{user.email}</p>
+                <p className="truncate text-[9px] text-zinc-400 leading-tight">{user.email}</p>
               </div>
-              <Settings className="h-3.5 w-3.5 shrink-0 text-[var(--color-sidebar-text)] opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-sidebar-text-hover)] transition-all duration-150" />
+              <Settings className="h-3 w-3 shrink-0 text-zinc-400 opacity-70 group-hover:opacity-100 group-hover:text-white transition-all duration-150" />
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-full justify-start gap-1.5 text-[11px] text-[var(--color-sidebar-text)] hover:bg-white/[0.04] hover:text-[var(--color-danger)]"
+              className="h-6 w-full justify-start gap-1 text-[10px] text-zinc-400 hover:bg-white/[0.04] hover:text-red-400"
               onClick={logout}
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-3 w-3" />
               Logout
             </Button>
           </div>

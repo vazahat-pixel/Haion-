@@ -63,7 +63,7 @@
   --transition-base: 200ms var(--ease-smooth);
   --transition-slow: 280ms var(--ease-smooth);
 
-  --sidebar-width: 216px;
+  --sidebar-width: 228px;
   --sidebar-width-collapsed: 56px;
   --topbar-height: 48px;
 }
