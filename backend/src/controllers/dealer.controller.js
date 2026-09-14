@@ -2,6 +2,9 @@ import Dealer from '../models/Dealer.model.js';
 import DealerInventory from '../models/DealerInventory.model.js';
 import DealerTeamMember from '../models/DealerTeamMember.model.js';
 import Bill from '../models/Bill.model.js';
+import User from '../models/User.model.js';
+import { ROLES } from '../config/constants.js';
+import { sendDealerWelcomeEmail } from '../services/email.service.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
@@ -44,20 +47,26 @@ export const getDealer = asyncHandler(async (req, res) => {
 export const createDealer = asyncHandler(async (req, res) => {
   const body = req.body;
   const dealerCode = body.code || nextSequence('DLR');
+  const dealerEmail = (body.email || body.contactEmail || '').toLowerCase().trim();
+  const dealerPhone = (body.phone || body.contactPhone || '').trim();
+
   await ensureDealerUniqueness({
     code: dealerCode,
     gstin: body.gstin,
-    email: body.email || body.contactEmail,
-    phone: body.phone || body.contactPhone,
+    email: dealerEmail,
+    phone: dealerPhone,
   });
+
+  const rawPassword = body.password?.trim() || `Haion@${Math.floor(1000 + Math.random() * 9000)}`;
+
   const dealer = await Dealer.create({
     code: dealerCode,
     name: body.name,
     city: body.city,
     state: body.state,
     gstin: body.gstin,
-    email: body.email || body.contactEmail,
-    phone: body.phone || body.contactPhone,
+    email: dealerEmail,
+    phone: dealerPhone,
     creditLimit: body.creditLimit ?? 0,
     documentUrl: body.documentUrl || null,
     documents: Array.isArray(body.documents) ? body.documents : (body.documentUrl ? [{ type: 'GENERAL', label: 'Primary document', url: body.documentUrl }] : []),
@@ -65,7 +74,63 @@ export const createDealer = asyncHandler(async (req, res) => {
     logoUrl: body.logoUrl || null,
     status: body.status || 'PENDING_ONBOARDING',
   });
-  return sendCreated(res, { data: mapDealer(dealer.toObject()), message: 'Dealer created' });
+
+  // Create or link User account for Dealer Portal login
+  let user = null;
+  if (dealerEmail) {
+    user = await User.findOne({ email: dealerEmail });
+    if (!user) {
+      const hashedPassword = await User.hashPassword(rawPassword);
+      user = await User.create({
+        email: dealerEmail,
+        password: hashedPassword,
+        firstName: (body.contactName || body.name || 'Dealer').split(' ')[0],
+        lastName: (body.contactName || body.name || 'Dealer').split(' ').slice(1).join(' ') || 'Owner',
+        phone: dealerPhone || '0000000000',
+        role: ROLES.DEALER_ADMIN,
+        dealerId: dealer._id,
+        isActive: true,
+      });
+    } else {
+      user.dealerId = dealer._id;
+      user.role = ROLES.DEALER_ADMIN;
+      if (body.password) {
+        user.password = await User.hashPassword(rawPassword);
+      }
+      await user.save();
+    }
+  }
+
+  // Send Welcome Email with credentials directly to the dealer
+  let emailSent = false;
+  if (dealerEmail) {
+    try {
+      const emailRes = await sendDealerWelcomeEmail({
+        to: dealerEmail,
+        dealerName: dealer.name,
+        dealerCode: dealer.code,
+        email: dealerEmail,
+        password: rawPassword,
+      });
+      emailSent = !emailRes?.error;
+    } catch (err) {
+      console.error('[dealer:welcome-email:err]', err.message);
+    }
+  }
+
+  return sendCreated(res, {
+    data: {
+      ...mapDealer(dealer.toObject()),
+      credentials: {
+        email: dealerEmail,
+        temporaryPassword: rawPassword,
+        emailSent,
+      },
+    },
+    message: emailSent
+      ? 'Dealer created and login credentials emailed successfully'
+      : 'Dealer created and login account generated',
+  });
 });
 
 export const updateDealer = asyncHandler(async (req, res) => {
