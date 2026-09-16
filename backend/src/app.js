@@ -62,6 +62,7 @@ import purchaseReturnRoutes from './routes/purchaseReturn.routes.js';
 import referralRoutes from './routes/referral.routes.js';
 import ocrRoutes from './routes/ocr.routes.js';
 import companyLedgerRoutes from './routes/companyLedger.routes.js';
+import hrmsRoutes from './routes/hrms.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,12 +87,20 @@ app.use(helmet({
       ],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'blob:'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'blob:',
+        // Dev: allow landing page (different Vite port) to load /uploads images from backend
+        ...(env.isDev ? ['http://localhost:3000', 'http://127.0.0.1:3000'] : []),
+      ],
       connectSrc: [
         "'self'",
         'https://cloudflareinsights.com',
         'https://checkout.razorpay.com',
         'https://api.razorpay.com',
+        // Dev: allow landing page to call /api on backend directly (when not using proxy)
+        ...(env.isDev ? ['http://localhost:3000', 'http://127.0.0.1:3000'] : []),
       ],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
@@ -217,6 +226,7 @@ app.use('/api/purchase-returns', purchaseReturnRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/ocr', ocrRoutes);
 app.use('/api/company-ledger', companyLedgerRoutes);
+app.use('/api/hrms', hrmsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

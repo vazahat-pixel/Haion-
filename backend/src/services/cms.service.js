@@ -260,7 +260,7 @@ export async function syncMissingSections(seedSections = [], { fillEmpty = false
 export async function getPublicPageBundle(page) {
   const [settings, sections] = await Promise.all([
     getOrCreateSettings(),
-    getSectionsForPage(page, { visibleOnly: true }),
+    getSectionsForPage(page, { visibleOnly: false }),
   ]);
   const collections = {};
   await Promise.all(

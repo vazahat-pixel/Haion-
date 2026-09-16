@@ -1,7 +1,16 @@
-/** Parse display prices like "₹70,000" or "70000" into rupees (number). */
+/**
+ * Parse display prices into rupees (number).
+ * Handles all variants found in CMS product data:
+ *   "₹70,000"  "? 9,499"  "?1,44,999"  "? 28,999"  70000
+ * The '?' is the garbled UTF-8 encoding of '₹' sometimes stored in CMS.
+ */
 export function parsePrice(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
-  const n = parseFloat(String(value ?? '').replace(/[₹,\s]/g, ''));
+  // Strip currency symbols (₹ and its common garbled variants), commas, spaces
+  const cleaned = String(value ?? '')
+    .replace(/[₹?？\u20B9\u00A0\u202F,\s]/g, '') // ₹, ?, ?, non-breaking spaces, commas
+    .trim();
+  const n = parseFloat(cleaned);
   return Number.isFinite(n) ? n : 0;
 }
 

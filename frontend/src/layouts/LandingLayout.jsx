@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const POPPINS_HREF =
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap';
@@ -9,7 +9,7 @@ function isLandingAsset(link) {
   return (
     link.dataset.landingStyles === 'true' ||
     link.dataset.landingFont === 'true' ||
-    link.href.includes('fonts.googleapis.com')
+    (link.href && link.href.includes('fonts.googleapis.com'))
   );
 }
 
@@ -26,26 +26,39 @@ function setErpStylesEnabled(enabled) {
 }
 
 export default function LandingLayout() {
+  const [isCssReady, setIsCssReady] = useState(() => {
+    return !!document.querySelector('link[data-landing-styles="true"]');
+  });
+
   useEffect(() => {
     const previousHtmlClass = document.documentElement.className;
     const previousBodyClass = document.body.className;
 
-    document.documentElement.className = 'light scroll-smooth';
-    document.body.className = 'bg-[#f8f9fa] text-zinc-900 antialiased overflow-x-hidden landing-active';
+    document.documentElement.className = 'dark scroll-smooth';
+    document.body.className = 'bg-[#030303] text-gray-200 antialiased overflow-x-hidden landing-active';
 
     setErpStylesEnabled(false);
 
-    const fontLink = document.createElement('link');
-    fontLink.rel = 'stylesheet';
-    fontLink.href = POPPINS_HREF;
-    fontLink.dataset.landingFont = 'true';
-    document.head.appendChild(fontLink);
+    let fontLink = document.head.querySelector('link[data-landing-font="true"]');
+    if (!fontLink) {
+      fontLink = document.createElement('link');
+      fontLink.rel = 'stylesheet';
+      fontLink.href = POPPINS_HREF;
+      fontLink.dataset.landingFont = 'true';
+      document.head.appendChild(fontLink);
+    }
 
-    const styleLink = document.createElement('link');
-    styleLink.rel = 'stylesheet';
-    styleLink.href = LANDING_CSS_HREF;
-    styleLink.dataset.landingStyles = 'true';
-    document.head.appendChild(styleLink);
+    let styleLink = document.head.querySelector('link[data-landing-styles="true"]');
+    if (!styleLink) {
+      styleLink = document.createElement('link');
+      styleLink.rel = 'stylesheet';
+      styleLink.href = LANDING_CSS_HREF;
+      styleLink.dataset.landingStyles = 'true';
+      styleLink.onload = () => setIsCssReady(true);
+      document.head.appendChild(styleLink);
+    } else {
+      setIsCssReady(true);
+    }
 
     return () => {
       document.head.querySelector('link[data-landing-font="true"]')?.remove();
@@ -59,7 +72,16 @@ export default function LandingLayout() {
   }, []);
 
   return (
-    <div className="landing-root min-h-screen" data-landing-panel style={{ minHeight: '100vh' }}>
+    <div
+      className="landing-root min-h-screen bg-[#030303]"
+      data-landing-panel
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#030303',
+        opacity: isCssReady ? 1 : 0,
+        transition: 'opacity 0.1s ease-in'
+      }}
+    >
       <Outlet />
     </div>
   );

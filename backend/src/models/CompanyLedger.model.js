@@ -1,13 +1,15 @@
 import mongoose from 'mongoose';
 
 export const COMPANY_TXN_TYPES = [
-  'SALE_TO_DEALER',       // Admin sells to dealer (Sales Invoice)
-  'PAYMENT_FROM_DEALER',  // Dealer pays admin (Payment received)
-  'PURCHASE',             // Admin buys stock / raw material
-  'EXPENSE',              // Operating expense (salary, rent, etc.)
-  'MANUFACTURE',          // Manufacturing cost entry
-  'ADJUSTMENT',           // Manual correction / journal
-  'OPENING_BALANCE',      // Initial balance entry
+  'SALE_TO_DEALER',              // Admin sells to dealer (Sales Invoice)
+  'PAYMENT_FROM_DEALER',         // Dealer pays admin (Payment received)
+  'SALE_TO_SERVICE_CENTER',      // Admin sells spares/parts to Service Center (GST Invoice)
+  'PAYMENT_FROM_SERVICE_CENTER', // Service Center payment received
+  'PURCHASE',                    // Admin buys stock / raw material
+  'EXPENSE',                     // Operating expense (salary, rent, etc.)
+  'MANUFACTURE',                 // Manufacturing cost entry
+  'ADJUSTMENT',                  // Manual correction / journal
+  'OPENING_BALANCE',             // Initial balance entry
 ];
 
 const companyLedgerSchema = new mongoose.Schema(
@@ -26,7 +28,7 @@ const companyLedgerSchema = new mongoose.Schema(
     // Running balance (computed at insert time)
     balance: { type: Number, default: 0 },
     description: { type: String, trim: true, default: '' },
-    partyName: { type: String, trim: true, default: '' },  // dealer / vendor name
+    partyName: { type: String, trim: true, default: '' },  // dealer / vendor / service center name
     // Hard link to the Party master. Null means the entry is internal (no
     // counterparty) or predates party linking — partyName is then free text.
     party: { type: mongoose.Schema.Types.ObjectId, ref: 'Party', default: null },
@@ -37,7 +39,7 @@ const companyLedgerSchema = new mongoose.Schema(
     sourceRef: { type: mongoose.Schema.Types.ObjectId, refPath: 'sourceModel', default: null },
     sourceModel: {
       type: String,
-      enum: ['SalesInvoice', 'Payment', 'Expense', 'Purchase', 'Manufacture', null],
+      enum: ['SalesInvoice', 'ServiceCenterInvoice', 'Payment', 'Expense', 'Purchase', 'Manufacture', null],
       default: null,
     },
     paymentMode: { type: String, default: '' },

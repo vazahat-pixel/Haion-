@@ -35,7 +35,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>Haion ERP</title>
+    
+    <!-- Instant preparation for /landing: dark theme & landing.css before React mounts -->
+    <script>
+      (function() {
+        if (window.location.pathname.startsWith('/landing')) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.backgroundColor = '#030303';
+          document.documentElement.style.colorScheme = 'dark';
+          
+          var fontLink = document.createElement('link');
+          fontLink.rel = 'stylesheet';
+          fontLink.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap';
+          fontLink.dataset.landingFont = 'true';
+          document.head.appendChild(fontLink);
+
+          var styleLink = document.createElement('link');
+          styleLink.rel = 'stylesheet';
+          styleLink.href = '/landing/landing.css';
+          styleLink.dataset.landingStyles = 'true';
+          document.head.appendChild(styleLink);
+        }
+      })();
+    </script>
+    <title>Haion</title>
   </head>
   <body>
     <div id="root"></div>

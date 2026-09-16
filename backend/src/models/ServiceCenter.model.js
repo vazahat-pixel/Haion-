@@ -7,15 +7,23 @@ const serviceCenterSchema = new mongoose.Schema(
     city: { type: String, required: true, trim: true },
     state: { type: String, required: true, trim: true },
     address: { type: String, default: '' },
+    billingAddress: { type: String, default: '' },
+    shippingAddress: { type: String, default: '' },
+    gstin: { type: String, trim: true, uppercase: true, default: '' },
+    pan: { type: String, trim: true, uppercase: true, default: '' },
+    contactPerson: { type: String, trim: true, default: '' },
     phone: { type: String, trim: true },
     email: { type: String, trim: true, lowercase: true },
+    party: { type: mongoose.Schema.Types.ObjectId, ref: 'Party', default: null },
+    creditLimit: { type: Number, default: 0, min: 0 },
+    openingBalance: { type: Number, default: 0 },
     inchargeUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
   },
   { timestamps: true }
 );
 
-serviceCenterSchema.index({ name: 'text', code: 'text', city: 1 });
+serviceCenterSchema.index({ name: 'text', code: 'text', city: 1, gstin: 1 });
 
 const ServiceCenter = mongoose.model('ServiceCenter', serviceCenterSchema);
 export default ServiceCenter;

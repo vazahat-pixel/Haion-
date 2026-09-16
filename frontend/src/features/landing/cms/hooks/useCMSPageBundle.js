@@ -27,12 +27,19 @@ export function useCMSPageBundle(page) {
   const collections = data?.collections ?? {};
 
   const getSection = (sectionKey, fieldDefaults = {}) => {
-    const found = sections.find((s) => s.sectionKey === sectionKey && s.isVisible !== false);
+    const found = sections.find((s) => s.sectionKey === sectionKey);
     const defaults = CMS_DEFAULTS.sections?.[page]?.[sectionKey] ?? fieldDefaults;
+    if (!found) {
+      return {
+        ...defaults,
+        _visible: true,
+      };
+    }
     return {
       ...defaults,
-      ...(found?.content ?? {}),
-      _visible: found ? found.isVisible !== false : true,
+      ...(found.content ?? {}),
+      _visible: found.isVisible !== false,
+      _seo: found.seo,
     };
   };
 

@@ -44,13 +44,17 @@ const FALLBACK_SECTIONS = Object.keys(SECTION_MAP).map((key, order) => ({
 }));
 
 export default function SectionRenderer({ onViewDetails }) {
-  const { visibleSections } = useCMS();
+  const { visibleSections, sections, isLoading } = useCMS();
 
-  const sections = visibleSections.length > 0 ? visibleSections : FALLBACK_SECTIONS;
+  // If sections have loaded from the CMS API, respect visibleSections (even if empty because all were disabled).
+  // Only fall back to FALLBACK_SECTIONS if the API is still loading and we have no data yet.
+  const displaySections = Array.isArray(sections) && sections.length > 0
+    ? visibleSections
+    : (isLoading ? FALLBACK_SECTIONS : visibleSections);
 
   return (
     <>
-      {sections.map((section) => {
+      {displaySections.map((section) => {
         const Component = SECTION_MAP[section.sectionKey];
         if (!Component) return null;
         const props = section.sectionKey === 'products-tabs' ? { onViewDetails } : {};

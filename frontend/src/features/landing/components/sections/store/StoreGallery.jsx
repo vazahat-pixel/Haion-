@@ -4,9 +4,11 @@ import { FiX, FiZoomIn, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useCMSGallery } from '../../../cms/hooks/useCMSContent';
 
 export default function StoreGallery() {
-  const { items, section } = useCMSGallery();
+  const { items, section, _visible } = useCMSGallery();
   const [activeFilter, setActiveFilter] = useState('All');
   const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  if (_visible === false) return null;
 
   const filteredData = activeFilter === 'All' ? items : items.filter((item) => item.category === activeFilter);
 

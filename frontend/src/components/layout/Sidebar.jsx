@@ -26,6 +26,8 @@ import {
   Wrench,
   BarChart3,
   FolderClosed,
+  IndianRupee,
+  Globe,
 } from 'lucide-react';
 
 const SECTION_ICONS = {
@@ -40,7 +42,10 @@ const SECTION_ICONS = {
   '6. REFERRAL SYSTEM': Gift,
   '7. INSURANCE & WARRANTY': ShieldCheck,
   '8. SERVICE CENTRE': Wrench,
-  '9. SYSTEM & REPORTS': BarChart3,
+  '9. FINANCE': IndianRupee,
+  '10. WEBSITE ADMIN': Globe,
+  '11. HRMS & WORKFORCE': Users,
+  '12. SYSTEM & REPORTS': BarChart3,
 };
 
 function getSectionDisplayTitle(title) {
@@ -48,6 +53,10 @@ function getSectionDisplayTitle(title) {
   if (title.includes('DISPATCH') || title.includes('WAREHOUSE')) return '4. DISPATCH & LOGISTICS';
   if (title.includes('BILLING') || title.includes('CUSTOMER & DEALER')) return '5. BILLING & INVOICES';
   if (title.includes('REFERRAL')) return '6. REFERRALS';
+  if (title.includes('FINANCE')) return '9. FINANCE';
+  if (title.includes('WEBSITE')) return '10. WEBSITE ADMIN';
+  if (title.includes('HRMS')) return '11. HRMS & WORKFORCE';
+  if (title.includes('SYSTEM')) return '12. SYSTEM & REPORTS';
   return title;
 }
 

@@ -96,12 +96,17 @@ export function CMSProvider({ page = 'home', children }) {
   }, [queryClient]);
 
   const apiOnline = !pageQuery.isError && !settingsQuery.isError;
+  const isReady = apiOnline && !pageQuery.isLoading;
   const bundle = pageQuery.data ?? {};
-  const settings = apiOnline
-    ? (settingsQuery.data ?? bundle.settings ?? CMS_DEFAULTS.settings)
+  const settings = (apiOnline && (settingsQuery.data ?? bundle.settings))
+    ? (settingsQuery.data ?? bundle.settings)
     : CMS_DEFAULTS.settings;
-  const sections = apiOnline ? (bundle.sections ?? []) : [];
-  const collections = apiOnline ? (bundle.collections ?? {}) : {};
+  const sections = isReady && Array.isArray(bundle.sections) && bundle.sections.length > 0
+    ? bundle.sections
+    : [];
+  const collections = isReady && bundle.collections
+    ? bundle.collections
+    : {};
 
   useEffect(() => {
     applyCmsTheme(settings.theme ?? CMS_DEFAULTS.settings.theme);
@@ -109,35 +114,37 @@ export function CMSProvider({ page = 'home', children }) {
 
   const getSection = useCallback(
     (sectionKey) => {
-      if (!apiOnline) {
+      const defaults = CMS_DEFAULTS.sections?.[page]?.[sectionKey] ?? {};
+      const fallbacks = CMS_FALLBACKS.sections?.[sectionKey] ?? {};
+      const found = sections.find((s) => s.sectionKey === sectionKey);
+      if (!found) {
         return {
-          ...(CMS_DEFAULTS.sections?.[page]?.[sectionKey] ?? {}),
-          ...(CMS_FALLBACKS.sections?.[sectionKey] ?? {}),
+          ...defaults,
+          ...fallbacks,
           _visible: true,
         };
       }
-      const found = sections.find((s) => s.sectionKey === sectionKey && s.isVisible !== false);
-      const defaults = CMS_DEFAULTS.sections?.[page]?.[sectionKey] ?? {};
       return {
         ...defaults,
+        ...fallbacks,
         ...(found?.content ?? {}),
-        _visible: found ? found.isVisible !== false : true,
+        _visible: found.isVisible !== false,
         _seo: found?.seo,
       };
     },
-    [sections, page, apiOnline]
+    [sections, page]
   );
 
   const getCollection = useCallback(
     (collectionKey) => {
-      if (!apiOnline) {
+      const items = collections[collectionKey];
+      if (!items || (Array.isArray(items) && items.length === 0)) {
         return fallbackForCollection(collectionKey);
       }
-      const items = collections[collectionKey] ?? [];
       const parsed = getCollectionData(Array.isArray(items) ? items : []);
-      return parsed;
+      return parsed.length > 0 ? parsed : fallbackForCollection(collectionKey);
     },
-    [collections, apiOnline]
+    [collections]
   );
 
   const visibleSections = useMemo(

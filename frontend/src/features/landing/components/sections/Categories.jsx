@@ -45,19 +45,23 @@ export default function Categories() {
   const { items: categoriesData } = useCMSCollection('categories');
   const { getSection } = useCMSPage();
   const section = getSection('categories');
-  if (!categoriesData.length) return null;
+
+  // Hooks MUST come before any early returns (React Rules of Hooks)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const sliderRef = useRef(null);
 
   // Auto-play interval for left-to-right slider animation
   useEffect(() => {
+    if (!categoriesData.length) return;
     if (selectedCategory) return; // Pause auto-play when modal is open
     const interval = setInterval(() => {
       handleNext();
     }, 4500);
     return () => clearInterval(interval);
-  }, [currentIndex, selectedCategory]);
+  }, [currentIndex, selectedCategory, categoriesData.length]);
+
+  if (!categoriesData.length) return null;
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? categoriesData.length - 1 : prev - 1));

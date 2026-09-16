@@ -64,30 +64,53 @@ export function useCMSAbout() {
     initials: m.initials,
   }));
 
+  const heroSec = getSection('about-hero');
+  const cardsSec = getSection('about-cards');
+  const leadershipSec = getSection('about-leadership');
+  const journeySec = getSection('about-journey');
+  const founderSec = getSection('about-founder');
+  const careersSec = getSection('about-careers');
+  const taglineSec = getSection('about-tagline');
+
+  const cardList = apiOnline
+    ? (cardsSec.cards?.length ? cardsSec.cards : ABOUT_FALLBACK.cards)
+    : ABOUT_FALLBACK.cards;
+
   return {
-    hero: mergeSection(ABOUT_FALLBACK.hero, getSection('about-hero')),
-    cards: apiOnline
-      ? getSection('about-cards').cards?.length
-        ? getSection('about-cards').cards
-        : ABOUT_FALLBACK.cards
-      : ABOUT_FALLBACK.cards,
+    hero: {
+      ...mergeSection(ABOUT_FALLBACK.hero, heroSec),
+      _visible: heroSec._visible !== false,
+    },
+    cards: cardList,
+    cardsVisible: cardsSec._visible !== false,
     leadership: {
       ...ABOUT_FALLBACK.leadership,
-      ...getSection('about-leadership'),
+      ...leadershipSec,
       members: teamFromCollection.length
         ? teamFromCollection
-        : getSection('about-leadership').members?.length
-          ? getSection('about-leadership').members
+        : leadershipSec.members?.length
+          ? leadershipSec.members
           : ABOUT_FALLBACK.leadership.members,
+      _visible: leadershipSec._visible !== false,
     },
-    journey: mergeSection(ABOUT_FALLBACK.journey, getSection('about-journey')),
-    founder: mergeSection(ABOUT_FALLBACK.founder, getSection('about-founder')),
-    careers: mergeSection(ABOUT_FALLBACK.careers, getSection('about-careers')),
-    tagline: pickCms(ABOUT_FALLBACK.tagline, getSection('about-tagline').text),
-    filmStrip: getSection('about-tagline').filmStrip?.length
-      ? getSection('about-tagline').filmStrip
+    journey: {
+      ...mergeSection(ABOUT_FALLBACK.journey, journeySec),
+      _visible: journeySec._visible !== false,
+    },
+    founder: {
+      ...mergeSection(ABOUT_FALLBACK.founder, founderSec),
+      _visible: founderSec._visible !== false,
+    },
+    careers: {
+      ...mergeSection(ABOUT_FALLBACK.careers, careersSec),
+      _visible: careersSec._visible !== false,
+    },
+    tagline: pickCms(ABOUT_FALLBACK.tagline, taglineSec.text),
+    taglineVisible: taglineSec._visible !== false,
+    filmStrip: taglineSec.filmStrip?.length
+      ? taglineSec.filmStrip
       : ABOUT_FALLBACK.filmStrip,
-    bgImages: { ...ABOUT_FALLBACK.bgImages, ...getSection('about-hero').bgImages },
+    bgImages: { ...ABOUT_FALLBACK.bgImages, ...heroSec.bgImages },
   };
 }
 
@@ -155,6 +178,7 @@ export function useCMSGallery() {
   return {
     items: apiOnline && items.length ? items : GALLERY_FALLBACK,
     section: mergeSection(GALLERY_SECTION_FALLBACK, section),
+    _visible: section._visible !== false,
   };
 }
 
@@ -170,8 +194,8 @@ export function useCMSPartners() {
 }
 
 export function useCMSDownloadCta() {
+  const { settings } = useCMS();
   const { getSection } = useCMSPageBundle('home');
-  const settings = useCMSSettings();
   const section = getSection('download-cta');
   return {
     ...mergeSection(DOWNLOAD_CTA_FALLBACK, section),
@@ -203,6 +227,8 @@ export function useCMSStoreExtras(config) {
   const merged = mergeSection(STORE_EXTRA_FALLBACK, extra);
   return {
     heroBadge: pickCms(STORE_EXTRA_FALLBACK.heroBadge, hero.badge),
+    heroVisible: hero._visible !== false,
+    extrasVisible: extra._visible !== false,
     layoutsTitle: pickCms(STORE_EXTRA_FALLBACK.layoutsTitle, merged.layoutsTitle),
     images: merged.images?.length ? merged.images : config?.showroomInfo?.images?.length ? config.showroomInfo.images.map((i) => ({ src: i.src, title: i.title, location: i.location, desc: i.title })) : STORE_EXTRA_FALLBACK.images,
     highlights: merged.highlights?.length ? merged.highlights.map((h) => ({ ...h, icon: HIGHLIGHT_ICONS[h.iconName] || FiAward })) : STORE_EXTRA_FALLBACK.highlights.map((h) => ({ ...h, icon: HIGHLIGHT_ICONS[h.iconName] })),
@@ -213,5 +239,8 @@ export function useCMSStoreExtras(config) {
 export function useCMSAppliancesSections() {
   const { getSection } = useCMSPageBundle('appliances');
   const sections = getSection('appliances-sections');
-  return mergeSection(APPLIANCES_SECTIONS_FALLBACK, sections);
+  return {
+    ...mergeSection(APPLIANCES_SECTIONS_FALLBACK, sections),
+    _visible: sections._visible !== false,
+  };
 }

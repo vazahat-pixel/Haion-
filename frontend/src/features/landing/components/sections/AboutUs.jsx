@@ -165,6 +165,15 @@ export default function AboutUs({ onClose, onCareersClick }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const hasVisibleContent =
+    cms.hero?._visible !== false ||
+    cms.cardsVisible !== false ||
+    cms.leadership?._visible !== false ||
+    cms.journey?._visible !== false ||
+    cms.founder?._visible !== false ||
+    cms.careers?._visible !== false ||
+    cms.taglineVisible !== false;
+
   return (
     <div className="vintage-theme min-h-screen pt-28 pb-32 px-4 md:px-8 relative overflow-hidden selection:bg-[#a0825b] selection:text-white">
       {/* Embedded Style Block for complete modular CSS control */}
@@ -207,169 +216,195 @@ export default function AboutUs({ onClose, onCareersClick }) {
       `}</style>
 
       {/* BACKGROUND WATERMARKS (Top-Left Scooter, Top-Right Battery/Blueprint) */}
-      <div className="absolute top-10 left-[-60px] w-80 h-80 opacity-[0.04] pointer-events-none select-none z-0">
-        <img src={cms.bgImages.scooter} alt="" className="w-full h-full object-contain" />
-      </div>
-      <div className="absolute top-20 right-[-100px] w-[500px] h-[500px] opacity-[0.03] pointer-events-none select-none z-0">
-        <img src={cms.bgImages.battery} alt="" className="w-full h-full object-contain pointer-events-none" />
-      </div>
+      {hasVisibleContent && (
+        <>
+          <div className="absolute top-10 left-[-60px] w-80 h-80 opacity-[0.04] pointer-events-none select-none z-0">
+            <img src={cms.bgImages.scooter} alt="" className="w-full h-full object-contain" />
+          </div>
+          <div className="absolute top-20 right-[-100px] w-[500px] h-[500px] opacity-[0.03] pointer-events-none select-none z-0">
+            <img src={cms.bgImages.battery} alt="" className="w-full h-full object-contain pointer-events-none" />
+          </div>
 
-      {/* FLOATING RETRO MUSIC & MOVIE STICKERS IN SIDE MARGINS */}
-      <CassetteSticker className="top-[25%] left-2 xl:left-8 scale-110 md:scale-125 rotate-[15deg] hidden lg:block" />
-      <MusicNotesSticker className="top-[35%] right-2 xl:right-8 scale-125 md:scale-150 -rotate-[10deg] hidden lg:block" />
-      <HeadphonesSticker className="top-[55%] left-3 xl:left-10 scale-110 md:scale-125 rotate-[8deg] hidden lg:block" />
-      <TicketSticker className="top-[70%] right-2 xl:right-8 scale-110 rotate-[-12deg] hidden lg:block" />
-      <PopcornSticker className="top-[85%] left-3 xl:left-10 scale-110 md:scale-125 rotate-[12deg] hidden lg:block" />
-      <CassetteSticker className="top-[95%] right-4 xl:right-12 scale-110 rotate-[-8deg] hidden lg:block" />
+          {/* FLOATING RETRO MUSIC & MOVIE STICKERS IN SIDE MARGINS */}
+          <CassetteSticker className="top-[25%] left-2 xl:left-8 scale-110 md:scale-125 rotate-[15deg] hidden lg:block" />
+          <MusicNotesSticker className="top-[35%] right-2 xl:right-8 scale-125 md:scale-150 -rotate-[10deg] hidden lg:block" />
+          <HeadphonesSticker className="top-[55%] left-3 xl:left-10 scale-110 md:scale-125 rotate-[8deg] hidden lg:block" />
+          <TicketSticker className="top-[70%] right-2 xl:right-8 scale-110 rotate-[-12deg] hidden lg:block" />
+          <PopcornSticker className="top-[85%] left-3 xl:left-10 scale-110 md:scale-125 rotate-[12deg] hidden lg:block" />
+          <CassetteSticker className="top-[95%] right-4 xl:right-12 scale-110 rotate-[-8deg] hidden lg:block" />
+        </>
+      )}
 
       <div className="max-w-7xl mx-auto relative z-10">
+        {!hasVisibleContent && (
+          <div className="text-center py-28">
+            <h2 className="text-3xl font-extrabold text-[#40321f] mb-3">About Haion</h2>
+            <p className="text-zinc-500 text-sm md:text-base max-w-md mx-auto">
+              This page content is currently being updated. Please check back soon!
+            </p>
+          </div>
+        )}
         
 
 
         {/* Hero Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block text-xs font-bold tracking-widest text-[#a0825b] uppercase mb-3">
-            {cms.hero.badge}
-          </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#40321f] mb-4 text-glow">
-            {cms.hero.title}
-          </h1>
-          <p className="text-zinc-550 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
-            {cms.hero.subtitle}
-          </p>
-        </div>
+        {cms.hero?._visible !== false && (
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="inline-block text-xs font-bold tracking-widest text-[#a0825b] uppercase mb-3">
+              {cms.hero.badge}
+            </span>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#40321f] mb-4 text-glow">
+              {cms.hero.title}
+            </h1>
+            <p className="text-zinc-550 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+              {cms.hero.subtitle}
+            </p>
+          </div>
+        )}
 
         {/* 3-CARD GRID DESIGN */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 relative">
-          <TicketSticker className="-top-12 -left-6 scale-90 md:scale-100" />
-          <FilmCanisterSticker className="-bottom-10 -right-8 scale-90 md:scale-100" />
+        {cms.cardsVisible !== false && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 relative">
+            <TicketSticker className="-top-12 -left-6 scale-90 md:scale-100" />
+            <FilmCanisterSticker className="-bottom-10 -right-8 scale-90 md:scale-100" />
 
-          {cms.cards.map((card) => (
-          <div key={card.title} className="about-card flex flex-col md:-rotate-1 relative">
-            <div className="h-48 overflow-hidden border-b-2 border-zinc-900 bg-zinc-50">
-              <img 
-                src={card.image} 
-                alt={card.alt || card.title} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-6 md:p-8 flex-1 flex flex-col text-left">
-              <h3 className="text-xl font-bold text-[#40321f] mb-4">{card.title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-650 font-medium">{card.body}</p>
-            </div>
+            {(Array.isArray(cms.cards) ? cms.cards : (cms.cards?.items || [])).map((card) => (
+              <div key={card.title} className="about-card flex flex-col md:-rotate-1 relative">
+                <div className="h-48 overflow-hidden border-b-2 border-zinc-900 bg-zinc-50">
+                  <img 
+                    src={card.image} 
+                    alt={card.alt || card.title} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6 md:p-8 flex-1 flex flex-col text-left">
+                  <h3 className="text-xl font-bold text-[#40321f] mb-4">{card.title}</h3>
+                  <p className="text-sm leading-relaxed text-zinc-650 font-medium">{card.body}</p>
+                </div>
+              </div>
+            ))}
           </div>
-          ))}
-
-        </div>
+        )}
 
         {/* LEADERSHIP TEAM SECTION */}
-        <div className="about-card max-w-5xl mx-auto mb-16 text-left relative md:rotate-1">
-          <TicketSticker className="-top-12 -left-8 scale-90 md:scale-100" />
-          <PopcornSticker className="-bottom-12 -right-8 scale-90 md:scale-100" />
-          
-          <div className="p-8 md:p-10">
-            <span className="text-xs font-bold text-[#a0825b] block mb-2">{cms.leadership.badge}</span>
-            <h3 className="text-2xl font-black mb-8 text-[#40321f] border-b-2 border-zinc-900 pb-2 inline-block">
-              {cms.leadership.title}
-            </h3>
+        {cms.leadership?._visible !== false && (
+          <div className="about-card max-w-5xl mx-auto mb-16 text-left relative md:rotate-1">
+            <TicketSticker className="-top-12 -left-8 scale-90 md:scale-100" />
+            <PopcornSticker className="-bottom-12 -right-8 scale-90 md:scale-100" />
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {cms.leadership.members.map((member, index) => (
-                <div key={index} className="bg-[#faf9f6] border-2 border-zinc-900 rounded-2xl p-5 flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-[4px_4px_0px_rgba(24,24,27,0.9)] duration-300">
-                  <div className="w-14 h-14 rounded-full bg-[#a0825b]/10 border-2 border-[#a0825b]/30 flex items-center justify-center font-black text-base text-[#a0825b] mb-3 shadow-inner">
-                    {member.initials}
+            <div className="p-8 md:p-10">
+              <span className="text-xs font-bold text-[#a0825b] block mb-2">{cms.leadership.badge}</span>
+              <h3 className="text-2xl font-black mb-8 text-[#40321f] border-b-2 border-zinc-900 pb-2 inline-block">
+                {cms.leadership.title}
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {(cms.leadership.members || []).map((member, index) => (
+                  <div key={index} className="bg-[#faf9f6] border-2 border-zinc-900 rounded-2xl p-5 flex flex-col items-center text-center transition-transform hover:-translate-y-1 hover:shadow-[4px_4px_0px_rgba(24,24,27,0.9)] duration-300">
+                    <div className="w-14 h-14 rounded-full bg-[#a0825b]/10 border-2 border-[#a0825b]/30 flex items-center justify-center font-black text-base text-[#a0825b] mb-3 shadow-inner">
+                      {member.initials}
+                    </div>
+                    <h4 className="text-sm font-bold text-[#40321f] mb-1 leading-tight">{member.name}</h4>
+                    <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">{member.role}</span>
                   </div>
-                  <h4 className="text-sm font-bold text-[#40321f] mb-1 leading-tight">{member.name}</h4>
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">{member.role}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
         {/* FILM STRIP TRANSITION ACCENT */}
-        <FilmStripSeparator />
+        {cms.taglineVisible !== false && <FilmStripSeparator />}
 
         {/* FULL JOURNEY SECTION */}
-        <div className="about-card max-w-4xl mx-auto mb-16 text-left relative md:rotate-1">
-          <PopcornSticker className="-top-12 -left-8 scale-90 md:scale-100" />
-          <MusicNotesSticker className="-bottom-8 -right-8 scale-90 md:scale-100" />
-          
-          <div className="p-8 md:p-10">
-            <h3 className="text-2xl font-black mb-6 text-[#40321f] border-b-2 border-zinc-900 pb-2 inline-block">
-              {cms.journey.title}
-            </h3>
-            <div className="text-sm leading-relaxed text-zinc-650 space-y-4 font-medium">
-              {cms.journey.paragraphs.map((p, i) => (
-                <p key={i} className={p === cms.journey.highlightParagraph ? 'font-bold text-base text-[#40321f] mt-6' : p === cms.journey.paragraphs.at(-1) ? 'font-bold text-center text-[#40321f] bg-[#faf9f6] py-3 rounded-xl max-w-lg mx-auto' : ''}>
-                  {p}
-                </p>
-              ))}
+        {cms.journey?._visible !== false && (
+          <div className="about-card max-w-4xl mx-auto mb-16 text-left relative md:rotate-1">
+            <PopcornSticker className="-top-12 -left-8 scale-90 md:scale-100" />
+            <MusicNotesSticker className="-bottom-8 -right-8 scale-90 md:scale-100" />
+            
+            <div className="p-8 md:p-10">
+              <h3 className="text-2xl font-black mb-6 text-[#40321f] border-b-2 border-zinc-900 pb-2 inline-block">
+                {cms.journey.title}
+              </h3>
+              <div className="text-sm leading-relaxed text-zinc-650 space-y-4 font-medium">
+                {(cms.journey.paragraphs || []).map((p, i) => (
+                  <p key={i} className={p === cms.journey.highlightParagraph ? 'font-bold text-base text-[#40321f] mt-6' : p === (cms.journey.paragraphs || []).at(-1) ? 'font-bold text-center text-[#40321f] bg-[#faf9f6] py-3 rounded-xl max-w-lg mx-auto' : ''}>
+                    {p}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* FOUNDER MESSAGE CARD */}
-        <div className="about-card max-w-4xl mx-auto mb-16 text-left relative md:-rotate-1">
-          <TicketSticker className="-bottom-8 -right-8 scale-90 md:scale-100" />
-          <HeadphonesSticker className="-top-12 -left-8 scale-90 md:scale-100" />
-          
-          <div className="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center">
-            <div className="flex-1">
-              <span className="text-xs font-bold text-[#a0825b] block mb-2">{cms.founder.badge}</span>
-              <h3 className="text-2xl font-bold mb-4 text-[#40321f]">{cms.founder.title}</h3>
-              <span className="text-5xl text-[#a0825b]/20 block -mt-4">"</span>
-              <p className="text-sm italic leading-relaxed text-zinc-650 mb-4">
-                "{cms.founder.quote}"
-              </p>
-            </div>
-            <div className="md:w-72 border-t md:border-t-0 md:border-l-2 border-dashed border-zinc-400 pt-6 md:pt-0 md:pl-6 flex flex-col justify-center">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-[#a0825b]/10 flex items-center justify-center font-bold text-sm text-[#a0825b]">{cms.founder.initials}</div>
-                <div>
-                  <h5 className="text-sm font-bold text-[#40321f]">{cms.founder.name}</h5>
-                  <p className="text-[11px] text-[#a0825b] font-bold uppercase tracking-wider">{cms.founder.role}</p>
-                  <p className="text-[10px] text-zinc-400 font-semibold mt-0.5 leading-tight">
-                    {cms.founder.tagline}
-                  </p>
+        {cms.founder?._visible !== false && (
+          <div className="about-card max-w-4xl mx-auto mb-16 text-left relative md:-rotate-1">
+            <TicketSticker className="-bottom-8 -right-8 scale-90 md:scale-100" />
+            <HeadphonesSticker className="-top-12 -left-8 scale-90 md:scale-100" />
+            
+            <div className="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center">
+              <div className="flex-1">
+                <span className="text-xs font-bold text-[#a0825b] block mb-2">{cms.founder.badge}</span>
+                <h3 className="text-2xl font-bold mb-4 text-[#40321f]">{cms.founder.title}</h3>
+                <span className="text-5xl text-[#a0825b]/20 block -mt-4">"</span>
+                <p className="text-sm italic leading-relaxed text-zinc-650 mb-4">
+                  "{cms.founder.quote}"
+                </p>
+              </div>
+              <div className="md:w-72 border-t md:border-t-0 md:border-l-2 border-dashed border-zinc-400 pt-6 md:pt-0 md:pl-6 flex flex-col justify-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#a0825b]/10 flex items-center justify-center font-bold text-sm text-[#a0825b]">{cms.founder.initials}</div>
+                  <div>
+                    <h5 className="text-sm font-bold text-[#40321f]">{cms.founder.name}</h5>
+                    <p className="text-[11px] text-[#a0825b] font-bold uppercase tracking-wider">{cms.founder.role}</p>
+                    <p className="text-[10px] text-zinc-400 font-semibold mt-0.5 leading-tight">
+                      {cms.founder.tagline}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* CAREERS / WORK WITH US STRIP */}
-        <div className="about-card max-w-4xl mx-auto text-left relative md:rotate-1">
-          <FilmCanisterSticker className="-top-12 -right-8 scale-90 md:scale-100" />
-          <CassetteSticker className="-bottom-8 -left-8 scale-90 md:scale-100" />
+        {cms.careers?._visible !== false && (
+          <div className="about-card max-w-4xl mx-auto text-left relative md:rotate-1">
+            <FilmCanisterSticker className="-top-12 -right-8 scale-90 md:scale-100" />
+            <CassetteSticker className="-bottom-8 -left-8 scale-90 md:scale-100" />
 
-          <div className="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center justify-between">
-            <div className="flex-1">
-              <span className="text-xs font-bold text-[#a0825b] block mb-2">{cms.careers.badge}</span>
-              <h3 className="text-xl font-bold mb-2 text-[#40321f]">{cms.careers.title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-550 mb-2">
-                {cms.careers.body}
-              </p>
-            </div>
-            <div className="shrink-0 w-full md:w-auto">
-              <button
-                onClick={() => {
-                  console.log("Work With Us clicked. onCareersClick is:", onCareersClick);
-                  if (onCareersClick) onCareersClick();
-                }}
-                className="w-full md:w-auto inline-flex items-center justify-center bg-[#40321f] hover:bg-[#5a4831] text-white font-bold py-3.5 px-8 rounded-full text-sm tracking-wider uppercase transition-all duration-300 shadow-md cursor-pointer border-2 border-zinc-900"
-              >
-                {cms.careers.ctaLabel}
-              </button>
+            <div className="p-8 md:p-10 flex flex-col md:flex-row gap-8 items-center justify-between">
+              <div className="flex-1">
+                <span className="text-xs font-bold text-[#a0825b] block mb-2">{cms.careers.badge}</span>
+                <h3 className="text-xl font-bold mb-2 text-[#40321f]">{cms.careers.title}</h3>
+                <p className="text-sm leading-relaxed text-zinc-550 mb-2">
+                  {cms.careers.body}
+                </p>
+              </div>
+              <div className="shrink-0 w-full md:w-auto">
+                <button
+                  onClick={() => {
+                    console.log("Work With Us clicked. onCareersClick is:", onCareersClick);
+                    if (onCareersClick) onCareersClick();
+                  }}
+                  className="w-full md:w-auto inline-flex items-center justify-center bg-[#40321f] hover:bg-[#5a4831] text-white font-bold py-3.5 px-8 rounded-full text-sm tracking-wider uppercase transition-all duration-300 shadow-md cursor-pointer border-2 border-zinc-900"
+                >
+                  {cms.careers.ctaLabel}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Brand Tagline */}
-        <div className="text-center py-12">
-          <p className="text-lg md:text-xl font-bold text-[#40321f] italic">
-            {cms.tagline}
-          </p>
-        </div>
+        {cms.taglineVisible !== false && (
+          <div className="text-center py-12">
+            <p className="text-lg md:text-xl font-bold text-[#40321f] italic">
+              {cms.tagline}
+            </p>
+          </div>
+        )}
 
       </div>
     </div>

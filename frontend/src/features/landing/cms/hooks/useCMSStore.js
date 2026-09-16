@@ -23,10 +23,12 @@ export function useCMSStoreConfig() {
     refetchOnWindowFocus: true,
   });
 
-  const section = data?.sections?.find((s) => s.sectionKey === 'store-config' && s.isVisible !== false);
+  const section = data?.sections?.find((s) => s.sectionKey === 'store-config');
+  const isVisible = section ? section.isVisible !== false : true;
   const content = !isError && section?.content ? section.content : CMS_STORE_FALLBACK;
   return {
     config: content,
+    visible: isVisible,
     isLoading,
     get: (path, fallback) => {
       const keys = path.split('.');

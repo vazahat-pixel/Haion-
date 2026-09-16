@@ -27,13 +27,17 @@ import { nextSequence } from '../utils/sequence.util.js';
  * The remaining types (EXPENSE, MANUFACTURE, ADJUSTMENT, OPENING_BALANCE) may
  * be purely internal, so linking stays optional there.
  */
-export const PARTY_REQUIRED_TXN_TYPES = ['SALE_TO_DEALER', 'PAYMENT_FROM_DEALER', 'PURCHASE'];
+export const PARTY_REQUIRED_TXN_TYPES = ['SALE_TO_DEALER', 'PAYMENT_FROM_DEALER', 'SALE_TO_SERVICE_CENTER', 'PAYMENT_FROM_SERVICE_CENTER', 'PURCHASE'];
 
 /** Company txnType → the party ledger voucher type that means the same thing. */
 function voucherTypeFor(txnType, credit) {
   switch (txnType) {
-    case 'SALE_TO_DEALER': return 'SALES_INVOICE';
-    case 'PAYMENT_FROM_DEALER': return credit > 0 ? 'PAYMENT_IN' : 'PAYMENT_OUT';
+    case 'SALE_TO_DEALER':
+    case 'SALE_TO_SERVICE_CENTER':
+      return 'SALES_INVOICE';
+    case 'PAYMENT_FROM_DEALER':
+    case 'PAYMENT_FROM_SERVICE_CENTER':
+      return credit > 0 ? 'PAYMENT_IN' : 'PAYMENT_OUT';
     case 'PURCHASE': return credit > 0 ? 'PAYMENT_IN' : 'PURCHASE';
     case 'OPENING_BALANCE': return 'OPENING_BALANCE';
     default: return 'JOURNAL';

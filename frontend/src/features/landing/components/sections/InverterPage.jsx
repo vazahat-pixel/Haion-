@@ -14,18 +14,31 @@ export default function InverterPage({ onViewDetails, onClose }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const hasVisibleContent = hero?._visible !== false;
+
   return (
     <div className="bg-[#f8f9fa] min-h-screen pt-28 pb-20 px-6 font-sans">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <span className="inline-block text-xs font-bold tracking-widest text-purple-700 uppercase bg-purple-500/10 px-4 py-2 rounded-full border border-purple-500/25 mb-4">
-            {hero.badge}
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gradient mb-6 font-display bg-gradient-to-r from-zinc-950 to-amber-500 bg-clip-text text-transparent">
-            {hero.title}
-          </h1>
-          <p className="text-zinc-550 text-lg font-light leading-relaxed">{hero.subtitle}</p>
-        </div>
+        {!hasVisibleContent && (
+          <div className="text-center py-28">
+            <h2 className="text-3xl font-extrabold text-zinc-900 mb-3 font-display">Inverters</h2>
+            <p className="text-zinc-500 text-sm md:text-base max-w-md mx-auto">
+              This page content is currently being updated. Please check back soon!
+            </p>
+          </div>
+        )}
+
+        {hero?._visible !== false && (
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="inline-block text-xs font-bold tracking-widest text-purple-700 uppercase bg-purple-500/10 px-4 py-2 rounded-full border border-purple-500/25 mb-4">
+              {hero.badge}
+            </span>
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gradient mb-6 font-display bg-gradient-to-r from-zinc-950 to-amber-500 bg-clip-text text-transparent">
+              {hero.title}
+            </h1>
+            <p className="text-zinc-550 text-lg font-light leading-relaxed">{hero.subtitle}</p>
+          </div>
+        )}
 
         <div className="mb-20">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gradient text-center font-display mb-10 bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent">

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export const PARTY_TYPES = ['SUPPLIER', 'DEALER', 'CUSTOMER', 'EMPLOYEE', 'OTHER'];
+export const PARTY_TYPES = ['SUPPLIER', 'DEALER', 'CUSTOMER', 'EMPLOYEE', 'SERVICE_CENTER', 'OTHER'];
 
 const bankAccountSchema = new mongoose.Schema(
   {

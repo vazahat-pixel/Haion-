@@ -34,30 +34,42 @@ export default function HomeAppliancesPage({ onViewDetails, onClose }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const hasVisibleContent = hero?._visible !== false || sections?._visible !== false;
+
   return (
     <div className="bg-[#f8f9fa] min-h-screen pt-28 pb-20 px-6 font-sans">
       <div className="max-w-7xl mx-auto">
-        
-
+        {!hasVisibleContent && (
+          <div className="text-center py-28">
+            <h2 className="text-3xl font-extrabold text-zinc-900 mb-3 font-display">Home Appliances</h2>
+            <p className="text-zinc-500 text-sm md:text-base max-w-md mx-auto">
+              This page content is currently being updated. Please check back soon!
+            </p>
+          </div>
+        )}
 
         {/* Hero Header */}
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <span className="inline-block text-xs font-semibold tracking-widest text-purple-600 uppercase bg-purple-500/10 px-4 py-2 rounded-full border border-purple-500/25 mb-4 animate-pulse-slow">
-            {hero.badge || 'IoT Household'}
-          </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gradient mb-6 font-display">
-            {hero.title || 'Haion Home Appliances'}
-          </h1>
-          <p className="text-zinc-500 text-lg font-light leading-relaxed">
-            {hero.subtitle || 'Smarter living made effortless. Explore our connected IoT household devices.'}
-          </p>
-        </div>
+        {hero?._visible !== false && (
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="inline-block text-xs font-semibold tracking-widest text-purple-600 uppercase bg-purple-500/10 px-4 py-2 rounded-full border border-purple-500/25 mb-4 animate-pulse-slow">
+              {hero.badge || 'IoT Household'}
+            </span>
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gradient mb-6 font-display">
+              {hero.title || 'Haion Home Appliances'}
+            </h1>
+            <p className="text-zinc-550 text-lg font-light leading-relaxed">
+              {hero.subtitle || 'Smarter living made effortless. Explore our connected IoT household devices.'}
+            </p>
+          </div>
+        )}
 
-        {/* LED TVs Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gradient text-center font-display mb-8">
-            {sections.tv?.title || 'Smart LED TVs Series'}
-          </h2>
+        {sections?._visible !== false && (
+          <>
+            {/* LED TVs Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gradient text-center font-display mb-8">
+                {sections.tv?.title || 'Smart LED TVs Series'}
+              </h2>
           <div className="flex flex-wrap justify-center gap-8 md:gap-10">
             {appliancesData.filter(p => p.id.startsWith('tv')).map((product) => (
               <GlassCard key={product.id} className="w-full md:w-[380px] flex flex-col justify-between p-6 border-zinc-200/50 bg-white/70 hover:bg-white hover:border-purple-500/35 hover:shadow-[0_15px_40px_rgba(232,141,1,0.12)] transition-all duration-500 rounded-2xl group">
@@ -339,6 +351,8 @@ export default function HomeAppliancesPage({ onViewDetails, onClose }) {
           })}
           </div>
         </div>
+          </>
+        )}
 
       </div>
     </div>

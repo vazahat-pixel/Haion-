@@ -58,7 +58,14 @@ export function Router() {
         <Route path="/" element={<RootRedirect />} />
 
         <Route element={<LandingLayout />}>
-          <Route path="/landing" element={<LandingPage />} />
+          <Route
+            path="/landing"
+            element={
+              <Suspense fallback={<div className="min-h-screen bg-[#030303]" />}>
+                <LandingPage />
+              </Suspense>
+            }
+          />
         </Route>
 
         <Route element={<AuthLayout />}>
