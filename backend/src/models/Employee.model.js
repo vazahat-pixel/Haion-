@@ -62,6 +62,34 @@ const employeeSchema = new mongoose.Schema(
     manager: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
     dealerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Dealer' },
     warehouseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Warehouse' },
+
+    // ── Organizational Hierarchy Fields ──────────────────────────────────
+    vertical: {
+      type: String,
+      enum: ['SALES_PRODUCTION', 'FINANCE', 'PRODUCTION_MARKETING', ''],
+      default: '',
+    },
+    subVertical: {
+      type: String,
+      enum: ['SALES', 'SERVICE', ''],
+      default: '',
+    },
+    hierarchyLevel: {
+      type: String,
+      enum: ['CEO', 'NSM', 'STATE_HEAD', 'ASM', 'STORE_MANAGER', ''],
+      default: '',
+    },
+    territory: {
+      state: { type: String, trim: true, default: '' },
+      district: { type: String, trim: true, default: '' },
+      region: { type: String, trim: true, default: '' },
+    },
+    serviceCenterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ServiceCenter',
+      default: null,
+    },
+
     joinedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

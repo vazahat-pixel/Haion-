@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Sheet } from '@/components/ui/sheet';
@@ -24,6 +25,12 @@ export function DrawerForm({
     defaultValues,
   });
 
+  useEffect(() => {
+    if (open) {
+      reset(defaultValues);
+    }
+  }, [open, defaultValues, reset]);
+
   const submit = async (data) => {
     try {
       await onSubmit(data);
@@ -36,6 +43,10 @@ export function DrawerForm({
     }
   };
 
+  const regOptions = (field) => ({
+    onChange: field.onChange ? (e) => field.onChange(e.target.value) : undefined,
+  });
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title={title} description={description}>
       <form onSubmit={handleSubmit(submit)} className="space-y-4">
@@ -43,16 +54,16 @@ export function DrawerForm({
           <div key={field.name}>
             <Label htmlFor={field.name}>{field.label}</Label>
             {field.type === 'select' ? (
-              <Select id={field.name} {...register(field.name)} error={errors[field.name]}>
+              <Select id={field.name} {...register(field.name, regOptions(field))} error={errors[field.name]}>
                 <option value="">Select…</option>
                 {field.options?.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </Select>
             ) : field.type === 'textarea' ? (
-              <Textarea id={field.name} rows={field.rows || 3} {...register(field.name)} error={errors[field.name]} />
+              <Textarea id={field.name} rows={field.rows || 3} {...register(field.name, regOptions(field))} error={errors[field.name]} />
             ) : (
-              <Input id={field.name} type={field.type || 'text'} readOnly={field.readOnly} disabled={field.readOnly} {...register(field.name)} error={errors[field.name]} />
+              <Input id={field.name} type={field.type || 'text'} readOnly={field.readOnly} disabled={field.readOnly} {...register(field.name, regOptions(field))} error={errors[field.name]} />
             )}
             {errors[field.name] && (
               <p className="mt-1 text-xs text-[var(--color-danger)]">{errors[field.name].message}</p>

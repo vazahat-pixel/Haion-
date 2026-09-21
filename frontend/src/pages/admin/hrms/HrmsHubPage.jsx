@@ -16,6 +16,7 @@ import {
   FileText,
   UserCheck,
   UserX,
+  Network,
 } from 'lucide-react';
 import { PageShell } from '@/components/layout/PageShell';
 import { Button } from '@/components/ui/button';
@@ -308,6 +309,22 @@ export default function HrmsHubPage() {
                   <div>
                     <span className="block font-semibold text-xs text-surface-900">Departments</span>
                     <span className="block text-[10.5px] text-surface-500">Org structure & designations</span>
+                  </div>
+                </div>
+                <ArrowUpRight className="h-3.5 w-3.5 text-surface-400" />
+              </div>
+
+              <div
+                onClick={() => navigate('/admin/hrms/hierarchy')}
+                className="p-2.5 rounded-lg border border-surface-3 hover:border-amber-500/40 hover:bg-surface-2/40 cursor-pointer flex items-center justify-between transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-400">
+                    <Network className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="block font-semibold text-xs text-surface-900">Organization Hierarchy</span>
+                    <span className="block text-[10.5px] text-surface-500">Verticals, reporting lines & tree</span>
                   </div>
                 </div>
                 <ArrowUpRight className="h-3.5 w-3.5 text-surface-400" />

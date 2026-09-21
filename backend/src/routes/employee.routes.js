@@ -11,6 +11,7 @@ router.get('/team/:managerId', requirePermission('employees.read'), ctrl.getTeam
 router.get('/:id/dealers', requirePermission('employees.read'), ctrl.getEmployeeDealers);
 router.put('/:id/dealers', requirePermission('employees.update'), ctrl.setEmployeeDealers);
 router.get('/:id/reporting-line', requirePermission('employees.read'), ctrl.getReportingLine);
+router.get('/:id/subordinates', requirePermission('employees.read'), ctrl.getSubordinates);
 router.get('/', requirePermission('employees.read'), ctrl.listEmployees);
 router.post('/', requirePermission('employees.create'), ctrl.createEmployee);
 router.get('/:id', requirePermission('employees.read'), ctrl.getEmployee);

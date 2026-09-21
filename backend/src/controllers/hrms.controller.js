@@ -4,12 +4,17 @@ import Attendance from '../models/Attendance.model.js';
 import LeaveRequest from '../models/LeaveRequest.model.js';
 import Payroll from '../models/Payroll.model.js';
 import Department from '../models/Department.model.js';
+import Dealer from '../models/Dealer.model.js';
+import Warehouse from '../models/Warehouse.model.js';
+import ServiceCenter from '../models/ServiceCenter.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendError, sendPaginated } from '../utils/apiResponse.js';
 import { parsePagination, buildSearchFilter } from '../utils/pagination.util.js';
 import { toPublicDoc } from '../utils/serialize.util.js';
 import { nextSequence } from '../utils/sequence.util.js';
 import { addCompanyLedgerEntry } from '../services/companyLedger.service.js';
+import { env } from '../config/env.js';
+import { COMPANY_HEADQUARTERS, DEFAULT_GEOFENCE_RADIUS_METERS } from '../config/constants.js';
 
 // Seed default departments if empty
 async function ensureDefaultDepartments() {
@@ -545,3 +550,406 @@ export const updateDepartment = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, { data: toPublicDoc(doc.toObject()), message: 'Department updated successfully' });
 });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── REAL-TIME ATTENDANCE ENGINE (Production — Google Maps API Integration) ───
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Haversine formula: distance in meters between two GPS coordinates.
+ */
+function haversineMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Earth radius in metres
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Reverse geocode lat/lng to a human-readable address using Google Maps Geocoding API,
+ * with graceful fallback to OpenStreetMap Nominatim if Google Maps fails or times out.
+ */
+async function reverseGeocode(lat, lng) {
+  if (!lat || !lng) return '';
+  const apiKey = env.googleMapsApiKey;
+  if (apiKey) {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+      const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      const data = await response.json();
+      if (data.status === 'OK' && data.results?.length > 0) {
+        return data.results[0].formatted_address || '';
+      }
+    } catch {
+      // fallback below
+    }
+  }
+
+  // OpenStreetMap Nominatim reverse geocode fallback
+  try {
+    const nomUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+    const nomRes = await fetch(nomUrl, {
+      headers: { 'User-Agent': 'HaionERP/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+    const nomData = await nomRes.json();
+    if (nomData?.display_name) {
+      return nomData.display_name;
+    }
+  } catch {
+    // silent
+  }
+  return '';
+}
+
+/**
+ * GET /hrms/attendance/reverse-geocode?lat=...&lng=...
+ * Proxy reverse geocode endpoint for frontend
+ */
+export const getReverseGeocode = asyncHandler(async (req, res) => {
+  const { lat, lng } = req.query;
+  const latitude = parseFloat(lat);
+  const longitude = parseFloat(lng);
+
+  if (isNaN(latitude) || isNaN(longitude)) {
+    return sendError(res, { message: 'Valid latitude and longitude query parameters are required', statusCode: 400 });
+  }
+
+  const address = await reverseGeocode(latitude, longitude);
+  return sendSuccess(res, {
+    data: {
+      latitude,
+      longitude,
+      address,
+    },
+  });
+});
+
+
+/**
+ * Resolve the assigned workplace (HQ / Dealer / Warehouse / ServiceCenter) for an employee.
+ * Priority: Dealer → ServiceCenter → Warehouse → HQ fallback
+ */
+async function resolveWorkplace(emp) {
+  if (emp.dealerId) {
+    const dealer = await Dealer.findById(emp.dealerId).lean();
+    if (dealer) {
+      return {
+        workplaceType: 'DEALER',
+        refId: dealer._id,
+        name: dealer.name || 'Dealer Store',
+        address: dealer.address || `${dealer.city}, ${dealer.state}`,
+        coordinates: dealer.coordinates || {},
+        geofenceRadiusMeters: dealer.geofenceRadiusMeters || DEFAULT_GEOFENCE_RADIUS_METERS,
+      };
+    }
+  }
+  if (emp.serviceCenterId) {
+    const sc = await ServiceCenter.findById(emp.serviceCenterId).lean();
+    if (sc) {
+      return {
+        workplaceType: 'SERVICE_CENTER',
+        refId: sc._id,
+        name: sc.name || 'Service Center',
+        address: sc.address || `${sc.city}, ${sc.state}`,
+        coordinates: sc.coordinates || {},
+        geofenceRadiusMeters: sc.geofenceRadiusMeters || DEFAULT_GEOFENCE_RADIUS_METERS,
+      };
+    }
+  }
+  if (emp.warehouseId) {
+    const wh = await Warehouse.findById(emp.warehouseId).lean();
+    if (wh) {
+      return {
+        workplaceType: 'WAREHOUSE',
+        refId: wh._id,
+        name: wh.name || 'Warehouse',
+        address: `${wh.city}, ${wh.state}`,
+        coordinates: wh.coordinates || {},
+        geofenceRadiusMeters: wh.geofenceRadiusMeters || DEFAULT_GEOFENCE_RADIUS_METERS,
+      };
+    }
+  }
+  // Fallback to company HQ
+  return {
+    workplaceType: 'HEADQUARTERS',
+    refId: null,
+    name: COMPANY_HEADQUARTERS.name,
+    address: COMPANY_HEADQUARTERS.address,
+    coordinates: COMPANY_HEADQUARTERS.coordinates,
+    geofenceRadiusMeters: env.companyHqGeofenceMeters || COMPANY_HEADQUARTERS.geofenceRadiusMeters,
+  };
+}
+
+// ── GET /hrms/attendance/today ─────────────────────────────────────────────
+export const getMyAttendanceToday = asyncHandler(async (req, res) => {
+  // Primary: find by linked user id
+  let emp = await Employee.findOne({ user: req.user._id }).lean();
+  // Fallback: find by matching email (handles cases where user field wasn't set)
+  if (!emp && req.user.email) {
+    emp = await Employee.findOne({ email: req.user.email.toLowerCase() }).lean();
+  }
+  if (!emp) {
+    return sendError(res, { message: 'Employee profile not found. Ask admin to link your account.', statusCode: 404 });
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const record = await Attendance.findOne({ employee: emp._id, dateString: todayStr }).lean();
+
+  const workplace = await resolveWorkplace(emp);
+
+  return sendSuccess(res, {
+    data: {
+      record: record ? toPublicDoc(record) : null,
+      isPunchedIn: record?.isPunchedIn || false,
+      checkInTime: record?.checkInTime || null,
+      workMode: record?.workMode || null,
+      workplace,
+      employeeId: emp._id,
+      empId: emp.empId,
+    },
+  });
+});
+
+// ── POST /hrms/attendance/punch-in ────────────────────────────────────────────
+export const punchIn = asyncHandler(async (req, res) => {
+  const {
+    latitude,
+    longitude,
+    accuracy,
+    address: clientAddressField,   // ← address pre-resolved by frontend
+    workMode = 'OFFICE',
+    fieldDetails = {},
+  } = req.body;
+
+  if (!latitude || !longitude) {
+    return sendError(res, { message: 'GPS coordinates (latitude, longitude) are required', statusCode: 400 });
+  }
+
+  const emp2 = await Employee.findOne({ user: req.user._id });
+  let emp = emp2;
+  if (!emp && req.user.email) emp = await Employee.findOne({ email: req.user.email.toLowerCase() });
+  if (!emp) return sendError(res, { message: 'Employee profile not found. Ask admin to link your account.', statusCode: 404 });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const now = new Date();
+
+  // Check for duplicate active punch-in
+  const existing = await Attendance.findOne({ employee: emp._id, dateString: todayStr });
+  if (existing?.isPunchedIn) {
+    return sendError(res, { message: 'You are already punched in. Please punch out first.', statusCode: 400 });
+  }
+
+  // Use address from frontend if already reverse-geocoded (Google Maps API called client-side),
+  // otherwise call backend Geocoding API as fallback.
+  const address = clientAddressField || (await reverseGeocode(latitude, longitude));
+
+  // Resolve assigned workplace
+  const workplace = await resolveWorkplace(emp);
+
+  // Geofence check for OFFICE mode
+  let distanceMeters = null;
+  let isWithinGeofence = null;
+
+  if (workMode === 'OFFICE' && workplace.coordinates?.latitude && workplace.coordinates?.longitude) {
+    distanceMeters = Math.round(haversineMeters(
+      latitude, longitude,
+      workplace.coordinates.latitude,
+      workplace.coordinates.longitude,
+    ));
+    isWithinGeofence = distanceMeters <= (workplace.geofenceRadiusMeters || DEFAULT_GEOFENCE_RADIUS_METERS);
+  }
+
+  // Format checkIn time string for backward compat (payroll)
+  const checkInStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  // Determine status
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const isLate = hour > 9 || (hour === 9 && minute > 30); // Late if after 09:30
+
+  let record = existing;
+  if (record) {
+    // Update existing record (e.g. admin manually created ABSENT entry earlier)
+    record.checkInTime = now;
+    record.checkIn = checkInStr;
+    record.isPunchedIn = true;
+    record.workMode = workMode;
+    record.status = isLate ? 'LATE' : 'PRESENT';
+    record.checkInLocation = { latitude, longitude, accuracy: accuracy || null, address, distanceMeters, isWithinGeofence };
+    record.workplace = workplace;
+    if (workMode === 'FIELD') {
+      record.fieldDetails = {
+        clientName: fieldDetails.clientName || '',
+        siteName: fieldDetails.siteName || '',
+        purpose: fieldDetails.purpose || '',
+        remarks: fieldDetails.remarks || '',
+        verificationStatus: 'PENDING',
+      };
+    }
+    await record.save();
+  } else {
+    record = await Attendance.create({
+      employee: emp._id,
+      employeeName: `${emp.firstName} ${emp.lastName}`,
+      empId: emp.empId,
+      department: emp.department,
+      date: new Date(todayStr),
+      dateString: todayStr,
+      checkIn: checkInStr,
+      status: isLate ? 'LATE' : 'PRESENT',
+      totalHours: 0,
+      overtimeHours: 0,
+      markedBy: req.user._id,
+      workMode,
+      checkInTime: now,
+      isPunchedIn: true,
+      checkInLocation: { latitude, longitude, accuracy: accuracy || null, address, distanceMeters, isWithinGeofence },
+      workplace,
+      fieldDetails: workMode === 'FIELD' ? {
+        clientName: fieldDetails.clientName || '',
+        siteName: fieldDetails.siteName || '',
+        purpose: fieldDetails.purpose || '',
+        remarks: fieldDetails.remarks || '',
+        verificationStatus: 'PENDING',
+      } : {},
+    });
+  }
+
+  return sendSuccess(res, {
+    data: toPublicDoc(record.toObject()),
+    message: `✅ Punched in at ${checkInStr} (${workMode === 'FIELD' ? 'Field Visit' : 'Office'})${isWithinGeofence === false ? ' ⚠️ Outside geofence — recorded anyway' : ''}`,
+    meta: { isLate, isWithinGeofence, distanceMeters, address, workplace },
+  });
+});
+
+// ── POST /hrms/attendance/punch-out ─────────────────────────────────────────────
+export const punchOut = asyncHandler(async (req, res) => {
+  const { latitude, longitude, accuracy, address: clientOutAddress = '', remarks = '' } = req.body;
+
+  let emp = await Employee.findOne({ user: req.user._id });
+  if (!emp && req.user.email) emp = await Employee.findOne({ email: req.user.email.toLowerCase() });
+  if (!emp) return sendError(res, { message: 'Employee profile not found. Ask admin to link your account.', statusCode: 404 });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const record = await Attendance.findOne({ employee: emp._id, dateString: todayStr, isPunchedIn: true });
+
+  if (!record) {
+    return sendError(res, { message: 'No active punch-in found for today. Please punch in first.', statusCode: 400 });
+  }
+
+  const now = new Date();
+  const checkOutStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  // Calculate total hours worked
+  const checkInTime = record.checkInTime ? new Date(record.checkInTime) : now;
+  const diffMs = now - checkInTime;
+  const totalHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100; // 2 decimal places
+  const overtimeHours = Math.max(0, Math.round((totalHours - 8) * 100) / 100);
+
+  // Update to HALF_DAY if worked less than 4 hrs
+  let status = record.status;
+  if (totalHours < 4) status = 'HALF_DAY';
+
+  // Use client-sent address (already geocoded on frontend) or backend fallback
+  const checkOutAddress = clientOutAddress || (latitude && longitude ? await reverseGeocode(latitude, longitude) : '');
+
+  record.checkOutTime = now;
+  record.checkOut = checkOutStr;
+  record.isPunchedIn = false;
+  record.totalHours = totalHours;
+  record.overtimeHours = overtimeHours;
+  record.status = status;
+  record.remarks = remarks || record.remarks;
+  if (latitude && longitude) {
+    record.checkOutLocation = { latitude, longitude, accuracy: accuracy || null, address: checkOutAddress };
+  }
+
+  await record.save();
+
+  return sendSuccess(res, {
+    data: toPublicDoc(record.toObject()),
+    message: `✅ Punched out at ${checkOutStr}. Total time: ${totalHours} hrs${overtimeHours > 0 ? ` (${overtimeHours} hrs overtime)` : ''}.`,
+    meta: { totalHours, overtimeHours, checkOutAddress },
+  });
+});
+
+// ── GET /hrms/attendance/live — HR live monitor (all active punch-ins today) ──
+export const getLiveAttendance = asyncHandler(async (req, res) => {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const { department, workMode } = req.query;
+
+  const filter = { dateString: todayStr };
+  if (department) filter.department = department;
+  if (workMode) filter.workMode = workMode;
+
+  const records = await Attendance.find(filter)
+    .populate('employee', 'firstName lastName empId department designation hierarchyLevel role')
+    .lean();
+
+  // Compute running shift hours for punched-in employees
+  const now = new Date();
+  const enriched = records.map((r) => {
+    let activeShiftHours = r.totalHours;
+    if (r.isPunchedIn && r.checkInTime) {
+      activeShiftHours = Math.round(((now - new Date(r.checkInTime)) / (1000 * 60 * 60)) * 100) / 100;
+    }
+    return {
+      ...toPublicDoc(r),
+      activeShiftHours,
+      googleMapsUrl: r.checkInLocation?.latitude
+        ? `https://maps.google.com/?q=${r.checkInLocation.latitude},${r.checkInLocation.longitude}`
+        : null,
+    };
+  });
+
+  const punchedIn = enriched.filter((r) => r.isPunchedIn);
+  const inOffice = punchedIn.filter((r) => r.workMode === 'OFFICE');
+  const inField = punchedIn.filter((r) => r.workMode === 'FIELD');
+  const completed = enriched.filter((r) => !r.isPunchedIn && r.checkInTime);
+
+  return sendSuccess(res, {
+    data: enriched,
+    meta: {
+      totalRecords: enriched.length,
+      punchedIn: punchedIn.length,
+      inOffice: inOffice.length,
+      inField: inField.length,
+      completed: completed.length,
+      pendingFieldVerifications: enriched.filter((r) => r.fieldDetails?.verificationStatus === 'PENDING').length,
+    },
+  });
+});
+
+// ── PATCH /hrms/attendance/:id/verify-field — HR approves/rejects field visit ─
+export const verifyFieldAttendance = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { action, remarks = '' } = req.body; // action: 'APPROVED' | 'REJECTED'
+
+  if (!['APPROVED', 'REJECTED'].includes(action)) {
+    return sendError(res, { message: 'action must be APPROVED or REJECTED', statusCode: 400 });
+  }
+
+  const record = await Attendance.findById(id);
+  if (!record) return sendError(res, { message: 'Attendance record not found', statusCode: 404 });
+  if (record.workMode !== 'FIELD') {
+    return sendError(res, { message: 'This record is not a field visit', statusCode: 400 });
+  }
+
+  record.fieldDetails.verificationStatus = action;
+  record.fieldDetails.verifiedBy = req.user._id;
+  record.fieldDetails.verifiedAt = new Date();
+  if (remarks) record.fieldDetails.remarks = remarks;
+
+  await record.save();
+
+  return sendSuccess(res, {
+    data: toPublicDoc(record.toObject()),
+    message: `Field visit ${action.toLowerCase()} successfully.`,
+  });
+});
+

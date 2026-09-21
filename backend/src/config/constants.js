@@ -1,5 +1,10 @@
 export const ROLES = {
   MASTER_ADMIN: 'MASTER_ADMIN',
+  CEO: 'CEO',
+  NSM: 'NSM',
+  STATE_HEAD: 'STATE_HEAD',
+  ASM: 'ASM',
+  STORE_MANAGER: 'STORE_MANAGER',
   WAREHOUSE_MANAGER: 'WAREHOUSE_MANAGER',
   DEALER_ADMIN: 'DEALER_ADMIN',
   DEALER_SALES: 'DEALER_SALES',
@@ -8,6 +13,43 @@ export const ROLES = {
   CUSTOMER_SUPPORT: 'CUSTOMER_SUPPORT',
   SERVICE_CENTER: 'SERVICE_CENTER',
   CUSTOMER: 'CUSTOMER',
+};
+
+// Organizational verticals for HRMS hierarchy
+export const VERTICALS = {
+  SALES_PRODUCTION: 'SALES_PRODUCTION',
+  FINANCE: 'FINANCE',
+  PRODUCTION_MARKETING: 'PRODUCTION_MARKETING',
+};
+
+// Sub-verticals (used within SALES_PRODUCTION)
+export const SUB_VERTICALS = {
+  SALES: 'SALES',
+  SERVICE: 'SERVICE',
+};
+
+// Hierarchy level order (top → bottom) for sorting/display
+export const DESIGNATION_HIERARCHY = [
+  'CEO',
+  'NSM',
+  'STATE_HEAD',
+  'ASM',
+  'STORE_MANAGER',
+];
+
+// ── Real-Time Attendance constants ────────────────────────────────────────
+export const ATTENDANCE_WORK_MODES = ['OFFICE', 'FIELD', 'REMOTE', 'MANUAL'];
+export const DEFAULT_GEOFENCE_RADIUS_METERS = 250;
+
+// Haion Corporate Headquarters location (Delhi NCR default — update via Admin Settings)
+export const COMPANY_HEADQUARTERS = {
+  name: 'Haion Headquarters',
+  address: 'Haion Industries Pvt Ltd, Delhi, India',
+  coordinates: {
+    latitude: 28.6139,   // New Delhi (override in .env for exact location)
+    longitude: 77.2090,
+  },
+  geofenceRadiusMeters: DEFAULT_GEOFENCE_RADIUS_METERS,
 };
 
 export const INDIAN_STATES = [

@@ -55,7 +55,7 @@ const DealerPurchaseReturnNewPage = lazy(() => import('@/pages/dealer/purchase-r
 const DealerPurchaseReturnDetailPage = lazy(() => import('@/pages/dealer/purchase-returns/DealerPurchaseReturnDetailPage'));
 
 
-const PANEL_ROLES = [ROLES.DEALER_ADMIN, ROLES.DEALER_SALES];
+const PANEL_ROLES = [ROLES.DEALER_ADMIN, ROLES.DEALER_SALES, ROLES.STORE_MANAGER];
 
 export default function DealerRoutes() {
   return (

@@ -6,7 +6,8 @@ export const employeesService = {
   getDetail: async (id) => (await client.get(endpoints.employees.detail(id))).normalized.data,
   create: async (data) => (await client.post(endpoints.employees.list, data)).normalized.data,
   update: async (id, data) => (await client.patch(endpoints.employees.detail(id), data)).normalized.data,
-  getHierarchy: async () => (await client.get(endpoints.employees.hierarchy)).normalized.data,
+  getHierarchy: async (params) => (await client.get(endpoints.employees.hierarchy, { params })).normalized.data,
+  getSubordinates: async (id) => (await client.get(`${endpoints.employees.detail(id)}/subordinates`)).normalized.data,
   getReportingLine: async (id) => (await client.get(endpoints.employees.reportingLine(id))).normalized.data,
   getAssignedDealers: async (employeeId) =>
     (await client.get(endpoints.employees.dealers.list(employeeId))).normalized.data,

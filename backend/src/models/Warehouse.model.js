@@ -9,6 +9,12 @@ const warehouseSchema = new mongoose.Schema(
     capacity: { type: Number, default: 0 },
     managerName: { type: String, default: '' },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
+    // ── Geo-fence fields for real-time attendance ─────────────────────────────
+    coordinates: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+    },
+    geofenceRadiusMeters: { type: Number, default: 250 },
   },
   { timestamps: true }
 );

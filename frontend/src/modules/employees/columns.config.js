@@ -1,9 +1,10 @@
 export const employeeColumns = [
-  { key: 'empId', label: 'ID', width: 100 },
+  { key: 'empId', label: 'ID', width: 90 },
   { key: 'name', label: 'Name', width: 160 },
-  { key: 'department', label: 'Department', width: 120 },
-  { key: 'role', label: 'Role', width: 150 },
-  { key: 'email', label: 'Email', width: 180 },
+  { key: 'designation', label: 'Designation', width: 150 },
+  { key: 'department', label: 'Department', width: 130 },
+  { key: 'role', label: 'Role', width: 140 },
+  { key: 'hierarchyLevel', label: 'Level', width: 120 },
   { key: 'status', label: 'Status', width: 100, render: 'badge' },
   { key: 'actions', label: '', width: 60, render: 'actions', sticky: 'right' },
 ];
@@ -11,8 +12,12 @@ export const employeeColumns = [
 export const employeeDetailFields = [
   { key: 'empId', label: 'Employee ID' },
   { key: 'name', label: 'Name' },
+  { key: 'designation', label: 'Designation' },
   { key: 'department', label: 'Department' },
   { key: 'role', label: 'Role' },
+  { key: 'vertical', label: 'Vertical' },
+  { key: 'subVertical', label: 'Sub-Vertical' },
+  { key: 'hierarchyLevel', label: 'Hierarchy Level' },
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Phone' },
   { key: 'status', label: 'Status', format: 'badge' },

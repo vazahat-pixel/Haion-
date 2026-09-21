@@ -38,6 +38,7 @@ import HrmsAttendancePage from '@/pages/admin/hrms/HrmsAttendancePage';
 import HrmsLeavesPage from '@/pages/admin/hrms/HrmsLeavesPage';
 import HrmsPayrollPage from '@/pages/admin/hrms/HrmsPayrollPage';
 import HrmsDepartmentsPage from '@/pages/admin/hrms/HrmsDepartmentsPage';
+import EmployeeHierarchyPage from '@/pages/employee/team/EmployeeHierarchyPage';
 import ExpenseListPage from '@/pages/admin/expenses/ExpenseListPage';
 import ExpenseDetailPage from '@/pages/admin/expenses/ExpenseDetailPage';
 import AdminReportsPage from '@/pages/admin/reports/AdminReportsPage';
@@ -124,7 +125,14 @@ import AdminReferralsPage from '@/pages/admin/referrals/AdminReferralsPage';
 // Company Ledger
 import CompanyLedgerPageWrapper from '@/pages/admin/ledger/CompanyLedgerPageWrapper';
 
-const ADMIN_ROLES = [ROLES.MASTER_ADMIN, ROLES.WAREHOUSE_MANAGER];
+const ADMIN_ROLES = [
+  ROLES.MASTER_ADMIN,
+  ROLES.CEO,
+  ROLES.NSM,
+  ROLES.STATE_HEAD,
+  ROLES.ASM,
+  ROLES.WAREHOUSE_MANAGER,
+];
 
 export default function AdminRoutes() {
   return (
@@ -233,6 +241,7 @@ export default function AdminRoutes() {
               <Route path="hrms/leaves" element={<PermissionGuard require={PERMISSIONS.EMPLOYEES_READ} redirectTo="/unauthorized"><HrmsLeavesPage /></PermissionGuard>} />
               <Route path="hrms/payroll" element={<PermissionGuard require={PERMISSIONS.EMPLOYEES_READ} redirectTo="/unauthorized"><HrmsPayrollPage /></PermissionGuard>} />
               <Route path="hrms/departments" element={<PermissionGuard require={PERMISSIONS.EMPLOYEES_READ} redirectTo="/unauthorized"><HrmsDepartmentsPage /></PermissionGuard>} />
+              <Route path="hrms/hierarchy" element={<PermissionGuard require={PERMISSIONS.EMPLOYEES_READ} redirectTo="/unauthorized"><EmployeeHierarchyPage /></PermissionGuard>} />
               <Route path="approvals" element={<PermissionGuard require={PERMISSIONS.APPROVALS_READ} redirectTo="/unauthorized"><ApprovalListPage /></PermissionGuard>} />
               <Route path="approvals/:id" element={<PermissionGuard require={PERMISSIONS.APPROVALS_READ} redirectTo="/unauthorized"><ApprovalDetailPage /></PermissionGuard>} />
               <Route path="expenses" element={<PermissionGuard require={PERMISSIONS.EXPENSES_READ} redirectTo="/unauthorized"><ExpenseListPage /></PermissionGuard>} />

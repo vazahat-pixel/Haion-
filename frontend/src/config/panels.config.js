@@ -42,6 +42,7 @@ import {
   CalendarDays,
   Clock,
   CreditCard,
+  Network,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/constants/permissions';
 import { ROLES } from '@/constants/roles';
@@ -52,7 +53,7 @@ export const PANELS = {
   admin: {
     id: 'admin',
     label: 'Admin Console',
-    roles: [ROLES.MASTER_ADMIN, ROLES.WAREHOUSE_MANAGER],
+    roles: [ROLES.MASTER_ADMIN, ROLES.CEO, ROLES.NSM, ROLES.STATE_HEAD, ROLES.ASM, ROLES.WAREHOUSE_MANAGER],
     baseRoute: '/admin',
     nav: [
       // Top Level Overview
@@ -471,6 +472,14 @@ export const PANELS = {
         roles: [ROLES.MASTER_ADMIN],
         section: '11. HRMS & WORKFORCE',
       },
+      {
+        id: 'hrms-hierarchy',
+        label: 'Organization Hierarchy',
+        icon: Network,
+        path: '/admin/hrms/hierarchy',
+        permission: PERMISSIONS.EMPLOYEES_READ,
+        section: '11. HRMS & WORKFORCE',
+      },
 
       // 12. SYSTEM & REPORTS
       {
@@ -514,7 +523,7 @@ export const PANELS = {
   dealer: {
     id: 'dealer',
     label: 'Dealer Workspace',
-    roles: [ROLES.DEALER_ADMIN, ROLES.DEALER_SALES],
+    roles: [ROLES.DEALER_ADMIN, ROLES.DEALER_SALES, ROLES.STORE_MANAGER],
     baseRoute: '/dealer',
     nav: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DEALER_DASHBOARD, permission: PERMISSIONS.DEALER_DASHBOARD, roles: [ROLES.DEALER_ADMIN] },
@@ -591,7 +600,7 @@ export function getNavForPanel(panelId, role, hasPermission) {
   const panel = PANELS[panelId];
   if (!panel) return [];
 
-  const bypass = role === ROLES.MASTER_ADMIN || (env.useMockApi && env.isDev);
+  const bypass = role === ROLES.MASTER_ADMIN || role === ROLES.CEO || (env.useMockApi && env.isDev);
 
   return panel.nav.filter((item) => {
     if (!bypass) {

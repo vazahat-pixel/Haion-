@@ -413,6 +413,22 @@ export const getDashboard = asyncHandler(async (req, res) => {
       kpis = await managerKpis(req.user);
       charts = { primary: await employeePerformanceChart(), secondary: [] };
       break;
+    case 'ceo':
+      // CEO sees combined Sales + Service P&L
+      kpis = {
+        ...(await adminKpis()),
+        service: await serviceKpis(),
+      };
+      {
+        const { storeSalesChart } = await import('../services/store.service.js');
+        const storeChart = await storeSalesChart(30);
+        charts = {
+          primary: await revenueChart(),
+          secondary: await expenseChart(),
+          store: storeChart,
+        };
+      }
+      break;
     default:
       kpis = await adminKpis();
       charts = { primary: await revenueChart(), secondary: await expenseChart() };

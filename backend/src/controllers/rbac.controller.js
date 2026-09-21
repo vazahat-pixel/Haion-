@@ -9,6 +9,11 @@ import { logAudit } from '../services/audit.service.js';
 
 const ROLE_LABELS = {
   MASTER_ADMIN: 'Master Admin',
+  CEO: 'CEO',
+  NSM: 'National Sales Manager',
+  STATE_HEAD: 'State Head',
+  ASM: 'Area Sales Manager',
+  STORE_MANAGER: 'Store Manager',
   WAREHOUSE_MANAGER: 'Warehouse Manager',
   DEALER_ADMIN: 'Dealer Admin',
   DEALER_SALES: 'Dealer Sales',

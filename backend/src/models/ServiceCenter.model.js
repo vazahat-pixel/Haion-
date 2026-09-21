@@ -19,6 +19,12 @@ const serviceCenterSchema = new mongoose.Schema(
     openingBalance: { type: Number, default: 0 },
     inchargeUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
+    // ── Geo-fence fields for real-time attendance ─────────────────────────────
+    coordinates: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+    },
+    geofenceRadiusMeters: { type: Number, default: 250 },
   },
   { timestamps: true }
 );

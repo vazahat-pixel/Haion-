@@ -8,11 +8,19 @@ router.use(authenticate);
 // 1. Dashboard Overview
 router.get('/dashboard', ctrl.getHrmsStats);
 
-// 2. Attendance
+// 2. Attendance — Manual / Bulk (existing)
 router.get('/attendance', ctrl.getAttendanceList);
 router.post('/attendance/mark', ctrl.markAttendance);
 router.post('/attendance/bulk', ctrl.bulkMarkAttendance);
 router.get('/attendance/matrix', ctrl.getMonthlyAttendanceMatrix);
+
+// ── Real-Time Punch Endpoints (GPS / Google Maps) ─────────────────────────────
+router.get('/attendance/today', ctrl.getMyAttendanceToday);          // Employee: my status today
+router.get('/attendance/reverse-geocode', ctrl.getReverseGeocode);   // Reverse geocode proxy
+router.post('/attendance/punch-in', ctrl.punchIn);                   // Employee: GPS punch in
+router.post('/attendance/punch-out', ctrl.punchOut);                 // Employee: GPS punch out
+router.get('/attendance/live', ctrl.getLiveAttendance);              // HR: Live all-staff monitor
+router.patch('/attendance/:id/verify-field', ctrl.verifyFieldAttendance); // HR: Approve/reject field
 
 // 3. Leave Requests
 router.get('/leaves', ctrl.listLeaveRequests);

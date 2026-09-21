@@ -37,6 +37,10 @@ const envSchema = z.object({
   FIREBASE_SERVICE_ACCOUNT_BASE64: z.string().optional(),
   FIREBASE_SERVICE_ACCOUNT_PATH: z.string().optional(),
   FIREBASE_PROJECT_ID: z.string().optional(),
+  GOOGLE_MAPS_API_KEY: z.string().optional(),
+  COMPANY_HQ_LAT: z.coerce.number().optional(),
+  COMPANY_HQ_LNG: z.coerce.number().optional(),
+  COMPANY_HQ_GEOFENCE_METERS: z.coerce.number().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -76,4 +80,8 @@ export const env = {
   firebaseServiceAccountBase64: parsed.data.FIREBASE_SERVICE_ACCOUNT_BASE64,
   firebaseServiceAccountPath: parsed.data.FIREBASE_SERVICE_ACCOUNT_PATH,
   firebaseProjectId: parsed.data.FIREBASE_PROJECT_ID,
+  googleMapsApiKey: parsed.data.GOOGLE_MAPS_API_KEY || '',
+  companyHqLat: parsed.data.COMPANY_HQ_LAT || 28.6139,
+  companyHqLng: parsed.data.COMPANY_HQ_LNG || 77.2090,
+  companyHqGeofenceMeters: parsed.data.COMPANY_HQ_GEOFENCE_METERS || 250,
 };

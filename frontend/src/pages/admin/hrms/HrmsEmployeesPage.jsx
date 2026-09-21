@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Search,
@@ -15,6 +16,7 @@ import {
   UserCheck,
   Shield,
   FileText,
+  Network,
 } from 'lucide-react';
 import { PageShell } from '@/components/layout/PageShell';
 import { Button } from '@/components/ui/button';
@@ -23,11 +25,26 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { employeesService } from '@/services/employees.service';
 import { hrmsService } from '@/services/hrms.service';
+import { dealersService } from '@/services/dealers.service';
+import { serviceCenterService } from '@/services/serviceCenter.service';
 import { toast } from '@/utils/toast';
+import {
+  ROLES,
+  ROLE_LABELS,
+  VERTICALS,
+  VERTICAL_LABELS,
+  SUB_VERTICALS,
+  SUB_VERTICAL_LABELS,
+  HIERARCHY_LEVELS,
+  HIERARCHY_LEVEL_LABELS,
+} from '@/constants/roles';
 
 export default function HrmsEmployeesPage() {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [dealers, setDealers] = useState([]);
+  const [serviceCenters, setServiceCenters] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -64,6 +81,15 @@ export default function HrmsEmployeesPage() {
     status: 'ACTIVE',
     joinedAt: new Date().toISOString().split('T')[0],
     probationEndDate: '',
+
+    // ── Hierarchy & Mapping Fields ──────────────────────────────────────
+    vertical: '',
+    subVertical: '',
+    hierarchyLevel: '',
+    managerId: '',
+    territory: { state: '', district: '' },
+    dealerId: '',
+    serviceCenterId: '',
 
     salaryStructure: {
       ctc: 300000,
@@ -121,9 +147,23 @@ export default function HrmsEmployeesPage() {
     }
   };
 
+  const fetchDealersAndServiceCenters = async () => {
+    try {
+      const [dealersRes, scRes] = await Promise.all([
+        dealersService.getList({ perPage: 100, status: 'ACTIVE' }).catch(() => ({ data: [] })),
+        serviceCenterService.getList({ perPage: 100 }).catch(() => ({ data: [] })),
+      ]);
+      setDealers(dealersRes?.data || dealersRes || []);
+      setServiceCenters(scRes?.data || scRes || []);
+    } catch {
+      // fallback
+    }
+  };
+
   useEffect(() => {
     fetchEmployees();
     fetchDepartments();
+    fetchDealersAndServiceCenters();
   }, [search, departmentFilter, statusFilter]);
 
   const handleOpenCreate = () => {
@@ -155,6 +195,18 @@ export default function HrmsEmployeesPage() {
       status: emp.status || 'ACTIVE',
       joinedAt: emp.joinedAt ? new Date(emp.joinedAt).toISOString().split('T')[0] : '',
       probationEndDate: emp.probationEndDate ? new Date(emp.probationEndDate).toISOString().split('T')[0] : '',
+
+      // ── Hierarchy & Mapping Fields ──────────────────────────────────────
+      vertical: emp.vertical || '',
+      subVertical: emp.subVertical || '',
+      hierarchyLevel: emp.hierarchyLevel || '',
+      managerId: emp.manager ? String(emp.manager) : '',
+      territory: {
+        state: emp.territory?.state || '',
+        district: emp.territory?.district || '',
+      },
+      dealerId: emp.dealerId ? String(emp.dealerId) : '',
+      serviceCenterId: emp.serviceCenterId ? String(emp.serviceCenterId) : '',
 
       salaryStructure: {
         ctc: emp.salaryStructure?.ctc || 300000,
@@ -195,14 +247,19 @@ export default function HrmsEmployeesPage() {
 
     setSaving(true);
     try {
+      const payload = {
+        ...formData,
+        managerId: formData.managerId || null,
+        dealerId: formData.dealerId || null,
+        serviceCenterId: formData.serviceCenterId || null,
+        name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
+      };
+
       if (isEditing) {
-        await employeesService.update(currentEmpId, formData);
+        await employeesService.update(currentEmpId, payload);
         toast.success('Employee profile updated successfully!');
       } else {
-        await employeesService.create({
-          ...formData,
-          name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
-        });
+        await employeesService.create(payload);
         toast.success('Staff member registered successfully!');
       }
       setShowDrawer(false);
@@ -219,13 +276,22 @@ export default function HrmsEmployeesPage() {
       title="Staff Directory & 360° Employee Profiles"
       subtitle="Complete human resource register — job roles, organizational hierarchy, compensation structure, and bank records"
       actions={
-        <Button
-          size="sm"
-          className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold"
-          onClick={handleOpenCreate}
-        >
-          <Plus className="h-4 w-4 mr-1.5" /> Register New Employee
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate('/admin/hrms/hierarchy')}
+          >
+            <Network className="h-4 w-4 mr-1.5 text-amber-400" /> Org Hierarchy Tree
+          </Button>
+          <Button
+            size="sm"
+            className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold"
+            onClick={handleOpenCreate}
+          >
+            <Plus className="h-4 w-4 mr-1.5" /> Register New Employee
+          </Button>
+        </div>
       }
     >
       <div className="space-y-4">
@@ -548,17 +614,44 @@ export default function HrmsEmployeesPage() {
                         </select>
                       </div>
                       <div>
-                        <Label className="text-xs">System Role</Label>
+                        <Label className="text-xs">System Role *</Label>
                         <select
                           className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
                           value={formData.role}
-                          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                          onChange={(e) => {
+                            const newRole = e.target.value;
+                            const updates = { role: newRole };
+                            if (newRole === 'CEO') {
+                              updates.hierarchyLevel = 'CEO';
+                            } else if (newRole === 'NSM') {
+                              updates.hierarchyLevel = 'NSM';
+                              updates.vertical = 'SALES_PRODUCTION';
+                            } else if (newRole === 'STATE_HEAD') {
+                              updates.hierarchyLevel = 'STATE_HEAD';
+                              updates.vertical = 'SALES_PRODUCTION';
+                              updates.subVertical = 'SALES';
+                            } else if (newRole === 'ASM') {
+                              updates.hierarchyLevel = 'ASM';
+                              updates.vertical = 'SALES_PRODUCTION';
+                              updates.subVertical = 'SALES';
+                            } else if (newRole === 'STORE_MANAGER') {
+                              updates.hierarchyLevel = 'STORE_MANAGER';
+                              updates.vertical = 'SALES_PRODUCTION';
+                              updates.subVertical = 'SALES';
+                            }
+                            setFormData({ ...formData, ...updates });
+                          }}
                         >
-                          <option value="EMPLOYEE">Staff / Employee</option>
+                          <option value="EMPLOYEE">Staff / Field Employee</option>
+                          <option value="CEO">CEO (Vertical Head)</option>
+                          <option value="NSM">National Sales Manager (NSM)</option>
+                          <option value="STATE_HEAD">State Head</option>
+                          <option value="ASM">Area Sales Manager (ASM)</option>
+                          <option value="STORE_MANAGER">Store Manager</option>
                           <option value="MANAGER">Manager</option>
                           <option value="WAREHOUSE_MANAGER">Warehouse Manager</option>
                           <option value="CUSTOMER_SUPPORT">Customer Support</option>
-                          <option value="MASTER_ADMIN">Administrator</option>
+                          <option value="MASTER_ADMIN">Master Administrator</option>
                         </select>
                       </div>
                       <div>
@@ -574,6 +667,141 @@ export default function HrmsEmployeesPage() {
                           <option value="NOTICE_PERIOD">Notice Period</option>
                           <option value="INACTIVE">Inactive</option>
                         </select>
+                      </div>
+                    </div>
+
+                    {/* ── Organizational Hierarchy Section ── */}
+                    <div className="p-3.5 bg-surface-2/40 rounded-xl border border-surface-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-surface-900 uppercase tracking-wider text-[11px] text-amber-400">
+                          🏢 Organizational Hierarchy & Reporting
+                        </span>
+                        <span className="text-[10.5px] text-surface-400">Haion Structure</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <Label className="text-xs">Vertical</Label>
+                          <select
+                            className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
+                            value={formData.vertical}
+                            onChange={(e) => setFormData({ ...formData, vertical: e.target.value })}
+                          >
+                            <option value="">Select Vertical…</option>
+                            <option value="SALES_PRODUCTION">Sales & Production</option>
+                            <option value="FINANCE">Finance</option>
+                            <option value="PRODUCTION_MARKETING">Production & Marketing</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <Label className="text-xs">Sub-Vertical</Label>
+                          <select
+                            className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
+                            value={formData.subVertical}
+                            onChange={(e) => setFormData({ ...formData, subVertical: e.target.value })}
+                          >
+                            <option value="">None / Direct</option>
+                            <option value="SALES">Sales</option>
+                            <option value="SERVICE">Service</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <Label className="text-xs">Hierarchy Level</Label>
+                          <select
+                            className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
+                            value={formData.hierarchyLevel}
+                            onChange={(e) => setFormData({ ...formData, hierarchyLevel: e.target.value })}
+                          >
+                            <option value="">Default / Staff</option>
+                            <option value="CEO">CEO</option>
+                            <option value="NSM">National Sales Manager (NSM)</option>
+                            <option value="STATE_HEAD">State Head</option>
+                            <option value="ASM">Area Sales Manager (ASM)</option>
+                            <option value="STORE_MANAGER">Store Manager</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">Reports To (Reporting Manager)</Label>
+                          <select
+                            className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
+                            value={formData.managerId}
+                            onChange={(e) => setFormData({ ...formData, managerId: e.target.value })}
+                          >
+                            <option value="">No manager / Top-level CEO</option>
+                            {employees
+                              .filter((emp) => String(emp.id || emp._id) !== String(currentEmpId))
+                              .map((emp) => (
+                                <option key={emp.id || emp._id} value={emp.id || emp._id}>
+                                  {emp.name || `${emp.firstName} ${emp.lastName}`} — {emp.designation || emp.role} {emp.hierarchyLevel ? `[${emp.hierarchyLevel}]` : ''}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <Label className="text-xs">Assigned Store / Dealer</Label>
+                          <select
+                            className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
+                            value={formData.dealerId}
+                            onChange={(e) => setFormData({ ...formData, dealerId: e.target.value })}
+                          >
+                            <option value="">None / Not linked to store</option>
+                            {dealers.map((d) => (
+                              <option key={d.id || d._id} value={d.id || d._id}>
+                                {d.name} ({d.city || d.state || 'Store'})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <Label className="text-xs">Territory State</Label>
+                          <Input
+                            placeholder="e.g. Maharashtra"
+                            value={formData.territory?.state || ''}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                territory: { ...formData.territory, state: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Territory District</Label>
+                          <Input
+                            placeholder="e.g. Pune"
+                            value={formData.territory?.district || ''}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                territory: { ...formData.territory, district: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Assigned Service Center</Label>
+                          <select
+                            className="w-full h-9 rounded-md border border-surface-3 bg-surface-1 px-2 text-xs"
+                            value={formData.serviceCenterId}
+                            onChange={(e) => setFormData({ ...formData, serviceCenterId: e.target.value })}
+                          >
+                            <option value="">None / Not assigned</option>
+                            {serviceCenters.map((sc) => (
+                              <option key={sc.id || sc._id} value={sc.id || sc._id}>
+                                {sc.name} ({sc.city || sc.state || 'Service'})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
 
@@ -921,6 +1149,40 @@ export default function HrmsEmployeesPage() {
                     <div>
                       <span className="text-surface-500 block text-[10.5px]">Status</span>
                       <Badge variant="outline">{profileEmp.status}</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Organizational Hierarchy Card in Profile */}
+                <div className="p-3.5 bg-surface-2/40 rounded-xl border border-surface-3 space-y-2">
+                  <h4 className="font-bold text-surface-900 uppercase tracking-wider text-[11px] text-amber-400">
+                    🏢 Organizational Hierarchy & Reporting
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div>
+                      <span className="text-surface-500 block text-[10.5px]">Hierarchy Level</span>
+                      <span className="font-semibold text-amber-300">
+                        {HIERARCHY_LEVEL_LABELS[profileEmp.hierarchyLevel] || profileEmp.hierarchyLevel || profileEmp.role}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-surface-500 block text-[10.5px]">Vertical / Sub</span>
+                      <span className="text-surface-900 font-medium">
+                        {VERTICAL_LABELS[profileEmp.vertical] || profileEmp.vertical || '—'}
+                        {profileEmp.subVertical ? ` (${profileEmp.subVertical})` : ''}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-surface-500 block text-[10.5px]">Territory</span>
+                      <span className="text-surface-900 font-medium">
+                        {[profileEmp.territory?.district, profileEmp.territory?.state].filter(Boolean).join(', ') || 'National / General'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-surface-500 block text-[10.5px]">System Role</span>
+                      <span className="text-surface-900 font-medium font-mono text-[11px]">
+                        {profileEmp.role}
+                      </span>
                     </div>
                   </div>
                 </div>

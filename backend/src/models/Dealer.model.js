@@ -29,6 +29,13 @@ const dealerSchema = new mongoose.Schema(
     logoUrl: { type: String, default: null },
     onboardedAt: { type: Date, default: Date.now },
     insuranceWalletBalance: { type: Number, default: 0, min: 0 },
+    address: { type: String, default: '' },
+    // ── Geo-fence fields for real-time attendance ─────────────────────────────
+    coordinates: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+    },
+    geofenceRadiusMeters: { type: Number, default: 250 },
   },
   { timestamps: true }
 );

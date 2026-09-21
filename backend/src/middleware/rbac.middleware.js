@@ -47,8 +47,8 @@ export function requireScope(scopeFn) {
 }
 
 export function dealerScope(user, params) {
-  if (['MASTER_ADMIN', 'WAREHOUSE_MANAGER', 'EMPLOYEE', 'MANAGER'].includes(user.role)) return true;
-  if (user.role === 'DEALER_ADMIN' || user.role === 'DEALER_SALES') {
+  if (['MASTER_ADMIN', 'WAREHOUSE_MANAGER', 'EMPLOYEE', 'MANAGER', 'CEO', 'NSM', 'STATE_HEAD', 'ASM'].includes(user.role)) return true;
+  if (user.role === 'STORE_MANAGER' || user.role === 'DEALER_ADMIN' || user.role === 'DEALER_SALES') {
     return user.dealerId?.toString() === params.id || user.dealerId?.toString() === params.dealerId;
   }
   return false;
