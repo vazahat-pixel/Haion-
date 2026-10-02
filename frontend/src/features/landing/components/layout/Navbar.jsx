@@ -70,7 +70,9 @@ export default function Navbar({
   const evServiceOptions = evConfig.items?.length ? evConfig.items : serviceOptions;
   const evLabel = evConfig.label || 'EV';
   const safeguardConfig = settings.navbar?.safeguardLink ?? DEFAULT_SAFEGUARD;
-  const showEvDropdown = navLinks.some((l) => normalizeNavUrl(l.url) === 'ev-dropdown' || l.type === 'dropdown') || !settings.navbar?.links?.length;
+  // Always show EV dropdown by default — only hide if admin explicitly sets evDropdown.isVisible = false
+  const showEvDropdown = evConfig.isVisible !== false;
+  // Always show Safeguard link by default — use CMS link if explicitly in navLinks, else fallback
   const safeguardLink = navLinks.find((l) => normalizeNavUrl(l.url) === 'service-safeguard');
   const primaryLinks = navLinks.filter((l) => {
     const key = normalizeNavUrl(l.url);
@@ -198,7 +200,7 @@ export default function Navbar({
               const key = normalizeNavUrl(link.url);
               const items = [renderNavLink(link, linkClass)];
               if (key === 'about' || key === 'about-us') {
-                if (showEvDropdown || !settings.navbar?.links?.length) items.push(evDropdownDesktop);
+                if (showEvDropdown) items.push(evDropdownDesktop);
                 items.push(safeguardDesktop);
               }
               return items;
