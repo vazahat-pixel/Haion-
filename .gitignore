@@ -13,8 +13,6 @@ frontend/public/build-id.txt
 # ===========================
 # Environment files
 # ===========================
-.env
-.env.local
 .env.development.local
 .env.test.local
 # SECURITY: Explicitly ignore backend .env — contains DB credentials and JWT secrets
@@ -87,3 +85,4 @@ landing page website/
 # Scratch folders
 scratch/
 backend/scratch/
+config.bat
