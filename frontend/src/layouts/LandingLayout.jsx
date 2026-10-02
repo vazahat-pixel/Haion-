@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const POPPINS_HREF =
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap';
-const LANDING_CSS_HREF = '/landing/landing.css';
+const LANDING_CSS_HREF = '/landing-assets/landing.css';
 
 function isLandingAsset(link) {
   return (

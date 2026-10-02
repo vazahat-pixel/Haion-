@@ -56,10 +56,25 @@ function PanelFallback() {
 }
 
 export function Router() {
+  const isLanding = IsLandingDomain();
+
   return (
     <Suspense fallback={<PanelFallback />}>
       <Routes>
-        <Route path="/" element={<RootRedirect />} />
+        {isLanding ? (
+          <Route element={<LandingLayout />}>
+            <Route
+              path="/"
+              element={
+                <Suspense fallback={<div className="min-h-screen bg-[#030303]" />}>
+                  <LandingPage />
+                </Suspense>
+              }
+            />
+          </Route>
+        ) : (
+          <Route path="/" element={<RootRedirect />} />
+        )}
 
         <Route element={<LandingLayout />}>
           <Route
