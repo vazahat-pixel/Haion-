@@ -36,6 +36,10 @@ function IsLandingDomain() {
 }
 
 function RootRedirect() {
+  if (IsLandingDomain()) {
+    return <Navigate to="/landing" replace />;
+  }
+
   const { isAuthenticated, user, isInitializing } = useAuth();
 
   if (isInitializing) return <LoadingState message="Loading..." fullPage />;
