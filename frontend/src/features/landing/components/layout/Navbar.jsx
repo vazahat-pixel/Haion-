@@ -21,7 +21,7 @@ const DEFAULT_EV_DROPDOWN = { label: 'EV', items: serviceOptions };
 const DEFAULT_SAFEGUARD = { label: 'Safeguard (New Innovation)', url: 'service-safeguard', isVisible: true };
 
 function normalizeNavUrl(url = '') {
-  return String(url).replace(/^#/, '').toLowerCase();
+  return String(url).replace(/^[#/]+/, '').toLowerCase();
 }
 
 export default function Navbar({
@@ -196,15 +196,24 @@ export default function Navbar({
           </a>
 
           <div className="hidden md:flex items-center gap-5 lg:gap-6 xl:gap-8">
-            {primaryLinks.flatMap((link) => {
-              const key = normalizeNavUrl(link.url);
-              const items = [renderNavLink(link, linkClass)];
-              if (key === 'about' || key === 'about-us') {
-                if (showEvDropdown) items.push(evDropdownDesktop);
-                items.push(safeguardDesktop);
-              }
-              return items;
-            })}
+            {(() => {
+              const hasAbout = primaryLinks.some((l) => {
+                const k = normalizeNavUrl(l.url);
+                return k === 'about' || k === 'about-us';
+              });
+              return primaryLinks.flatMap((link, idx) => {
+                const key = normalizeNavUrl(link.url);
+                const items = [renderNavLink(link, linkClass)];
+                const shouldInsertHere = hasAbout
+                  ? key === 'about' || key === 'about-us'
+                  : idx === 1;
+                if (shouldInsertHere) {
+                  if (showEvDropdown) items.push(evDropdownDesktop);
+                  items.push(safeguardDesktop);
+                }
+                return items;
+              });
+            })()}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -271,36 +280,62 @@ export default function Navbar({
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {primaryLinks.flatMap((link) => {
-          const key = normalizeNavUrl(link.url);
-          const items = [renderNavLink(link, mobileLinkClass, () => setIsOpen(false))];
-          if (key === 'about' || key === 'about-us') {
-            items.push(
-              <div key="ev-mobile" className="w-12 h-[1px] bg-zinc-200 my-1" />,
-              <div key="ev-group" className="flex flex-col items-center gap-4">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">EV</span>
-                {evServiceOptions.map((opt) => (
+        {(() => {
+          const hasAbout = primaryLinks.some((l) => {
+            const k = normalizeNavUrl(l.url);
+            return k === 'about' || k === 'about-us';
+          });
+          return primaryLinks.flatMap((link, idx) => {
+            const key = normalizeNavUrl(link.url);
+            const items = [renderNavLink(link, mobileLinkClass, () => setIsOpen(false))];
+            const shouldInsertHere = hasAbout
+              ? key === 'about' || key === 'about-us'
+              : idx === 1;
+            if (shouldInsertHere) {
+              if (showEvDropdown) {
+                items.push(
+                  <div key="ev-mobile" className="w-12 h-[1px] bg-zinc-200 my-1" />,
+                  <div key="ev-group" className="flex flex-col items-center gap-4">
+                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{evLabel}</span>
+                    {evServiceOptions.map((opt) => (
+                      <a
+                        key={opt.id}
+                        href={`#service-${opt.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsOpen(false);
+                          onNavLinkClick(`#service-${opt.id}`);
+                        }}
+                        className="text-lg font-semibold text-zinc-800 hover:text-amber-500 transition-colors"
+                      >
+                        {opt.label}
+                      </a>
+                    ))}
+                  </div>
+                );
+              }
+              if (safeguardLink) {
+                items.push(renderNavLink(safeguardLink, mobileLinkClass, () => setIsOpen(false)));
+              } else if (safeguardConfig.isVisible !== false) {
+                items.push(
                   <a
-                    key={opt.id}
-                    href={`#service-${opt.id}`}
+                    key="safeguard-mobile"
+                    href={`#service-${safeguardConfig.url?.replace('service-', '') || 'safeguard'}`}
                     onClick={(e) => {
                       e.preventDefault();
                       setIsOpen(false);
-                      onNavLinkClick(`#service-${opt.id}`);
+                      onNavLinkClick(`#service-${safeguardConfig.url?.replace('service-', '') || 'safeguard'}`);
                     }}
-                    className="text-lg font-semibold text-zinc-800 hover:text-amber-500 transition-colors"
+                    className={mobileLinkClass}
                   >
-                    {opt.label}
+                    {safeguardConfig.label}
                   </a>
-                ))}
-              </div>
-            );
-            if (safeguardLink) {
-              items.push(renderNavLink(safeguardLink, mobileLinkClass, () => setIsOpen(false)));
+                );
+              }
             }
-          }
-          return items;
-        })}
+            return items;
+          });
+        })()}
 
         <div
           onClick={() => {

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const reactRoot = path.resolve(__dirname, 'node_modules/react');
 const reactDomRoot = path.resolve(__dirname, 'node_modules/react-dom');
