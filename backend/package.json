@@ -4,8 +4,8 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js",
+    "dev": "node api.js && node --watch src/server.js",
+    "start": "node api.js && node src/server.js",
     "seed": "node src/seed.js",
     "test": "node --test tests/**/*.test.js",
     "test:qa": "node --test --test-concurrency=1 tests/qa/**/*.test.js",

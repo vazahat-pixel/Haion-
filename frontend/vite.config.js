@@ -4,6 +4,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const reactRoot = path.resolve(__dirname, 'node_modules/react');
