@@ -145,6 +145,7 @@ function App() {
       setShowAboutUs(false);
       setShowHomeAppliances(false);
       setShowStore(false);
+      setShowInverter(false);
       setSelectedProductId(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
