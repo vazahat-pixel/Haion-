@@ -193,6 +193,16 @@ export default function ServiceDetailsPage({ serviceId, onViewProduct, onClose }
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen pt-28 pb-20 font-sans">
+      {onClose && (
+        <div className="max-w-7xl mx-auto px-6 mb-4">
+          <button
+            onClick={onClose}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 hover:text-amber-500 bg-white hover:bg-zinc-50 border border-zinc-200 px-4 py-2 rounded-full shadow-sm transition-all duration-200 cursor-pointer"
+          >
+            ← Back to Home
+          </button>
+        </div>
+      )}
 
       <div 
         className={`relative w-full ${
