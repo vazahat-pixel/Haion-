@@ -267,7 +267,37 @@ function App() {
       </main>
 
       {/* 14. PREMIUM FOOTER */}
-      <Footer onCareersClick={() => setShowCareersModal(true)} />
+      <Footer
+        onCareersClick={() => setShowCareersModal(true)}
+        onAboutUsClick={() => {
+          setSelectedProductId(null);
+          setShowHomeAppliances(false);
+          setSelectedServiceId(null);
+          setShowStore(false);
+          setShowProfile(false);
+          setShowInverter(false);
+          setShowAboutUs(true);
+        }}
+        onHomeAppliancesClick={() => {
+          setSelectedProductId(null);
+          setShowAboutUs(false);
+          setSelectedServiceId(null);
+          setShowStore(false);
+          setShowProfile(false);
+          setShowInverter(false);
+          setShowHomeAppliances(true);
+        }}
+        onNavLinkClick={navigateToHomeSection}
+        onStoreClick={() => {
+          setSelectedProductId(null);
+          setShowAboutUs(false);
+          setSelectedServiceId(null);
+          setShowHomeAppliances(false);
+          setShowProfile(false);
+          setShowInverter(false);
+          setShowStore(true);
+        }}
+      />
 
       {/* Automated Lead Popup */}
       <LeadPopup isOpen={showPopup} onClose={() => setShowPopup(false)} copy={leadPopup} />

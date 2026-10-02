@@ -236,16 +236,23 @@ export default function AboutUs({ onClose, onCareersClick }) {
       )}
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {!hasVisibleContent && (
-          <div className="text-center py-28">
-            <h2 className="text-3xl font-extrabold text-[#40321f] mb-3">About Haion</h2>
-            <p className="text-zinc-500 text-sm md:text-base max-w-md mx-auto">
-              This page content is currently being updated. Please check back soon!
-            </p>
-          </div>
-        )}
-        
-
+        {/* Back to Home Button */}
+        <div className="mb-8 flex items-center justify-between">
+          <button
+            onClick={onClose}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 hover:bg-white border border-[#d4af37]/40 hover:border-[#a0825b] text-[#40321f] text-sm font-bold shadow-sm transition-all duration-300 hover:scale-[1.02] cursor-pointer group backdrop-blur-sm"
+          >
+            <ArrowIcon size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+            Back to Home
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2.5 rounded-full bg-white/90 hover:bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-950 transition-colors shadow-sm cursor-pointer"
+            aria-label="Close"
+          >
+            <FiX size={18} />
+          </button>
+        </div>
 
         {/* Hero Header */}
         {cms.hero?._visible !== false && (

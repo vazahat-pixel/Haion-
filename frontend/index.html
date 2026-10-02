@@ -39,7 +39,10 @@
     <!-- Instant preparation for /landing: dark theme & landing.css before React mounts -->
     <script>
       (function() {
-        if (window.location.pathname.startsWith('/landing')) {
+        var isLandingPath = window.location.pathname.startsWith('/landing') ||
+                            window.location.pathname === '/' ||
+                            window.location.hostname.includes('haion.co.in');
+        if (isLandingPath) {
           document.documentElement.classList.add('dark');
           document.documentElement.style.backgroundColor = '#030303';
           document.documentElement.style.colorScheme = 'dark';
@@ -52,7 +55,7 @@
 
           var styleLink = document.createElement('link');
           styleLink.rel = 'stylesheet';
-          styleLink.href = '/landing/landing.css';
+          styleLink.href = '/landing-assets/landing.css';
           styleLink.dataset.landingStyles = 'true';
           document.head.appendChild(styleLink);
         }

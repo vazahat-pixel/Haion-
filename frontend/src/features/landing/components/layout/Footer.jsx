@@ -39,7 +39,13 @@ const DEFAULT_COLUMNS = [
   },
 ];
 
-export default function Footer({ onCareersClick }) {
+export default function Footer({
+  onCareersClick,
+  onAboutUsClick,
+  onHomeAppliancesClick,
+  onNavLinkClick,
+  onStoreClick,
+}) {
   const settings = useCMSSettings();
   const logoUrl = pickCms('/haionlogo-removebg-preview.webp', settings.logo?.url);
   const logoAlt = pickCms('Haion Logo', settings.logo?.alt);
@@ -56,9 +62,32 @@ export default function Footer({ onCareersClick }) {
   };
 
   const handleLinkClick = (e, url) => {
-    if (url === 'careers' && onCareersClick) {
-      e.preventDefault();
-      onCareersClick();
+    if (!url) return;
+    const cleanUrl = url.toLowerCase().replace(/^#/, '');
+    if (url === 'careers' || cleanUrl === 'careers') {
+      e?.preventDefault();
+      onCareersClick?.();
+      return;
+    }
+    if (cleanUrl === 'about' || cleanUrl === 'about-us') {
+      e?.preventDefault();
+      onAboutUsClick?.();
+      return;
+    }
+    if (cleanUrl === 'appliances' || cleanUrl === 'appliances-view') {
+      e?.preventDefault();
+      onHomeAppliancesClick?.();
+      return;
+    }
+    if (cleanUrl === 'store' || cleanUrl === 'store-view') {
+      e?.preventDefault();
+      onStoreClick?.();
+      return;
+    }
+    if (url.startsWith('#')) {
+      e?.preventDefault();
+      onNavLinkClick?.(url);
+      return;
     }
   };
 
