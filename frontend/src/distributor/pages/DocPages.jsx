@@ -211,22 +211,29 @@ export function UploadPage() {
   const [rows, setRows] = useState([]);
   const [msg, setMsg] = useState('');
   const [rowErrs, setRowErrs] = useState([]);
+  const [parsing, setParsing] = useState(false);
   const save = useDmsMutation((b) => dms.post('/invoices', b), { onSuccess: (res) => nav(`/distributor/doc/${res.data._id}`) });
   const byCode = useMemo(() => new Map((lk?.products || []).map((p) => [p.productCode, p])), [lk]);
   if (!['OPENING', 'UPLOAD_BILLING'].includes(kind)) return <Navigate to="/distributor/home" replace />;
   const onFile = async (f) => {
     setMsg('');
+    setRows([]); setRowErrs([]); // clear both together so stale rows are never turned into lines
     if (!f) return;
-    setRowErrs([]);
-    let parsed;
-    try { parsed = await readSheet(f); } catch (e) { setMsg(e.message); setRows([]); return; }
-    const errs = validateUploadRows(parsed, kind, byCode);
-    setRowErrs(errs);
-    if (errs.length) setMsg(`${errs.length} problem(s) found. Fix the file and upload again; nothing is saved until every row is valid.`);
-    setRows(parsed);
+    setParsing(true); // Upload stays disabled until the file has been read and checked
+    try {
+      let parsed;
+      try { parsed = await readSheet(f); } catch (e) { setMsg(e.message); return; }
+      const errs = validateUploadRows(parsed, kind, byCode);
+      setRowErrs(errs);
+      setMsg(errs.length ? `${errs.length} problem(s) found. Fix the file and upload again; nothing is saved until every row is valid.` : '');
+      setRows(parsed);
+    } finally {
+      setParsing(false);
+    }
   };
-  const lines = rowErrs.length ? [] : rows.map((r) => {
-    const p = byCode.get(String(r.productCode).trim().toUpperCase());
+  const lines = rowErrs.length ? [] : rows.flatMap((r) => {
+    const p = byCode.get(String(r.productCode ?? '').trim().toUpperCase());
+    if (!p) return [];
     const serials = r.serials ? r.serials.split('|').map((s) => s.trim()).filter(Boolean) : undefined;
     if (isOpening) {
       const ok = Number(r.okQty || 0); const dm = Number(r.damageQty || 0); const ms = Number(r.missingQty || 0);
@@ -257,7 +264,7 @@ export function UploadPage() {
         </div>
         {rowErrs.length > 0 && <Alert>{rowErrs.slice(0, 30).map((e, i) => <div key={i}>Row {e.row}: {e.message}</div>)}</Alert>}
         {lines.length > 0 && <p style={{ textAlign: 'center' }}>{lines.length} valid row(s), total qty {lines.reduce((n, l) => n + l.qty, 0)}</p>}
-        <div className="dms-actions"><button type="submit" className="dms-btn" disabled={save.isPending}>Upload</button><BackBtn /></div>
+        <div className="dms-actions"><button type="submit" className="dms-btn" disabled={save.isPending || parsing}>{parsing ? 'Reading file…' : 'Upload'}</button><BackBtn /></div>
       </form>
     </>
   );

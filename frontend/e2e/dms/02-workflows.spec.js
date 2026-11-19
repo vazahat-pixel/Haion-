@@ -152,6 +152,7 @@ test('Excel upload is all-or-nothing with row-level errors, then succeeds with a
   await page.getByRole('button', { name: 'Upload', exact: true }).click();
   expect((await api(page, '/invoices?kind=OPENING&perPage=1')).body.pagination.total).toBe(countBefore);
   await field(page, 'Attach File').locator('input[type=file]').setInputFiles(await make('opening_good.xlsx', [['CH-20W', 3, 1, 0, 400, ''], ['CB-C1', 4, 0, 0, 150, '']]));
+  await expect(page.getByText('2 valid row(s), total qty 8')).toBeVisible();
   await page.getByRole('button', { name: 'Upload', exact: true }).click();
   await expect(page).toHaveURL(/\/distributor\/doc\/[a-f0-9]{24}$/);
   await expect(page.locator('.dms-panel').first()).toContainText(/OPN\/\d{2}-\d{2}\/HQN\/\d{4}/);
