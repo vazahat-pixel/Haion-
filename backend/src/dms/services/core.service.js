@@ -259,9 +259,19 @@ export async function postLedger({ party, counterparty, counterpartyName, docNo,
   await DmsLedger.create({ party, counterparty, counterpartyName, docNo, docType, dr: round2(dr), cr: round2(cr), txnDate, paymentRemark, approvalRemark });
 }
 
+/** Receivable of a location: what others owe it (DR − CR on its own ledger). */
 export async function outstandingOf(locationId) {
   const [r] = await DmsLedger.aggregate([
     { $match: { party: locationId } },
+    { $group: { _id: null, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } },
+  ]);
+  return round2((r?.dr || 0) - (r?.cr || 0));
+}
+
+/** Payable of a location: what it owes to sellers (their ledger rows where it is the counterparty). */
+export async function payableOf(locationId) {
+  const [r] = await DmsLedger.aggregate([
+    { $match: { counterparty: locationId } },
     { $group: { _id: null, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } },
   ]);
   return round2((r?.dr || 0) - (r?.cr || 0));

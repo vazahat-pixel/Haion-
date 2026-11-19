@@ -174,7 +174,7 @@ export function DashYearly() {
       {error && <Alert>{apiError(error).message}</Alert>}
       {d && (d.series.length === 0 ? <p className="dms-loading">No sales in this year</p> : (
         <div className="dms-chart"><h4>Month-wise sale (₹)</h4>
-          <ResponsiveContainer width="100%" height={340}><BarChart data={d.chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Legend />
+          <ResponsiveContainer width="100%" height={340}><BarChart data={d.chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Legend />
             {d.series.map((s, i) => <Bar key={s.name} dataKey={s.name} fill={COLORS[i % COLORS.length]} />)}</BarChart></ResponsiveContainer>
         </div>
       ))}
@@ -195,7 +195,7 @@ export function DashMonthly() {
       {error && <Alert>{apiError(error).message}</Alert>}
       {p && (
         <div className="dms-chart"><h4>Day-wise sale</h4>
-          <ResponsiveContainer width="100%" height={340}><BarChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="day" /><YAxis yAxisId="a" /><YAxis yAxisId="q" orientation="right" /><Tooltip /><Legend />
+          <ResponsiveContainer width="100%" height={340}><BarChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="day" /><YAxis yAxisId="a" width={62} tickFormatter={fmt.short} /><YAxis yAxisId="q" orientation="right" /><Tooltip /><Legend />
             <Bar yAxisId="a" dataKey="amount" name="Amount (₹)" fill="#337ab7" /><Bar yAxisId="q" dataKey="qty" name="Qty" fill="#5cb85c" /></BarChart></ResponsiveContainer>
         </div>
       )}

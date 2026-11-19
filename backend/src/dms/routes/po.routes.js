@@ -6,11 +6,12 @@ import { parsePagination } from '../../utils/pagination.util.js';
 import { DmsPurchaseOrder, DmsInvoice } from '../models/txn.models.js';
 import { DmsLocation, DmsProfile } from '../models/master.models.js';
 import { requirePage, scopeFilter, assertCanSee } from '../middleware/context.js';
-import { DmsError, computeDocument, nextPoNo, outstandingOf, round2, isInterState } from '../services/core.service.js';
+import { DmsError, computeDocument, nextPoNo, payableOf, round2, isInterState } from '../services/core.service.js';
 import { buildParty } from '../services/party.service.js';
 import { logAudit } from '../../services/audit.service.js';
 
 const router = Router();
+const PO_READ = ['po', 'po_approval', 'corporate', 'vendor_po', 'r_po', 'dash_po', 'local_purchase'];
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 async function loadPo(req) {
@@ -26,15 +27,15 @@ function assertVisible(req, po) {
 }
 
 /** Credit balance = credit limit − outstanding (ledger DR − CR). */
-router.get('/credit/:locationId', asyncHandler(async (req, res) => {
+router.get('/credit/:locationId', requirePage('po', 'vendor_po'), asyncHandler(async (req, res) => {
   const loc = await DmsLocation.findById(req.params.locationId).lean();
   if (!loc) throw new DmsError('Location not found', 404);
   assertCanSee(req, loc._id);
-  const outstanding = await outstandingOf(loc._id);
+  const outstanding = await payableOf(loc._id); // what the ordering location already owes its suppliers
   sendSuccess(res, { data: { creditLimit: loc.creditLimit || 0, outstanding, available: round2((loc.creditLimit || 0) - outstanding) } });
 }));
 
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', requirePage(...PO_READ), asyncHandler(async (req, res) => {
   const { skip, perPage, page } = parsePagination(req.query);
   const poType = req.query.poType === 'VENDOR' ? 'VENDOR' : 'LOCATION';
   const q = { poType, ...scopeFilter(req, ['from.location', 'to.location']) };
@@ -62,7 +63,7 @@ router.get('/', asyncHandler(async (req, res) => {
   sendPaginated(res, { data, total, page, perPage });
 }));
 
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', requirePage(...PO_READ), asyncHandler(async (req, res) => {
   const po = await loadPo(req);
   const invoices = await DmsInvoice.find({ po: po._id, status: { $ne: 'Cancelled' } }).select('invoiceNo invoiceDate status grandTotal lines.product lines.qty').lean();
   // remaining qty per PO line = reqQty − already billed

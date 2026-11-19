@@ -116,13 +116,24 @@ router.get('/payment-status', requirePage('r_payment'), asyncHandler(async (req,
   if (!['Payable', 'Receivable'].includes(type)) throw new DmsError('Select a payment type', 422, { type: ['Required'] });
   if (!req.query.location) throw new DmsError('Select a location', 422, { location: ['Required'] });
   const [loc] = locScope(req, req.query.location);
-  // Payable: this location is the debtor (ledger.party). Receivable: it is the creditor (ledger.counterparty).
-  const match = type === 'Payable' ? { party: loc } : { counterparty: loc };
-  const group = type === 'Payable' ? '$counterparty' : '$party';
-  const rows = await DmsLedger.aggregate([{ $match: match }, { $group: { _id: group, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } }]);
-  const locs = await DmsLocation.find({ _id: { $in: rows.map((r) => r._id).filter(Boolean) } }).select('name city code').lean();
+  // Ledger rows live on the SELLER's account. Receivable: rows on this location's own ledger, grouped by buyer.
+  // Payable: rows where this location is the counterparty (buyer), grouped by the seller who owns the row.
+  const receivable = type === 'Receivable';
+  const rows = await DmsLedger.aggregate([
+    { $match: receivable ? { party: loc } : { counterparty: loc } },
+    { $group: { _id: { id: receivable ? '$counterparty' : '$party', n: '$counterpartyName' }, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } },
+  ]);
+  const ids = rows.map((r) => r._id.id).filter(Boolean);
+  const locs = await DmsLocation.find({ _id: { $in: ids } }).select('name city code').lean();
   const lm = new Map(locs.map((l) => [String(l._id), l]));
-  const data = rows.map((r) => ({ party: lm.get(String(r._id))?.name || 'Unknown', code: lm.get(String(r._id))?.code, invoiced: round2(r.dr), paid: round2(r.cr), outstanding: round2(r.dr - r.cr) })).filter((r) => r.outstanding !== 0);
+  const merged = new Map();
+  for (const r of rows) {
+    const l = r._id.id ? lm.get(String(r._id.id)) : null;
+    const key = l ? String(l._id) : `n:${r._id.n || 'Retail customers'}`;
+    const m = merged.get(key) || { party: l?.name || r._id.n || 'Retail customers', code: l?.code || '', dr: 0, cr: 0 };
+    m.dr += r.dr; m.cr += r.cr; merged.set(key, m);
+  }
+  const data = [...merged.values()].map((m) => ({ party: m.party, code: m.code, invoiced: round2(m.dr), paid: round2(m.cr), outstanding: round2(m.dr - m.cr) })).filter((r) => r.outstanding !== 0);
   sendSuccess(res, { data });
 }));
 

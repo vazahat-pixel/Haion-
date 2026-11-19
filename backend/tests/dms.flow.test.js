@@ -159,12 +159,12 @@ test('retail customer bill sells a serial; customer return brings it back', asyn
 test('payment receive → approval → party ledger and outstanding', async () => {
   const a = api();
   const p = ok(await a.post('/payments', { fromLocation: ctx.br._id, toLocation: ctx.ho._id, payMode: 'CASH', amount: 500, remark: 'part' }), 201);
-  assert.match(p.docNo, new RegExp(`^RECP/${fyLabel()}/SKD/0001$`));
+  assert.match(p.docNo, new RegExp(`^RECP/${fyLabel()}/SKD/0002$`));
   assert.equal(p.status, 'PFA');
   const tooMuch = await a.post(`/payments/${p._id}/approve`, { action: 'Approve', receivedAmount: 600, remark: 'x' });
   assert.equal(tooMuch.status, 422);
   ok(await a.post(`/payments/${p._id}/approve`, { action: 'Approve', receivedAmount: 500, remark: 'ok' }));
-  const led = ok(await a.get(`/reports/party-ledger?location=${ctx.br._id}`));
+  const led = ok(await a.get(`/reports/party-ledger?location=${ctx.ho._id}`));
   assert.equal(led.closing, 491.2); // 991.2 invoice − 500 payment
   const credit = ok(await a.get(`/po/credit/${ctx.br._id}`));
   assert.equal(credit.available, 500000 - 491.2);
@@ -196,7 +196,7 @@ test('cancelling a pending invoice restores stock and reverses ledger', async ()
   ok(await a.post(`/invoices/${inv._id}/cancel`, { remark: 'wrong' }));
   ho = ok(await a.get(`/reports/inventory?location=${ctx.ho._id}`)).find((s) => s.productCode === 'ACC01');
   assert.equal(ho.okQty, 92);
-  const led = ok(await a.get(`/reports/party-ledger?location=${ctx.br._id}`));
+  const led = ok(await a.get(`/reports/party-ledger?location=${ctx.ho._id}`));
   assert.equal(led.closing, 491.2);
   const received = await a.post(`/invoices/${ctx.inv._id}/cancel`, {});
   assert.equal(received.status, 422, 'received invoice cannot be cancelled');
@@ -251,4 +251,22 @@ test('change password verifies the old password', async () => {
   ok(await api(tok).post('/change-password', { oldPassword: 'OldPass123!', newPassword: 'NewPass123!' }));
   const login = await request(app).post('/api/auth/login').send({ email: 'pw@test.local', password: 'NewPass123!' });
   assert.equal(login.status, 200);
+});
+
+test('uploads are all-or-nothing: one bad line rejects the whole document and changes no stock', async () => {
+  const a = api();
+  const { DmsInvoice } = await import('../src/dms/models/txn.models.js');
+  const { DmsStock, DmsSerial } = await import('../src/dms/models/txn.models.js');
+  const before = { inv: await DmsInvoice.countDocuments(), stock: await DmsStock.find().lean(), ser: await DmsSerial.countDocuments() };
+  const bad = [
+    { product: ctx.pPlain._id, qty: 5, price: 10 },
+    { product: ctx.pSer._id, qty: 2, price: 10, serials: ['UPL-1', 'UPL-1'] }, // duplicate serial inside the file
+  ];
+  assert.equal((await a.post('/invoices', { kind: 'OPENING', from: ctx.ho._id, lines: bad })).status, 422);
+  assert.equal((await a.post('/invoices', { kind: 'OPENING', from: ctx.ho._id, lines: [{ product: ctx.pPlain._id, qty: 5, price: 10 }, { product: '000000000000000000000000', qty: 1, price: 1 }] })).status, 422, 'unknown product');
+  assert.equal((await a.post('/invoices', { kind: 'OPENING', from: ctx.ho._id, lines: [{ product: ctx.pPlain._id, qty: 5, price: 10 }, { product: ctx.pSer._id, qty: 1, price: 10, serials: ['IMEI001'] }] })).status, 422, 'serial already exists');
+  const after = { inv: await DmsInvoice.countDocuments(), stock: await DmsStock.find().lean(), ser: await DmsSerial.countDocuments() };
+  assert.equal(after.inv, before.inv, 'no document created');
+  assert.equal(after.ser, before.ser, 'no serial created');
+  assert.deepEqual(after.stock.map((s) => [s.okQty, s.damageQty]), before.stock.map((s) => [s.okQty, s.damageQty]), 'stock untouched');
 });

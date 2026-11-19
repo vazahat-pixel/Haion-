@@ -69,10 +69,18 @@
 .dms-field-err { color: #a94442; font-size: 11px; margin-top: 2px; }
 .dms label.dms-label { display: block; font-weight: 700; font-size: 12px; margin-bottom: 4px; }
 .dms .req { color: #d9534f; }
-.dms-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 30px; max-width: 1100px; margin: 0 auto; }
-.dms-form .full { grid-column: 1 / -1; }
+/* Reference form style (Bootstrap horizontal): one centred column, bold right-aligned label on the left. */
+.dms-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: 820px; margin: 0 auto; }
+.dms-form > div { display: grid; grid-template-columns: 38% minmax(0, 1fr); align-items: center; column-gap: 0; }
+.dms-form > div > label.dms-label { text-align: right; padding-right: 16px; margin: 0; }
+.dms-form > div > :not(label) { grid-column: 2; }
+.dms-form > div > .dms-field-err { grid-column: 2; }
+.dms-form > .full > textarea, .dms-form > div > textarea { align-self: start; }
+@media (max-width: 700px) { .dms-form > div { grid-template-columns: 1fr; } .dms-form > div > label.dms-label { text-align: left; margin-bottom: 4px; } .dms-form > div > :not(label) { grid-column: 1; } }
 .dms-filter { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 16px; justify-content: center; margin-bottom: 14px; }
-.dms-filter > div { min-width: 170px; }
+.dms-filter > div { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dms-filter .dms-label { margin: 0; white-space: nowrap; }
+.dms-filter select, .dms-filter .dms-input { width: 210px; }
 .dms-actions { display: flex; gap: 8px; justify-content: center; margin: 18px 0; }
 
 /* ── DataTables look ── */
@@ -136,7 +144,7 @@
   .dms-side { position: fixed; top: 0; bottom: 48px; left: 0; z-index: 900; transform: translateX(-100%); transition: transform .2s; }
   .dms.nav-open .dms-side { transform: none; }
   .dms .dms-burger { display: inline-flex; position: fixed; top: 8px; left: 8px; z-index: 950; width: auto; }
-  .dms-form, .dms-grid2 { grid-template-columns: 1fr; }
+  .dms-grid2 { grid-template-columns: 1fr; }
   .dms-title { font-size: 20px; margin-top: 46px; }
 }
 

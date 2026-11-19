@@ -221,6 +221,8 @@ router.get('/attendance-today', asyncHandler(async (req, res) => {
 router.post('/attendance-punch', asyncHandler(async (req, res) => {
   if (!hasPage(req, 'hr_attendance', 'e_attendance')) throw new DmsError('You do not have permission for this page', 403);
   const { kind, address = '', image = '' } = req.body;
+  // optional device location (a mobile client sends it); stored only when it is a plausible coordinate
+  const geo = (p) => (Number.isFinite(Number(req.body.lat)) && Math.abs(Number(req.body.lat)) <= 90 && Number.isFinite(Number(req.body.lng)) && Math.abs(Number(req.body.lng)) <= 180 && req.body.lat !== '' ? { [`${p}Lat`]: Number(req.body.lat), [`${p}Lng`]: Number(req.body.lng) } : {});
   if (!['in', 'out'].includes(kind)) throw new DmsError('kind must be in or out', 422);
   const now = new Date().toISOString();
   const rec = await DmsEntity.findOne({ type: 'attendance', ownerLoginId: me(req), 'data.date': today() });
@@ -228,13 +230,13 @@ router.post('/attendance-punch', asyncHandler(async (req, res) => {
     if (rec) throw new DmsError('You have already logged in today', 422);
     const created = await DmsEntity.create({
       type: 'attendance', status: 'Present', ownerLoginId: me(req), ...stamp(req), location: req.dms.location?._id || null,
-      data: { date: today(), employeeName: req.dms.displayName, inAt: now, inAddress: String(address).slice(0, 300), inImage: String(image).slice(0, 500) },
+      data: { date: today(), employeeName: req.dms.displayName, inAt: now, inAddress: String(address).slice(0, 300), inImage: String(image).slice(0, 500), ...geo('in') },
     });
     return sendCreated(res, { data: created, message: 'Login time recorded' });
   }
   if (!rec) throw new DmsError('Log in first', 422);
   if (rec.data.outAt) throw new DmsError('You have already logged out today', 422);
-  rec.data = { ...rec.data, outAt: now, outAddress: String(address).slice(0, 300), outImage: String(image).slice(0, 500) };
+  rec.data = { ...rec.data, outAt: now, outAddress: String(address).slice(0, 300), outImage: String(image).slice(0, 500), ...geo('out') };
   rec.markModified('data');
   await rec.save();
   return sendSuccess(res, { data: rec, message: 'Logout time recorded' });

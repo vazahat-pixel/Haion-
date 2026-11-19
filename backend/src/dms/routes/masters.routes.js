@@ -97,7 +97,7 @@ const MASTER_PAGE = {
   coupon: 'm_coupon', specification: 'm_specification', productdelivery: 'm_delivery', productimage: 'm_product',
 };
 router.param('mtype', (req, res, next, t) => (MASTER_TYPES.includes(t) ? next() : next(new DmsError('Unknown master', 404))));
-router.get('/masters/:mtype', asyncHandler(async (req, res) => {
+router.get('/masters/:mtype', (req, res, next) => requirePage(MASTER_PAGE[req.params.mtype])(req, res, next), asyncHandler(async (req, res) => {
   const { skip, perPage, page } = parsePagination(req.query);
   const q = { type: req.params.mtype };
   if (req.query.status) q.status = req.query.status;

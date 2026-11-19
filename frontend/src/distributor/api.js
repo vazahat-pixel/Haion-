@@ -45,6 +45,11 @@ export function useDmsMutation(fn, { onSuccess, silent } = {}) {
 export const fmt = {
   money: (n) => (Number(n) || 0).toFixed(2),
   date: (d) => (d ? new Date(d).toISOString().slice(0, 10) : ''),
+  /** Axis labels in Indian units (L = lakh, Cr = crore). */
+  short: (n) => { const v = Number(n) || 0; const a = Math.abs(v); return a >= 1e7 ? `${(v / 1e7).toFixed(1)} Cr` : a >= 1e5 ? `${(v / 1e5).toFixed(1)} L` : a >= 1e3 ? `${(v / 1e3).toFixed(0)}k` : String(v); },
+  dmy: (d) => (d ? new Date(d).toISOString().slice(0, 10).split('-').reverse().join('-') : ''),
+  /** Reference ledger style: zero prints as 0, anything else with two decimals. */
+  amt: (n) => (Number(n) ? Number(n).toFixed(2) : '0'),
   dt: (d) => (d ? new Date(d).toLocaleString('en-IN', { hour12: false }) : ''),
   party: (p) => (p ? [p.name, p.city].filter(Boolean).join(',') : ''),
 };

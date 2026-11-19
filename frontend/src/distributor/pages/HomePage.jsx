@@ -51,10 +51,10 @@ export default function HomePage() {
           </div>
           <div className="dms-grid2">
             <ChartBox title="Top 5 Model Sale Of The Month">
-              <BarChart data={d.topModels}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="qty" name="Qty" fill="#337ab7" /></BarChart>
+              <BarChart data={d.topModels}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="qty" name="Qty" fill="#337ab7" /></BarChart>
             </ChartBox>
             <ChartBox title="Top 5 Seller Of The Month">
-              <BarChart data={d.topSellers}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="amount" name="Amount" fill="#5cb85c" /></BarChart>
+              <BarChart data={d.topSellers}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount" fill="#5cb85c" /></BarChart>
             </ChartBox>
             <ChartBox title="Current Month PO Status">
               <PieChart><Pie data={d.poStatus} dataKey="count" nameKey="status" outerRadius={90} label>{d.poStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /><Legend /></PieChart>
@@ -65,7 +65,7 @@ export default function HomePage() {
           </div>
           <div className="dms-chart" style={{ marginBottom: 14 }}><h4>Last 12 Months Sale</h4>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={d.monthly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
+              <BarChart data={d.monthly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
             </ResponsiveContainer>
           </div>
         </>

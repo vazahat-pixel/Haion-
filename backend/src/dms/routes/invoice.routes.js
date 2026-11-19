@@ -19,11 +19,11 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendPaginated } from '../../utils/apiResponse.js';
 import { parsePagination } from '../../utils/pagination.util.js';
 import { DmsInvoice, DmsPurchaseOrder, DmsSerial, INVOICE_KINDS } from '../models/txn.models.js';
-import { DmsMaster, DmsScheme } from '../models/master.models.js';
+import { DmsMaster, DmsScheme, DmsLocation } from '../models/master.models.js';
 import { requirePage, scopeFilter, assertCanSee } from '../middleware/context.js';
 import {
   DmsError, computeDocument, nextInvoiceNo, isInterState, assertStockAvailable, moveStock,
-  assertSerialsOut, assertSerialsNew, setSerials, postLedger, round2,
+  assertSerialsOut, assertSerialsNew, setSerials, postLedger, round2, nextReceiptNo,
 } from '../services/core.service.js';
 import { buildParty, partyLabel } from '../services/party.service.js';
 import { logAudit } from '../../services/audit.service.js';
@@ -32,10 +32,10 @@ const router = Router();
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const SPEC = {
-  CORPORATE: { from: 'LOCATION', to: 'LOCATION', status: 'Pending', out: 'create', in: 'receive', ledger: 'buyer', page: 'corporate' },
-  UPLOAD_BILLING: { from: 'LOCATION', to: 'LOCATION', status: 'Pending', out: 'create', in: 'receive', ledger: 'buyer', page: 'corporate' },
-  RETAIL_LOCATION: { from: 'LOCATION', to: 'LOCATION', status: 'Pending', out: 'create', in: 'receive', ledger: 'buyer', page: 'retail' },
-  RETAIL_CUSTOMER: { from: 'LOCATION', to: 'CUSTOMER', status: 'Pending', out: 'create', serialOut: 'SOLD', page: 'retail', roundOff: true },
+  CORPORATE: { from: 'LOCATION', to: 'LOCATION', status: 'Pending', out: 'create', in: 'receive', ledger: 'seller', page: 'corporate' },
+  UPLOAD_BILLING: { from: 'LOCATION', to: 'LOCATION', status: 'Pending', out: 'create', in: 'receive', ledger: 'seller', page: 'corporate' },
+  RETAIL_LOCATION: { from: 'LOCATION', to: 'LOCATION', status: 'Pending', out: 'create', in: 'receive', ledger: 'seller', page: 'retail' },
+  RETAIL_CUSTOMER: { from: 'LOCATION', to: 'CUSTOMER', status: 'Pending', out: 'create', serialOut: 'SOLD', ledger: 'seller', page: 'retail', roundOff: true },
   STN: { from: 'LOCATION', to: 'LOCATION', status: 'PFA', out: 'approve', in: 'receive', page: 'stock_transfer', approvePage: 'stock_transfer_approval', approver: 'from' },
   JOBWORK: { from: 'LOCATION', to: 'LOCATION', status: 'PFA', out: 'approve', in: 'receive', page: 'jobwork', approvePage: 'stock_transfer_approval', approver: 'from' },
   PRN: { from: 'LOCATION', to: 'LOCATION', status: 'PFA', out: 'approve', in: 'receive', ledger: 'returner', page: 'purchase_return', approvePage: 'return_approval', approver: 'to' },
@@ -46,6 +46,19 @@ const SPEC = {
 };
 const RECEIVABLE = ['CORPORATE', 'UPLOAD_BILLING', 'RETAIL_LOCATION', 'STN', 'JOBWORK', 'PRN', 'LOCAL_PURCHASE'];
 const DISPATCHABLE = ['CORPORATE', 'UPLOAD_BILLING', 'RETAIL_LOCATION', 'STN', 'JOBWORK', 'PRN'];
+
+const REPORT_PAGES = ['r_sale', 'r_return', 'r_vendor', 'dash_sale', 'dash_inventory', 'r_stock_ledger', 'r_isd'];
+const ALSO_READ = { RETAIL_CUSTOMER: ['customer_return'], CORPORATE: ['po', 'po_approval'], LOCAL_PURCHASE: ['vendor_po'] };
+/** Page rights that may list documents for a given query. */
+function listPages({ queue, kind }) {
+  if (queue === 'receive') return ['receive', 'receive_jobwork', 'local_purchase'];
+  if (queue === 'dispatch') return ['dispatch'];
+  if (queue === 'approval') return ['stock_transfer_approval', 'return_approval'];
+  const kinds = String(kind || '').split(',').filter((k) => SPEC[k]);
+  const base = kinds.length ? kinds : Object.keys(SPEC);
+  return [...new Set([...base.flatMap((k) => [SPEC[k].page, SPEC[k].approvePage, ...(ALSO_READ[k] || [])]), ...REPORT_PAGES].filter(Boolean))];
+}
+const canReadDoc = (req, inv) => req.dms.isAdmin || [SPEC[inv.kind].page, SPEC[inv.kind].approvePage, 'dispatch', 'receive', 'receive_jobwork', ...REPORT_PAGES, ...(inv.po ? ['po', 'po_approval', 'vendor_po'] : []), ...(ALSO_READ[inv.kind] || [])].some((k) => k && req.dms.pages.includes(k));
 
 const actor = (req) => ({ by: req.dms.displayName, byUser: req.user._id });
 const visibleIds = (inv) => [inv.from?.location, inv.to?.location].filter(Boolean).map(String);
@@ -92,16 +105,19 @@ async function stockIn(inv, spec, receivedLines) {
   }
 }
 async function postInvoiceLedger(inv, spec, sign = 1) {
-  if (spec.ledger === 'buyer') {
+  // Reference behaviour (verified on the live Party Ledger): the SELLER's ledger is debited when it issues an
+  // invoice and credited when it receives payment. The counterparty (buyer / payer) is the secondary column.
+  if (spec.ledger === 'seller') {
     await postLedger({
-      party: inv.to.location, counterparty: inv.from.location, counterpartyName: inv.from.name,
+      party: inv.from.location, counterparty: inv.to.location, counterpartyName: inv.to.name,
       docNo: inv.invoiceNo, docType: sign > 0 ? inv.kind : `${inv.kind}_CANCEL`,
       dr: sign > 0 ? inv.grandTotal : 0, cr: sign < 0 ? inv.grandTotal : 0, txnDate: inv.invoiceDate,
     });
   }
   if (spec.ledger === 'returner') {
     await postLedger({
-      party: inv.from.location, counterparty: inv.to.location, counterpartyName: inv.to.name,
+      // a purchase return reduces what the returning location owes the supplier (the PRN's receiver)
+      party: inv.to.location, counterparty: inv.from.location, counterpartyName: inv.from.name,
       docNo: inv.invoiceNo, docType: 'PRN', cr: inv.grandTotal, txnDate: new Date(),
     });
   }
@@ -113,7 +129,7 @@ async function refreshPoStatus(poId) {
 }
 
 /* ── list ── */
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', (req, res, next) => requirePage(...listPages(req.query))(req, res, next), asyncHandler(async (req, res) => {
   const { skip, perPage, page } = parsePagination(req.query);
   const kinds = String(req.query.kind || '').split(',').filter((k) => INVOICE_KINDS.includes(k));
   const q = {};
@@ -163,6 +179,7 @@ router.get('/', asyncHandler(async (req, res) => {
 
 router.get('/:id', asyncHandler(async (req, res) => {
   const inv = await loadInvoice(req);
+  if (!canReadDoc(req, inv)) throw new DmsError('You do not have permission for this page', 403);
   await inv.populate('logistic.courier', 'name attrs');
   sendSuccess(res, { data: inv });
 }));
@@ -479,6 +496,11 @@ router.post('/:id/payment', requirePage('retail'), asyncHandler(async (req, res)
   const due = round2(inv.grandTotal - inv.paidAmount);
   if (amount > due) throw new DmsError(`Amount exceeds balance due (${due})`, 422, { amount: ['Too high'] });
   inv.paidAmount = round2(inv.paidAmount + amount);
+  const receiptNo = await nextReceiptNo('RECEIPT', await DmsLocation.findById(inv.from.location).lean());
+  await postLedger({
+    party: inv.from.location, counterpartyName: inv.to.name, docNo: receiptNo, docType: 'PAYMENT', cr: amount, txnDate: new Date(),
+    paymentRemark: [req.body.payMode || 'CASH', req.body.remark].filter(Boolean).join(' - '),
+  });
   if (inv.paidAmount >= inv.grandTotal) inv.status = 'Completed';
   inv.actions.push({ ...actor(req), action: 'Payment Received', remark: `${req.body.payMode || 'CASH'} ${amount}${req.body.remark ? ` — ${req.body.remark}` : ''}` });
   await inv.save();
@@ -486,7 +508,7 @@ router.post('/:id/payment', requirePage('retail'), asyncHandler(async (req, res)
 }));
 
 /* ── serial lookup (single + multiple track) ── */
-router.post('/serials/track', asyncHandler(async (req, res) => {
+router.post('/serials/track', requirePage('serial_track', 'serial_track_multi'), asyncHandler(async (req, res) => {
   const list = (req.body.serials || []).map((s) => String(s).trim().toUpperCase()).filter(Boolean).slice(0, 500);
   if (!list.length) throw new DmsError('Enter at least one serial number');
   const rows = await DmsSerial.find({ serialNo: { $in: list } }).populate('product', 'productCode name').populate('location', 'name code city').lean();

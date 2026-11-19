@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { Database } from 'lucide-react';
-import { dms, useDmsQuery, useDmsMutation, useLookups, apiError } from '../api';
+import { dms, useDmsQuery, useDmsMutation, useLookups, apiError, fmt } from '../api';
 import {
   PageTitle, Toolbar, Btn, BackBtn, DataTable, useListState, Field, Input, Select, TextArea, EditLink, Alert, locOpt, prodOpt, Status,
 } from '../components/ui';
@@ -47,7 +47,7 @@ export function MasterList() {
   const opts = useOptions(lk?.data);
   const list = useListState();
   const [filters, setFilters] = useState({});
-  const { data, isFetching } = useDmsQuery(`m-${key}`, cfg?.endpoint, { ...list.params, ...filters }, { enabled: Boolean(cfg) });
+  const { data, isFetching, error } = useDmsQuery(`m-${key}`, cfg?.endpoint, { ...list.params, ...filters }, { enabled: Boolean(cfg) });
   if (!cfg) return <Navigate to="/distributor/home" replace />;
   const columns = [
     ...cfg.columns.map((c) => {
@@ -60,6 +60,7 @@ export function MasterList() {
   return (
     <>
       <PageTitle icon={Database}>{cfg.title}</PageTitle>
+      {error && <Alert>{apiError(error).message}</Alert>}
       {cfg.filters?.length > 0 && (
         <FilterBar defs={cfg.filters} opts={opts} onGo={(f) => { setFilters(f); list.setFilters({}); }} />
       )}
@@ -74,7 +75,7 @@ export function MasterList() {
 }
 
 export function FilterBar({ defs, opts, onGo, initial = {} }) {
-  const [v, setV] = useState(initial);
+  const [v, setV] = useState(() => ({ ...Object.fromEntries(defs.filter((d) => d.defaultToday).map((d) => [d.name, fmt.date(new Date())])), ...initial }));
   return (
     <form className="dms-filter" onSubmit={(e) => { e.preventDefault(); onGo(Object.fromEntries(Object.entries(v).filter(([, x]) => x !== '' && x != null))); }}>
       {defs.map((d) => (

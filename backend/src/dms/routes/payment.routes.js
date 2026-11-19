@@ -20,7 +20,7 @@ async function load(req) {
   return p;
 }
 
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', (req, res, next) => requirePage(...(req.query.kind === 'ADJUSTMENT' ? ['acc_adjust'] : ['payment_receive', 'payment_approval', 'r_collection', 'r_payment']))(req, res, next), asyncHandler(async (req, res) => {
   const { skip, perPage, page } = parsePagination(req.query);
   const q = { kind: req.query.kind === 'ADJUSTMENT' ? 'ADJUSTMENT' : 'RECEIPT' };
   if (req.query.queue === 'approval') {
@@ -38,7 +38,12 @@ router.get('/', asyncHandler(async (req, res) => {
   sendPaginated(res, { data, total, page, perPage });
 }));
 
-router.get('/:id', asyncHandler(async (req, res) => sendSuccess(res, { data: await load(req) })));
+router.get('/:id', asyncHandler(async (req, res) => {
+  const p = await load(req);
+  const pages = p.kind === 'ADJUSTMENT' ? ['acc_adjust'] : ['payment_receive', 'payment_approval', 'r_collection', 'r_payment'];
+  if (!req.dms.isAdmin && !pages.some((k) => req.dms.pages.includes(k))) throw new DmsError('You do not have permission for this page', 403);
+  sendSuccess(res, { data: p });
+}));
 
 router.post('/', (req, res, next) => requirePage(req.body.kind === 'ADJUSTMENT' ? 'acc_adjust' : 'payment_receive')(req, res, next), asyncHandler(async (req, res) => {
   const b = req.body;
@@ -127,7 +132,8 @@ router.post('/:id/approve', requirePage('payment_approval'), asyncHandler(async 
   await p.save();
   if (action === 'Approve') {
     await postLedger({
-      party: p.fromLocation._id, counterparty: p.toLocation._id, counterpartyName: p.toLocation.name, docNo: p.docNo,
+      // seller-side ledger: the receiver's account is credited (matches the reference Party Ledger)
+      party: p.toLocation._id, counterparty: p.fromLocation._id, counterpartyName: p.fromLocation.name, docNo: p.docNo,
       docType: 'PAYMENT', cr: p.receivedAmount, txnDate: p.paymentDate, paymentRemark: p.remark, approvalRemark: p.approveRemark,
     });
   }

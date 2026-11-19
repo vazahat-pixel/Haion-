@@ -1,33 +1,30 @@
 # DMS Rebuild: Progress Tracker
 
-Last updated: 19-Nov-2026.
+Last updated: 19-Nov-2026 (after the final audit pass). Full detail: [final-completion-audit.md](final-completion-audit.md). Assumptions: [risks.md](risks.md). Demo script: [demo-walkthrough.md](demo-walkthrough.md).
 
-**Status legend:** D discovered · I inspected · Doc documented · FE frontend · BE backend · T automated API test passes · UI exercised in a browser against the local stack · V visual comparison done.
+Legend: D discovered · I inspected · FE frontend · BE backend · T automated test · UI exercised in a browser · V compared visually with the reference · Seed = populated in the demo database.
 
-Evidence:
-- `backend/tests/dms.flow.test.js` (12 tests) and `backend/tests/dms.entities.test.js` (7 tests), in-memory MongoDB only.
-- `vite build` succeeds.
-- Browser runs on localhost against an isolated in-memory DB (route smoke tests + the full PO → receive flow).
+| Group (reference pages) | Status |
+|---|---|
+| Home dashboard + 6 dashboards | D I FE BE T UI Seed (tiles reconciled to source documents) |
+| Master Management (23) | D I FE BE T Seed (Product Image/Specification sparse) |
+| Report Master (15) | D I FE BE T Seed; Party Ledger also **V** (columns, ledger direction, formats); others not result-compared |
+| Logistic / Invoicing / Purchase / Return / Payment / Receive Stock (29) | D I FE BE T UI V(PO list) Seed — full PO→invoice→dispatch→receive→payment cycle on 23 months of data |
+| Sale Force (7), General Query (2), App Transaction (5) | D I FE BE T Seed |
+| HRMS HR (18) / Emp (10) / Reports (6) | D I FE BE T Seed (attendance 1,472 days, payroll Aug–Oct 2026) |
 
-## All 117 reference pages
+## Evidence (this pass)
+- Backend `npm test`: **146/146**. Frontend `vite build`: OK.
+- `scripts/dms-demo-verify.js`: **20/20** reconciliation checks on the seeded data.
+- `scripts/dms-demo-roles-check.js`: **17/17** role-visibility checks.
+- `tests/dms.authz.test.js`: zero-rights user refused on 65 read + 21 write endpoints; cross-location isolation.
+- Browser (Chrome extension, before it disconnected): dashboard, Inventory Aging, Party Ledger verified on seeded data; earlier 81-route smoke test.
 
-| Group | Pages | Status |
-|---|---|---|
-| Home dashboard | tiles, top-5 charts, PO/invoice pies, 12-month chart | D I Doc FE BE T UI |
-| Dashboard (6) | Dashboard 1 (yearly), Dashboard 2 (day-wise qty/amt), Inventory, Lead, Purchase, Sale | D I FE BE T (UI smoke) |
-| Master Management (23) | Account, Admin/Users, Brand, City, Color, Coupon, Courier, Customer, Location (+mapping), Other Tax, Parameter, Price, Product Category, Product Delivery (+matrix upload), Product Image, Product, Sub Category, Scheme, Serial No. Activation (upload), Specification, State, HSN Tax, Vendor | D I Doc FE BE T |
-| Report Master (15) | Beat, Collection, Inventory, Aging, ISD, Party Ledger, Party Master, Payment, Price Drop, Purchase Order, Return, Sale, Serial Activation, Stock Ledger, Vendor Purchase | D I FE BE T/UI smoke |
-| Logistic / Invoicing / Purchase / Return / Payment / Receive Stock (29) | full PO → invoice → dispatch → receive, retail, STN, job work, returns, payments | D I Doc FE BE T UI V |
-| Sale Force (7) | Beat Scheduler (CSV upload), Deviation Approval, Lead, My Beat Plan, PJP Master, Quote, Target | D I FE BE T |
-| General Query (2) | Locationwise Expense, Query Status | D I FE BE T |
-| App Transaction (5) | App Feedback, App Task, App Track Location (+distance), Attendance Report, TA DA Approval | D I FE BE T |
-| HRMS HR (18) | Activities, Application Approve, Attendance, Claim Approvals, Claims, Department, Designation, Employee, Holidays, Leave Approve, Leave Master, My Teams, Notice, Policies, Projects, Resign, Salary Generate, Salary Sheet | D I FE BE T |
-| HRMS Emp (10) | Activities, Application, Attendance, Claims, Leave, My Documents, My Profile, Policies, Resign, Salary Sheet | D I FE BE T |
-| HRMS Report (6) | Attendance, Employee, Leave, Other Request, Salary, Salary Slip (print) | D I FE BE |
+## Changes made because the audit found problems
+1. **Ledger direction corrected** to the reference's seller-side convention (invoice DR / payment received CR) — verified on the live Party Ledger.
+2. **Missing server-side page-right checks** on PO / invoice / payment lists + details, master lists, serial track → fixed + tested.
+3. Inventory Aging N+1 (timed out) → single query. Axis labels clipped → Indian units. Master list errors surfaced. Party Ledger/Stock Ledger columns aligned to the reference; zero prints `0`; `dd-mm-yyyy`; label-left filter rows and horizontal forms.
+4. Seed bug found by the reconciliation (vendor receipts numbered with today's FY) → fixed, re-seeded, re-verified.
 
-## Known limits (be honest about these)
-- Visual comparison against the live reference was done only for the sidebar/layout and the PO List page. Other pages share the same components but were not individually compared.
-- The reference's exact Excel templates were not available. Uploads accept CSV with the columns shown by each page's "Download template" button.
-- The reference's mobile **app** (selfie attendance, GPS tracking, app tasks) is not built. The back-office pages and the API they use are built; the Attendance page accepts a typed address, not a camera/GPS capture.
-- HO / Branch / Dealer role walkthroughs on the reference site were not done, so per-role menus follow the page-rights model rather than the reference's fixed role menus.
-- No MongoDB multi-document transactions (see risks.md).
+## Not done / not verified (see audit for the full list)
+Role walkthroughs on the reference (blocked: needs the user to sign in as HO/Branch/Dealer), mobile app, .xlsx templates, per-page pixel comparison beyond the pages named above, post-CSS-change screenshots (browser disconnected), MongoDB transactions, e-invoice/e-way bill.

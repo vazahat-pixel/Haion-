@@ -10,6 +10,12 @@ import { DmsError, round2 } from '../services/core.service.js';
 
 const router = Router();
 const oid = (v) => new mongoose.Types.ObjectId(String(v));
+/** Ledger "Document Type" captions. RETAIL INVOICE and Payment Received are verified on the reference; the rest follow the same style. */
+const DOC_TYPE_LABEL = {
+  RETAIL_LOCATION: 'RETAIL INVOICE', RETAIL_CUSTOMER: 'RETAIL INVOICE', CORPORATE: 'CORPORATE INVOICE', UPLOAD_BILLING: 'CORPORATE INVOICE', PAYMENT: 'Payment Received',
+  PRN: 'PURCHASE RETURN', ADJUSTMENT_CR: 'Account Adjustment (CR)', ADJUSTMENT_DR: 'Account Adjustment (DR)',
+  RETAIL_LOCATION_CANCEL: 'RETAIL INVOICE CANCELLED', RETAIL_CUSTOMER_CANCEL: 'RETAIL INVOICE CANCELLED', CORPORATE_CANCEL: 'CORPORATE INVOICE CANCELLED', UPLOAD_BILLING_CANCEL: 'CORPORATE INVOICE CANCELLED',
+};
 const SALE_KINDS = ['CORPORATE', 'UPLOAD_BILLING', 'RETAIL_LOCATION', 'RETAIL_CUSTOMER'];
 const STN_KINDS = ['STN', 'JOBWORK'];
 
@@ -107,6 +113,10 @@ router.get('/inventory', requirePage('r_inventory', 'dash_inventory', 'home'), a
 router.get('/aging', requirePage('r_aging'), asyncHandler(async (req, res) => {
   const ids = locIds(req);
   const stock = await DmsStock.find(inIds(ids, 'location')).populate('product', 'productCode name isSerialized').populate('location', 'name locationType').lean();
+  // one query for every inward movement (newest first); stock is aged FIFO-from-the-top: the units still on hand are the most recent receipts
+  const inward = await DmsStockLedger.find({ ...inIds(ids, 'location'), inQty: { $gt: 0 } }).sort({ createdAt: -1 }).select('location product bucket inQty createdAt').lean();
+  const byKey = new Map();
+  for (const r of inward) { const k = `${r.location}|${r.product}|${r.bucket}`; (byKey.get(k) || byKey.set(k, []).get(k)).push(r); }
   const now = Date.now();
   const out = [];
   for (const s of stock) {
@@ -114,14 +124,12 @@ router.get('/aging', requirePage('r_aging'), asyncHandler(async (req, res) => {
     const row = { location: s.location.name, locationType: s.location.locationType, productCode: s.product.productCode, productName: s.product.name, nature: s.product.isSerialized ? 'Serialized' : 'Non-Serialized', b0: {}, b16: {}, b31: {} };
     for (const [bucket, field, key] of [['OK', 'okQty', 'ok'], ['DAMAGE', 'damageQty', 'dm'], ['MISSING', 'missingQty', 'ms']]) {
       let left = s[field] || 0;
-      // eslint-disable-next-line no-await-in-loop
-      const ins = await DmsStockLedger.find({ location: s.location._id, product: s.product._id, bucket, inQty: { $gt: 0 } }).sort({ createdAt: -1 }).select('inQty createdAt').lean();
-      for (const r of ins) {
+      for (const r of byKey.get(`${s.location._id}|${s.product._id}|${bucket}`) || []) {
         if (left <= 0) break;
         const take = Math.min(left, r.inQty); left -= take;
         const days = (now - new Date(r.createdAt).getTime()) / 86400000;
-        const b = days <= 15 ? 'b0' : days <= 30 ? 'b16' : 'b31';
-        row[b][key] = (row[b][key] || 0) + take;
+        const bk = days <= 15 ? 'b0' : days <= 30 ? 'b16' : 'b31';
+        row[bk][key] = (row[bk][key] || 0) + take;
       }
       if (left > 0) row.b31[key] = (row.b31[key] || 0) + left;
     }
@@ -152,9 +160,12 @@ router.get('/party-ledger', requirePage('r_ledger'), asyncHandler(async (req, re
   const before = req.query.from ? await DmsLedger.aggregate([{ $match: { party, txnDate: { $lt: new Date(req.query.from) } } }, { $group: { _id: null, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } }]) : [];
   let bal = round2((before[0]?.dr || 0) - (before[0]?.cr || 0));
   const opening = bal;
-  const data = rows.map((r) => { bal = round2(bal + r.dr - r.cr); return { ...r, balance: bal }; });
   const loc = await DmsLocation.findById(party).select('name code').lean();
-  sendSuccess(res, { data: { party: loc, opening, closing: bal, rows: data } });
+  const data = rows.map((r) => {
+    bal = round2(bal + r.dr - r.cr);
+    return { ...r, balance: bal, locationName: loc?.name, docTypeLabel: DOC_TYPE_LABEL[r.docType] || r.docType.replace(/_/g, ' ') };
+  });
+  sendSuccess(res, { data: { party: loc, opening, closing: bal, totalDr: round2(rows.reduce((n, r) => n + r.dr, 0)), totalCr: round2(rows.reduce((n, r) => n + r.cr, 0)), rows: data } });
 }));
 
 /* ── sale / purchase / return / PO reports (flat line rows) ── */

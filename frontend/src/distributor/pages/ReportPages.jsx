@@ -43,7 +43,7 @@ export function Report({ title, icon = FileBarChart, url, filters, columns, pick
 }
 
 const loc = (required) => ({ name: 'location', label: 'Location', optionsFrom: 'locations', required });
-const dates = [{ name: 'from', label: 'From Date', type: 'date' }, { name: 'to', label: 'To Date', type: 'date' }];
+const dates = [{ name: 'from', label: 'From Date', type: 'date', defaultToday: true }, { name: 'to', label: 'To Date', type: 'date', defaultToday: true }];
 
 export const InventoryReport = ({ title = 'Inventory', icon }) => (
   <Report title={title} icon={icon} url="/reports/inventory" requireGo={false}
@@ -66,20 +66,21 @@ export const StockLedgerReport = () => (
   <Report title="Stock Ledger" url="/reports/stock-ledger" filters={[...dates, loc(true), { name: 'product', label: 'Product', optionsFrom: 'products' }]}
     columns={[
       { key: '#', label: 'S.No' }, { key: 'createdAt', label: 'Date & Time', render: (r) => fmt.dt(r.createdAt), text: (r) => fmt.dt(r.createdAt) },
-      { key: 'item', label: 'Item', text: (r) => `${r.product?.name} | ${r.product?.productCode}`, render: (r) => `${r.product?.name} | ${r.product?.productCode}` },
-      { key: 'bucket', label: 'Bucket' }, { key: 'opening', label: 'Opening Stock', align: 'r' }, { key: 'inQty', label: 'In', align: 'r' }, { key: 'outQty', label: 'Out', align: 'r' },
-      { key: 'closing', label: 'Closing Stock', align: 'r' }, { key: 'docNo', label: 'System Ref. No.' }, { key: 'docKind', label: 'Transfer Type' }, { key: 'counterparty', label: 'Stock Transfer' },
+      { key: 'item', label: 'Item', text: (r) => `${r.product?.name} | ${r.product?.productCode}${r.bucket !== 'OK' ? ` (${r.bucket})` : ''}`, render: (r) => `${r.product?.name} | ${r.product?.productCode}${r.bucket !== 'OK' ? ` (${r.bucket})` : ''}` },
+      { key: 'opening', label: 'Opening Stock', align: 'r' }, { key: 'inQty', label: 'In', align: 'r' }, { key: 'outQty', label: 'Out', align: 'r' },
+      { key: 'closing', label: 'Closing Stock', align: 'r' }, { key: 'docNo', label: 'System Ref. No.' }, { key: 'docKind', label: 'Transfer Type', text: (r) => String(r.docKind || '').replace(/_/g, ' '), render: (r) => String(r.docKind || '').replace(/_/g, ' ') }, { key: 'counterparty', label: 'Stock Transfer' },
     ]} />
 );
 
+/* Column order, captions and number style follow the live reference Party Ledger (verified 19-Nov-2026). */
 export const PartyLedgerReport = () => (
-  <Report title="Party Ledger" url="/reports/party-ledger" filters={[{ ...loc(true), label: 'Party Name' }, ...dates]} pick={(d) => d.rows}
-    footer={(d) => d && <p style={{ textAlign: 'right' }}><b>Opening:</b> {fmt.money(d.opening)} &nbsp; <b>Closing balance (DR − CR):</b> {fmt.money(d.closing)}</p>}
+  <Report title="Party Ledger" url="/reports/party-ledger" filters={[{ ...loc(true), label: 'Location Name :' }, ...dates]} pick={(d) => d.rows}
+    footer={(d) => d && <p style={{ textAlign: 'right' }}><b>Total CR:</b> {fmt.amt(d.totalCr)} &nbsp; <b>Total DR:</b> {fmt.amt(d.totalDr)} &nbsp; <b>Opening:</b> {fmt.amt(d.opening)} &nbsp; <b>Closing (DR − CR):</b> {fmt.amt(d.closing)}</p>}
     columns={[
-      { key: '#', label: 'SNo.' }, { key: 'counterpartyName', label: 'Party Name' }, { key: 'docNo', label: 'Document No.' }, { key: 'docType', label: 'Document Type' },
-      { key: 'txnDate', label: 'Transaction Date', render: (r) => fmt.date(r.txnDate), text: (r) => fmt.date(r.txnDate) }, { key: 'createdAt', label: 'Entry Date', render: (r) => fmt.date(r.createdAt), text: (r) => fmt.date(r.createdAt) },
+      { key: '#', label: 'SNo.' }, { key: 'locationName', label: 'Location Name' }, { key: 'counterpartyName', label: 'Party Name' }, { key: 'docNo', label: 'Document No.' }, { key: 'docTypeLabel', label: 'Document Type' },
+      { key: 'txnDate', label: 'Transaction Date', render: (r) => fmt.dmy(r.txnDate), text: (r) => fmt.dmy(r.txnDate) }, { key: 'createdAt', label: 'Entry Date', render: (r) => fmt.dmy(r.createdAt), text: (r) => fmt.dmy(r.createdAt) },
       { key: 'paymentRemark', label: 'Payment Remark' }, { key: 'approvalRemark', label: 'Approval Remark' },
-      { key: 'cr', label: 'Amount CR', align: 'r', render: (r) => fmt.money(r.cr) }, { key: 'dr', label: 'Amount DR', align: 'r', render: (r) => fmt.money(r.dr) }, { key: 'balance', label: 'Balance', align: 'r', render: (r) => fmt.money(r.balance) },
+      { key: 'cr', label: 'Amount CR', align: 'r', render: (r) => fmt.amt(r.cr), text: (r) => fmt.amt(r.cr) }, { key: 'dr', label: 'Amount DR', align: 'r', render: (r) => fmt.amt(r.dr), text: (r) => fmt.amt(r.dr) },
     ]} />
 );
 
@@ -172,7 +173,7 @@ export function SaleDashboard() {
       <FilterBar defs={[loc(false), { name: 'txn', label: 'Type', options: [{ value: 'both', label: 'Invoice + STN' }, { value: 'invoice', label: 'Invoice' }, { value: 'stn', label: 'STN' }], placeholder: false }]} opts={opts} onGo={setP} />
       <div className="dms-chart"><h4>Month-wise Sale (last 12 months)</h4>
         <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={d?.monthly || []}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis yAxisId="a" /><YAxis yAxisId="q" orientation="right" /><Tooltip /><Legend />
+          <BarChart data={d?.monthly || []}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis yAxisId="a" width={62} tickFormatter={fmt.short} /><YAxis yAxisId="q" orientation="right" /><Tooltip /><Legend />
             <Bar yAxisId="a" dataKey="amount" name="Amount (₹)" fill="#337ab7" /><Bar yAxisId="q" dataKey="qty" name="Qty (Pcs)" fill="#5cb85c" /></BarChart>
         </ResponsiveContainer>
       </div>
