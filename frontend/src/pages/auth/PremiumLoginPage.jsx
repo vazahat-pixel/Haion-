@@ -163,8 +163,10 @@ export default function PremiumLoginPage({ initialPortal = 'staff', lockPortal =
 
   const validateForm = () => {
     const newErrors = {};
-    if (!email.trim()) newErrors.email = 'Email required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email';
+    // Accepts email, 10-digit mobile, or a Distributor (DMS) login ID — same rule as the API
+    const id = email.trim();
+    if (!id) newErrors.email = 'Email, mobile or user ID required';
+    else if (!/\S+@\S+\.\S+/.test(id) && !/^\d{10}$/.test(id) && !/^[A-Za-z0-9]{3,30}$/.test(id)) newErrors.email = 'Enter a valid email, mobile number or user ID';
     if (!password) newErrors.password = 'Password required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -341,13 +343,14 @@ export default function PremiumLoginPage({ initialPortal = 'staff', lockPortal =
               <div className="field-label-row">
                 <label className="field-label">
                   <Mail className="w-3.5 h-3.5" />
-                  <span>Email Address</span>
+                  <span>Email / Mobile / User ID</span>
                 </label>
               </div>
               <div className="input-wrap">
                 <div className="input-glow-border" />
                 <input
-                  type="email"
+                  type="text"
+                  autoComplete="username"
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({ ...errors, email: null }); }}
                   placeholder="name@company.com"

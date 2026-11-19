@@ -56,6 +56,8 @@ function devLogin(credentials) {
   return { user, accessToken: `dev-token-${user.id}` };
 }
 
+let refreshInFlight = null;
+
 export const authService = {
   async login(credentials) {
     if (env.useMockApi) return devLogin(credentials);
@@ -72,8 +74,18 @@ export const authService = {
     }
   },
 
-  async refresh() {
-    if (env.useMockApi) return null;
+  // Single-flight: the refresh token rotates on every call, so concurrent refreshes
+  // (React StrictMode double effects, AuthProvider + 401 interceptor) must share one
+  // request — otherwise the second call presents an already-rotated token and gets 401.
+  refresh() {
+    if (env.useMockApi) return Promise.resolve(null);
+    if (!refreshInFlight) {
+      refreshInFlight = authService._refreshOnce().finally(() => { refreshInFlight = null; });
+    }
+    return refreshInFlight;
+  },
+
+  async _refreshOnce() {
     try {
       const res = await client.post(endpoints.auth.refresh);
       return res.normalized.data;

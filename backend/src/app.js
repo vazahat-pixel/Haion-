@@ -63,6 +63,7 @@ import referralRoutes from './routes/referral.routes.js';
 import ocrRoutes from './routes/ocr.routes.js';
 import companyLedgerRoutes from './routes/companyLedger.routes.js';
 import hrmsRoutes from './routes/hrms.routes.js';
+import dmsRoutes from './dms/index.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -227,6 +228,7 @@ app.use('/api/referrals', referralRoutes);
 app.use('/api/ocr', ocrRoutes);
 app.use('/api/company-ledger', companyLedgerRoutes);
 app.use('/api/hrms', hrmsRoutes);
+app.use('/api/dms', dmsRoutes); // Distributor Management System (isolated module)
 
 app.use(notFoundHandler);
 app.use(errorHandler);

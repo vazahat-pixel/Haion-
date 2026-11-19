@@ -13,6 +13,7 @@ export const ROLES = {
   CUSTOMER_SUPPORT: 'CUSTOMER_SUPPORT',
   SERVICE_CENTER: 'SERVICE_CENTER',
   CUSTOMER: 'CUSTOMER',
+  DMS_USER: 'DMS_USER', // Distributor panel users (rights come from DmsProfile)
 };
 
 // Organizational verticals for HRMS hierarchy

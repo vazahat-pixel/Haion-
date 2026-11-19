@@ -87,3 +87,8 @@ landing page website/
 # Scratch folders
 scratch/
 backend/scratch/
+
+# Client reference credentials (never commit)
+Credentail Details.txt
+pdf_123
+reference-audit/screenshots/

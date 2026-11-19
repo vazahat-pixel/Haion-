@@ -13,6 +13,7 @@ export const ROLES = {
   CUSTOMER_SUPPORT: 'CUSTOMER_SUPPORT',
   SERVICE_CENTER: 'SERVICE_CENTER',
   CUSTOMER: 'CUSTOMER',
+  DMS_USER: 'DMS_USER',
 };
 
 export const ROLE_PANEL_MAP = {
@@ -30,6 +31,7 @@ export const ROLE_PANEL_MAP = {
   [ROLES.CUSTOMER_SUPPORT]: 'service',
   [ROLES.SERVICE_CENTER]: 'service',
   [ROLES.CUSTOMER]: 'customer',
+  [ROLES.DMS_USER]: 'distributor',
 };
 
 export const ROLE_HOME_ROUTE = {
@@ -47,6 +49,7 @@ export const ROLE_HOME_ROUTE = {
   [ROLES.CUSTOMER_SUPPORT]: '/service/dashboard',
   [ROLES.SERVICE_CENTER]: '/service/walkin',
   [ROLES.CUSTOMER]: '/customer/dashboard',
+  [ROLES.DMS_USER]: '/distributor/home',
 };
 
 // Organizational hierarchy verticals
@@ -97,5 +100,6 @@ export const ROLE_LABELS = {
   CUSTOMER_SUPPORT: 'Customer Support',
   SERVICE_CENTER: 'Service Center',
   CUSTOMER: 'Customer',
+  DMS_USER: 'Distributor User',
 };
 

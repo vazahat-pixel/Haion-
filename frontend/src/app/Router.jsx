@@ -13,6 +13,7 @@ const AdminRoutes = lazy(() => import('@/routes/admin/AdminRoutes'));
 const DealerRoutes = lazy(() => import('@/routes/dealer/DealerRoutes'));
 const EmployeeRoutes = lazy(() => import('@/routes/employee/EmployeeRoutes'));
 const ServiceRoutes = lazy(() => import('@/routes/service/ServiceRoutes'));
+const DistributorRoutes = lazy(() => import('@/distributor/DistributorRoutes'));
 const CustomerRoutes = lazy(() => import('@/routes/customer/CustomerRoutes'));
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -99,6 +100,7 @@ export function Router() {
         <Route path="/dealer/*" element={<DealerRoutes />} />
         <Route path="/employee/*" element={<EmployeeRoutes />} />
         <Route path="/service/*" element={<ServiceRoutes />} />
+        <Route path="/distributor/*" element={<DistributorRoutes />} />
 
         <Route element={<PublicLayout />}>
           <Route path="/customer/access" element={<CustomerAccessPage />} />

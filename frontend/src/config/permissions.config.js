@@ -113,4 +113,6 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.SERVICE_REQUESTS_READ,
     PERMISSIONS.SERVICE_REQUESTS_CREATE,
   ],
+  // Distributor panel rights are enforced server-side via /api/dms (DmsProfile.pages)
+  [ROLES.DMS_USER]: [],
 };

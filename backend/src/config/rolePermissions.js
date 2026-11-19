@@ -198,4 +198,6 @@ export const ROLE_PERMISSIONS = {
   CUSTOMER: [
     'orders.read', 'warranty.read', 'service-requests.read', 'service-requests.create', 'notifications.read',
   ],
+  // Distributor panel users: page rights are enforced by /api/dms (DmsProfile.pages)
+  DMS_USER: ['notifications.read'],
 };
