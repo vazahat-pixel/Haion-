@@ -16,6 +16,8 @@ import poRoutes from './routes/po.routes.js';
 import invoiceRoutes from './routes/invoice.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import reportRoutes from './routes/report.routes.js';
+import entityRoutes from './routes/entities.routes.js';
+import reports2Routes from './routes/reports2.routes.js';
 
 const router = Router();
 router.use(authenticate, dmsContext);
@@ -49,6 +51,8 @@ router.use('/po', poRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/reports', reportRoutes);
+router.use('/entities', entityRoutes);
+router.use('/x', reports2Routes);
 
 // DMS errors carry per-field `errors`; the global handler would drop them for custom errors.
 // eslint-disable-next-line no-unused-vars

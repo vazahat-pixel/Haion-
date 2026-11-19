@@ -6,9 +6,10 @@
  */
 import { DmsProfile, DmsLocation } from '../models/master.models.js';
 import { DmsError } from '../services/core.service.js';
+import { ENTITY_PAGES } from '../entities.config.js';
 
 /** Page keys (mirrors the reference sidebar). Used for per-user page rights. */
-export const DMS_PAGES = [
+export const DMS_PAGES = [...new Set([
   'home', 'dash_yearly', 'dash_monthly', 'dash_inventory', 'dash_po', 'dash_sale',
   'm_account', 'm_users', 'm_brand', 'm_city', 'm_color', 'm_coupon', 'm_courier', 'm_customer',
   'm_location', 'm_othertax', 'm_parameter', 'm_price', 'm_category', 'm_delivery', 'm_product',
@@ -20,7 +21,10 @@ export const DMS_PAGES = [
   'local_purchase', 'opening', 'po', 'po_approval', 'vendor_po',
   'customer_return', 'purchase_return', 'return_approval', 'vendor_return',
   'acc_adjust', 'payment_approval', 'payment_receive', 'receive', 'receive_jobwork',
-];
+  'dash_lead', 'r_beat', 'r_isd', 'r_price_drop', 'rp_attendance', 'rp_employee', 'rp_leave', 'rp_other', 'rp_salary', 'rp_slip',
+  'hr_attendance', 'hr_salary_gen', 'hr_myteams',
+  ...ENTITY_PAGES,
+])];
 
 async function descendantsOf(rootId) {
   const ids = [String(rootId)];

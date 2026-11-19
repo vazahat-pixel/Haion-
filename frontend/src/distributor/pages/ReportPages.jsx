@@ -2,17 +2,12 @@ import { useState } from 'react';
 import { FileBarChart, Search, Gauge } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { dms, useDmsQuery, useLookups, apiError, fmt } from '../api';
-import { PageTitle, DataTable, Field, TextArea, Alert, Btn, Input, Status, locOpt, prodOpt } from '../components/ui';
+import { PageTitle, DataTable, Field, TextArea, Alert, Btn, Input, Status, locOpt, prodOpt, exportCsv } from '../components/ui';
 import { FilterBar } from './MasterPages';
 
-function exportCsv(name, columns, rows) {
-  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const csv = [columns.map((c) => esc(c.label)).join(','), ...rows.map((r) => columns.map((c) => esc(c.text ? c.text(r) : r[c.key])).join(','))].join('\n');
-  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  const a = document.createElement('a'); a.href = url; a.download = `${name}.csv`; a.click(); URL.revokeObjectURL(url);
-}
+export { exportCsv };
 
-function useLocProdOpts() {
+export function useLocProdOpts() {
   const { data } = useLookups();
   const lk = data?.data;
   return (d) => {
@@ -26,7 +21,7 @@ function useLocProdOpts() {
 }
 
 /** Generic report: filter bar → GO → table (+ Excel/CSV export). */
-function Report({ title, icon = FileBarChart, url, filters, columns, pick = (d) => d, requireGo = true, name, footer }) {
+export function Report({ title, icon = FileBarChart, url, filters, columns, pick = (d) => d, requireGo = true, name, footer }) {
   const opts = useLocProdOpts();
   const [params, setParams] = useState(requireGo ? null : {});
   const { data, isFetching, error } = useDmsQuery(`rep-${url}`, url, params, { enabled: params !== null });

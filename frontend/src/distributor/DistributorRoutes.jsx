@@ -46,6 +46,33 @@ const VendorPurchaseReport = lazy(() => R().then((m) => ({ default: m.VendorPurc
 const PoReport = lazy(() => R().then((m) => ({ default: m.PoReport })));
 const SerialTrack = lazy(() => R().then((m) => ({ default: m.SerialTrack })));
 const SaleDashboard = lazy(() => R().then((m) => ({ default: m.SaleDashboard })));
+const EP = () => import('./pages/EntityPages');
+const EntityList = lazy(() => EP().then((m) => ({ default: m.EntityList })));
+const EntityForm = lazy(() => EP().then((m) => ({ default: m.EntityForm })));
+const EntityView = lazy(() => EP().then((m) => ({ default: m.EntityView })));
+const MyProfile = lazy(() => EP().then((m) => ({ default: m.MyProfile })));
+const MP = () => import('./pages/MorePages');
+const mp = (n) => lazy(() => MP().then((m) => ({ default: m[n] })));
+const AttendancePage = mp('AttendancePage');
+const SalaryGenerate = mp('SalaryGenerate');
+const MyTeams = mp('MyTeams');
+const RpPage = mp('RpPage');
+const OtherRequests = mp('OtherRequests');
+const PrintPayslip = mp('PrintPayslip');
+const BeatScheduler = mp('BeatScheduler');
+const DashYearly = mp('DashYearly');
+const DashMonthly = mp('DashMonthly');
+const DashLead = mp('DashLead');
+const CollectionReport = mp('CollectionReport');
+const PaymentStatusReport = mp('PaymentStatusReport');
+const PriceDropReport = mp('PriceDropReport');
+const PartyMasterReport = mp('PartyMasterReport');
+const IsdReport = mp('IsdReport');
+const SerialActReport = mp('SerialActReport');
+const TrackLocation = mp('TrackLocation');
+const SerialActivationUpload = mp('SerialActivationUpload');
+const DeliveryUpload = mp('DeliveryUpload');
+const LocationMapping = mp('LocationMapping');
 const PR = () => import('./pages/PrintPages');
 const PrintDoc = lazy(() => PR().then((m) => ({ default: m.PrintDoc })));
 const PrintPo = lazy(() => PR().then((m) => ({ default: m.PrintPo })));
@@ -69,6 +96,7 @@ export default function DistributorRoutes() {
           <Route path="doc/:id" element={<PrintDoc />} />
           <Route path="po/:id" element={<PrintPo />} />
           <Route path="payment/:id" element={<PrintPayment />} />
+          <Route path="payslip/:id" element={<PrintPayslip />} />
         </Route>
         <Route element={<DmsLayout />}>
           <Route index element={<Navigate to="home" replace />} />
@@ -124,6 +152,37 @@ export default function DistributorRoutes() {
           <Route path="payment/approval" element={<PaymentList kind="RECEIPT" approval />} />
           <Route path="payment/:id" element={<PaymentView />} />
           <Route path="payment/:id/approve" element={<PaymentApprove />} />
+
+          {/* generic entities: Sale Force, General Query, App, HRMS */}
+          <Route path="e/:type" element={<EntityList />} />
+          <Route path="e/:type/new" element={<EntityForm />} />
+          <Route path="e/:type/:id" element={<EntityView />} />
+          <Route path="e/:type/:id/edit" element={<EntityForm />} />
+          <Route path="me/profile" element={<MyProfile />} />
+          <Route path="me/attendance-punch" element={<AttendancePage />} />
+          <Route path="me/:type" element={<EntityList mode="mine" />} />
+          <Route path="me/:type/new" element={<EntityForm mode="mine" />} />
+          <Route path="me/:type/:id/edit" element={<EntityForm mode="mine" />} />
+          <Route path="approve/:type" element={<EntityList mode="approval" />} />
+          <Route path="hr/attendance" element={<AttendancePage />} />
+          <Route path="hr/salary-generate" element={<SalaryGenerate />} />
+          <Route path="hr/my-teams" element={<MyTeams />} />
+          <Route path="rp/other" element={<OtherRequests />} />
+          <Route path="rp/:type" element={<RpPage />} />
+          <Route path="sf/beat-scheduler" element={<BeatScheduler />} />
+          <Route path="sf/track" element={<TrackLocation />} />
+          <Route path="dashboard/yearly" element={<DashYearly />} />
+          <Route path="dashboard/monthly" element={<DashMonthly />} />
+          <Route path="dashboard/lead" element={<DashLead />} />
+          <Route path="reports/collection" element={<CollectionReport />} />
+          <Route path="reports/payment" element={<PaymentStatusReport />} />
+          <Route path="reports/price-drop" element={<PriceDropReport />} />
+          <Route path="reports/party-master" element={<PartyMasterReport />} />
+          <Route path="reports/isd" element={<IsdReport />} />
+          <Route path="reports/serial-activation" element={<SerialActReport />} />
+          <Route path="masters-upload/serial-activation" element={<SerialActivationUpload />} />
+          <Route path="masters-upload/delivery" element={<DeliveryUpload />} />
+          <Route path="masters/locations/:id/mapping" element={<LocationMapping />} />
 
           <Route path="*" element={<Navigate to="home" replace />} />
         </Route>

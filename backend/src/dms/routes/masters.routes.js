@@ -59,6 +59,37 @@ function crud(path, { model, page, readPages = [], search = [], filters = [], po
   }));
 }
 
+
+/** Per-type validation / enrichment for the attrs-based masters. */
+async function prepareMaster(type, body) {
+  const a = { ...(body.attrs || {}) };
+  const bad = (field, msg) => { throw new DmsError('Please correct the highlighted fields', 422, { [field]: [msg] }); };
+  if (type === 'account' && !String(a.accountNo || '').trim()) bad('accountNo', 'Required');
+  if (type === 'coupon') {
+    if (!(Number(a.amount) > 0)) bad('amount', 'Enter a valid amount');
+    if (!a.validFrom || !a.validTo) bad('validFrom', 'Required');
+    if (a.validTo < a.validFrom) bad('validTo', 'Must not be before Valid From');
+    a.amount = Number(a.amount);
+  }
+  if (type === 'othertax') { const p = Number(a.percent); if (!(p >= 0 && p <= 100)) bad('percent', 'Enter 0 to 100'); a.percent = p; }
+  if (type === 'productdelivery') {
+    const d = Number(a.days);
+    if (!a.fromCity || !a.toCity || !a.category) bad('fromCity', 'From city, to city and category are required');
+    if (!Number.isInteger(d) || d < 0) bad('days', 'Whole number of days');
+    a.days = d; body.name = `${a.fromCity}>${a.toCity}>${a.category}`;
+  }
+  if (type === 'specification' || type === 'productimage') {
+    if (!isId(a.product)) bad('product', 'Required');
+    const p = await DmsProduct.findById(a.product).populate('brand category subCategory', 'name').lean();
+    if (!p) bad('product', 'Not found');
+    Object.assign(a, { productLabel: `${p.name} | ${p.productCode}`, brandName: p.brand?.name, categoryName: p.category?.name, subCategoryName: p.subCategory?.name });
+    body.name = a.productLabel;
+    if (type === 'productimage' && !/^https?:\/\/\S+$/i.test(String(a.imageUrl || ''))) bad('imageUrl', 'Enter a http(s) image URL');
+    if (type === 'specification' && !String(a.specs || '').trim()) bad('specs', 'Required');
+  }
+  return { ...body, attrs: a };
+}
+
 /* ── simple masters: /masters/:type ── */
 const MASTER_PAGE = {
   brand: 'm_brand', category: 'm_category', subcategory: 'm_subcategory', color: 'm_color', state: 'm_state',
@@ -79,7 +110,7 @@ router.get('/masters/:mtype', asyncHandler(async (req, res) => {
   sendPaginated(res, { data, total, page, perPage });
 }));
 router.post('/masters/:mtype', (req, res, next) => requirePage(MASTER_PAGE[req.params.mtype])(req, res, next), asyncHandler(async (req, res) => {
-  const body = pick(req.body, ['name', 'code', 'parent', 'attrs', 'status']);
+  const body = await prepareMaster(req.params.mtype, pick(req.body, ['name', 'code', 'parent', 'attrs', 'status']));
   if (!body.parent) delete body.parent;
   const doc = await DmsMaster.create({ ...body, type: req.params.mtype, createdBy: req.user._id });
   sendCreated(res, { data: doc, message: 'Saved successfully' });
@@ -88,7 +119,7 @@ router.put('/masters/:mtype/:id', (req, res, next) => requirePage(MASTER_PAGE[re
   if (!isId(req.params.id)) throw new DmsError('Invalid id', 400);
   const doc = await DmsMaster.findOne({ _id: req.params.id, type: req.params.mtype });
   if (!doc) throw new DmsError('Not found', 404);
-  const body = pick(req.body, ['name', 'code', 'parent', 'attrs', 'status']);
+  const body = await prepareMaster(req.params.mtype, pick(req.body, ['name', 'code', 'parent', 'attrs', 'status']));
   if (body.parent === '') body.parent = null;
   doc.set(body);
   await doc.save();

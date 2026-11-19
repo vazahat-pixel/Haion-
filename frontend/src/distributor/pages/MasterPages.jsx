@@ -6,6 +6,9 @@ import {
   PageTitle, Toolbar, Btn, BackBtn, DataTable, useListState, Field, Input, Select, TextArea, EditLink, Alert, locOpt, prodOpt, Status,
 } from '../components/ui';
 import { MASTERS } from './masters.config';
+import './masters.extra.config';
+import { Link } from 'react-router-dom';
+import { exportCsv } from '../components/ui';
 
 const getPath = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 function setPath(o, p, v) {
@@ -47,7 +50,11 @@ export function MasterList() {
   const { data, isFetching } = useDmsQuery(`m-${key}`, cfg?.endpoint, { ...list.params, ...filters }, { enabled: Boolean(cfg) });
   if (!cfg) return <Navigate to="/distributor/home" replace />;
   const columns = [
-    ...cfg.columns.map((c) => (c.key === 'status' ? { ...c, render: (r) => <Status value={r.status} /> } : c.text && !c.render ? { ...c, render: c.text } : c)),
+    ...cfg.columns.map((c) => {
+      if (c.key === 'status') return { ...c, render: (r) => <Status value={r.status} /> };
+      if (c.link) return { ...c, sortable: false, align: 'c', render: (r) => <Link to={c.link(r)}>{c.linkText || 'Open'}</Link> };
+      return c.text && !c.render ? { ...c, render: c.text } : c;
+    }),
     { key: 'edit', label: 'View/Edit', sortable: false, align: 'c', render: (r) => <EditLink to={`/distributor/masters/${key}/${r._id}`} /> },
   ];
   return (
@@ -56,7 +63,11 @@ export function MasterList() {
       {cfg.filters?.length > 0 && (
         <FilterBar defs={cfg.filters} opts={opts} onGo={(f) => { setFilters(f); list.setFilters({}); }} />
       )}
-      <Toolbar><Btn to={`/distributor/masters/${key}/new`}>{cfg.addLabel}</Btn></Toolbar>
+      <Toolbar>
+        {cfg.exportable && <Btn variant="default" onClick={() => exportCsv(cfg.title, cfg.columns.filter((c) => c.key !== '#'), data?.data || [])}>Export to Excel (CSV)</Btn>}
+        {(cfg.toolbar || []).map((b) => <Btn key={b.to} variant="default" to={b.to}>{b.label}</Btn>)}
+        <Btn to={`/distributor/masters/${key}/new`}>{cfg.addLabel}</Btn>
+      </Toolbar>
       <DataTable columns={columns} rows={data?.data} total={data?.pagination?.total ?? 0} loading={isFetching && !data} {...list.tableProps} />
     </>
   );
