@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, Printer, Pencil, Trash2, X } from 'lucide-react';
+import { exportXlsx } from '../excel';
 
 export function PageTitle({ icon: Icon, children }) {
   useEffect(() => {
@@ -204,12 +205,9 @@ export function DataTable({ columns, rows = [], loading, total, page = 1, perPag
   );
 }
 
-/** Download rows as CSV (Excel opens it). columns: [{label, key, text?}] */
+/** Download rows as a formatted Excel (.xlsx) file. columns: [{label, key, text?}] */
 export function exportCsv(name, columns, rows) {
-  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const csv = [columns.map((c) => esc(c.label)).join(','), ...rows.map((r) => columns.map((c) => esc(c.text ? c.text(r) : r[c.key])).join(','))].join('\n');
-  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  const a = document.createElement('a'); a.href = url; a.download = `${name}.csv`; a.click(); URL.revokeObjectURL(url);
+  return exportXlsx(name, columns, rows, { title: `${name} — exported ${new Date().toLocaleString('en-IN')}` });
 }
 
 /** Server-side list state helper. */

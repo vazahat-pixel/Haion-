@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "DMS Field",
+    "slug": "dms-field",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.haion.dmsfield"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.haion.dmsfield",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "DMS Field uses your location to mark attendance and log dealer visits."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "DMS Field takes a selfie when you mark attendance."
+        }
+      ]
+    ]
+  }
+}

@@ -72,6 +72,7 @@ export const MENU = [
       { label: 'Multiple Serial No. Track', to: `${D}/invoicing/multi-serial-track`, page: 'serial_track_multi' },
       { label: 'Retail', to: `${D}/invoicing/retail`, page: 'retail' },
       { label: 'Single Serial No. Track', to: `${D}/invoicing/serial-track`, page: 'serial_track' },
+      { label: 'STN Distribution', to: `${D}/invoicing/stn-distribution`, page: 'stn_distribution' },
       { label: 'Stock Transfer', to: `${D}/invoicing/stock-transfer`, page: 'stock_transfer' },
       { label: 'Stock Transfer Approval', to: `${D}/invoicing/stock-transfer-approval`, page: 'stock_transfer_approval' },
       { label: 'Stock Transfer for Job work', to: `${D}/invoicing/jobwork`, page: 'jobwork' },

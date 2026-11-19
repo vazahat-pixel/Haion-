@@ -15,6 +15,11 @@ export const DOC_LISTS = {
     buttons: [{ label: 'Add Retail Billing To Location', to: '/distributor/new/RETAIL_LOCATION' }, { label: 'Add Retail Billing To Customer', to: '/distributor/new/RETAIL_CUSTOMER' }],
     cols: ['from', 'to', 'no', 'date', 'status', 'serials'], actions: ['print', 'view', 'cancel'], fromFirst: true,
   },
+  'invoicing/stn-distribution': {
+    title: 'STN Distribution List', icon: Monitor, params: { kind: 'STN', distribution: '1' },
+    buttons: [{ label: 'Add STN Distribution', to: '/distributor/invoicing/stn-distribution/new' }],
+    cols: ['to', 'from', 'no', 'ref', 'date', 'entry', 'status'], actions: ['print', 'view'], labels: { to: 'Stock Transfer To', from: 'Stock Transfer From', no: 'Document No.', date: 'Document Date', ref: 'Distribution' },
+  },
   'invoicing/stock-transfer': {
     title: 'Stock Transfer List', icon: Monitor, params: { kind: 'STN' },
     buttons: [{ label: 'Add Stock Transfer', to: '/distributor/new/STN' }],

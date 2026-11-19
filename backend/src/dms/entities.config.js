@@ -130,8 +130,8 @@ export const ENTITY_TYPES = {
       f('assignedTo', 'Assigned To', 'ref', { ref: 'profile', req: 1 }), f('date', 'Date', 'date'),
     ],
     cols: ['taskName', 'subject', 'details', 'assignedTo', 'status', 'createdByName', 'createdAt'], filters: ['assignedTo'], statusFilter: ['Pending', 'Open', 'In-Progress', 'Done'],
-    actions: [{ key: 'setStatus', label: 'Update Status', page: 'app_task', remark: false, statuses: ['Pending', 'Open', 'In-Progress', 'Done'], from: ['Pending', 'Open', 'In-Progress'] }],
-    ownerField: 'assignedTo',
+    actions: [{ key: 'setStatus', label: 'Update Status', page: 'app_task', remark: false, owner: true, statuses: ['Pending', 'Open', 'In-Progress', 'Done'], from: ['Pending', 'Open', 'In-Progress'] }],
+    ownerField: 'assignedTo', selfPage: 'my_beat', // the field user the task is assigned to sees and updates it (mobile app)
   },
   track: {
     label: 'Track Location', title: 'Track Location', page: 'app_track', selfPage: 'app_track', initial: 'Logged', noEdit: true, dateField: 'travelDate',

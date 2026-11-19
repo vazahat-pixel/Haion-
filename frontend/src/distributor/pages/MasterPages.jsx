@@ -65,7 +65,7 @@ export function MasterList() {
         <FilterBar defs={cfg.filters} opts={opts} onGo={(f) => { setFilters(f); list.setFilters({}); }} />
       )}
       <Toolbar>
-        {cfg.exportable && <Btn variant="default" onClick={() => exportCsv(cfg.title, cfg.columns.filter((c) => c.key !== '#'), data?.data || [])}>Export to Excel (CSV)</Btn>}
+        {cfg.exportable && <Btn variant="default" onClick={() => exportCsv(cfg.title, cfg.columns.filter((c) => c.key !== '#'), data?.data || [])}>Export to Excel</Btn>}
         {(cfg.toolbar || []).map((b) => <Btn key={b.to} variant="default" to={b.to}>{b.label}</Btn>)}
         <Btn to={`/distributor/masters/${key}/new`}>{cfg.addLabel}</Btn>
       </Toolbar>

@@ -8,6 +8,7 @@ import {
 } from '../components/ui';
 import { LineItems, TotalsBox, emptyLine, previewTotals, toPayloadLines, splitSerials } from '../components/LineItems';
 import { useFormCtx, ActionLog } from './PoPages';
+import { readSheet, downloadTemplate } from '../excel';
 import { DOC_LISTS, DOC_FORMS, KIND_LABEL } from './doc.config';
 
 /* ───────────── list ───────────── */
@@ -25,7 +26,7 @@ export function DocList({ listKey }) {
     to: { key: 'to', label: L.to, text: (r) => fmt.party(r.to), render: (r) => fmt.party(r.to) },
     from: { key: 'from', label: L.from, text: (r) => fmt.party(r.from), render: (r) => fmt.party(r.from) },
     no: { key: 'invoiceNo', label: L.no },
-    ref: { key: 'refNo', label: 'Vendor Inv. No.' },
+    ref: { key: 'refNo', label: L.ref || 'Vendor Inv. No.' },
     src: { key: 'sourceInvoiceNo', label: 'Invoice No.' },
     date: { key: 'invoiceDate', label: L.date, render: (r) => fmt.date(r.invoiceDate) },
     po: { key: 'poNo', label: 'PO No.' },
@@ -176,13 +177,29 @@ export function DocForm() {
 
 /* ───────────── CSV upload (Upload Billing / Upload Opening Stock) ───────────── */
 const TEMPLATES = {
-  UPLOAD_BILLING: 'productCode,qty,price,discountPerUnit,serials\nPRD001,2,1000,0,IMEI1|IMEI2\n',
-  OPENING: 'productCode,okQty,damageQty,missingQty,price,serials\nPRD001,10,0,0,1000,\n',
+  UPLOAD_BILLING: [['productCode', 'qty', 'price', 'discountPerUnit', 'serials'], [['PH-X1', 2, 13499, 0, 'IMEI1|IMEI2'], ['CH-20W', 10, 539, 5, '']]],
+  OPENING: [['productCode', 'okQty', 'damageQty', 'missingQty', 'price', 'serials'], [['CH-20W', 10, 0, 0, 431, ''], ['PH-X1', 2, 0, 0, 10799, 'IMEI1|IMEI2']]],
 };
-function parseCsv(text) {
-  const rows = text.replace(/\r/g, '').split('\n').filter((l) => l.trim());
-  const head = rows.shift()?.split(',').map((h) => h.trim()) || [];
-  return rows.map((r) => Object.fromEntries(r.split(',').map((c, i) => [head[i], c.trim()])));
+const NUM = (v) => (v === '' || v === undefined ? 0 : Number(v));
+/** Row-level validation: returns [{ row, message }] (row numbers as in Excel, header = row 1). */
+export function validateUploadRows(rows, kind, byCode) {
+  const errs = [];
+  const seen = new Set();
+  rows.forEach((r, i) => {
+    const n = i + 2;
+    const p = byCode.get(String(r.productCode || '').trim().toUpperCase());
+    if (!p) { errs.push({ row: n, message: `Unknown product code "${r.productCode || ''}"` }); return; }
+    const qtyFields = kind === 'OPENING' ? ['okQty', 'damageQty', 'missingQty'] : ['qty'];
+    for (const f of [...qtyFields, 'price', ...(kind === 'OPENING' ? [] : ['discountPerUnit'])]) {
+      if (r[f] !== undefined && r[f] !== '' && !(Number(r[f]) >= 0)) errs.push({ row: n, message: `${f} must be a number 0 or more` });
+    }
+    const qty = qtyFields.reduce((s, f) => s + NUM(r[f]), 0);
+    if (!(qty > 0)) errs.push({ row: n, message: 'Quantity must be greater than 0' });
+    const serials = r.serials ? String(r.serials).split('|').map((s) => s.trim()).filter(Boolean) : [];
+    if (p.isSerialized && serials.length !== qty) errs.push({ row: n, message: `${p.productCode} is serial-tracked: give ${qty} serial(s) separated by |` });
+    for (const s of serials) { if (seen.has(s.toUpperCase())) errs.push({ row: n, message: `Serial ${s} repeated in the file` }); seen.add(s.toUpperCase()); }
+  });
+  return errs;
 }
 export function UploadPage() {
   const { kind } = useParams();
@@ -193,20 +210,23 @@ export function UploadPage() {
   const [v, setV] = useState({ from: '', to: '', date: '' });
   const [rows, setRows] = useState([]);
   const [msg, setMsg] = useState('');
+  const [rowErrs, setRowErrs] = useState([]);
   const save = useDmsMutation((b) => dms.post('/invoices', b), { onSuccess: (res) => nav(`/distributor/doc/${res.data._id}`) });
   const byCode = useMemo(() => new Map((lk?.products || []).map((p) => [p.productCode, p])), [lk]);
   if (!['OPENING', 'UPLOAD_BILLING'].includes(kind)) return <Navigate to="/distributor/home" replace />;
   const onFile = async (f) => {
     setMsg('');
     if (!f) return;
-    if (!/\.csv$/i.test(f.name)) { setMsg('Please upload a .csv file (save the Excel sheet as CSV).'); return; }
-    const parsed = parseCsv(await f.text());
-    const bad = parsed.filter((r) => !byCode.has(String(r.productCode || '').toUpperCase()));
-    if (bad.length) setMsg(`Unknown product code(s): ${bad.map((b) => b.productCode).slice(0, 10).join(', ')}`);
+    setRowErrs([]);
+    let parsed;
+    try { parsed = await readSheet(f); } catch (e) { setMsg(e.message); setRows([]); return; }
+    const errs = validateUploadRows(parsed, kind, byCode);
+    setRowErrs(errs);
+    if (errs.length) setMsg(`${errs.length} problem(s) found. Fix the file and upload again; nothing is saved until every row is valid.`);
     setRows(parsed);
   };
-  const lines = rows.filter((r) => byCode.has(String(r.productCode).toUpperCase())).map((r) => {
-    const p = byCode.get(String(r.productCode).toUpperCase());
+  const lines = rowErrs.length ? [] : rows.map((r) => {
+    const p = byCode.get(String(r.productCode).trim().toUpperCase());
     const serials = r.serials ? r.serials.split('|').map((s) => s.trim()).filter(Boolean) : undefined;
     if (isOpening) {
       const ok = Number(r.okQty || 0); const dm = Number(r.damageQty || 0); const ms = Number(r.missingQty || 0);
@@ -216,13 +236,11 @@ export function UploadPage() {
   });
   const submit = (e) => {
     e.preventDefault(); setMsg('');
-    if (!lines.length) { setMsg('No valid rows in file'); return; }
+    if (rowErrs.length) { setMsg('The file has errors; nothing was saved.'); return; }
+    if (!lines.length) { setMsg('No rows in file'); return; }
     save.mutate({ kind, from: v.from, to: isOpening ? undefined : v.to, invoiceDate: v.date || undefined, lines }, { onError: (err) => setMsg(apiError(err).message) });
   };
-  const template = () => {
-    const url = URL.createObjectURL(new Blob([TEMPLATES[kind]], { type: 'text/csv' }));
-    const a = document.createElement('a'); a.href = url; a.download = `${kind.toLowerCase()}_template.csv`; a.click(); URL.revokeObjectURL(url);
-  };
+  const template = () => downloadTemplate(`${kind.toLowerCase()}_template`, TEMPLATES[kind][0], TEMPLATES[kind][1], ['productCode must exist in Product Master.', 'serials: only for serial-tracked products, separated by | and equal in number to the quantity.', 'The whole file is rejected if any row is invalid (nothing is saved partially).']);
   return (
     <>
       <PageTitle icon={ShoppingCart}>{isOpening ? 'Upload Opening Stock' : 'Upload Billing'}</PageTitle>
@@ -232,11 +250,12 @@ export function UploadPage() {
           <Field label={isOpening ? 'Location' : 'Billing From'} required><Select required value={v.from} options={(lk?.locations || []).map(locOpt)} onChange={(e) => setV({ ...v, from: e.target.value })} /></Field>
           {!isOpening && <Field label="Billing To" required><Select required value={v.to} options={(lk?.allLocations || []).filter((l) => l._id !== v.from).map(locOpt)} onChange={(e) => setV({ ...v, to: e.target.value })} /></Field>}
           <Field label={isOpening ? 'Opening Date' : 'Bill Date'}><Input type="date" value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} /></Field>
-          <Field label="Attach File (.csv)" required>
-            <Input type="file" accept=".csv,text/csv" required onChange={(e) => onFile(e.target.files?.[0])} />
+          <Field label="Attach File (.xlsx / .csv)" required>
+            <Input type="file" accept=".xlsx,.csv" required onChange={(e) => onFile(e.target.files?.[0])} />
             <button type="button" className="dms-btn sm default" style={{ marginTop: 4 }} onClick={template}>Download template</button>
           </Field>
         </div>
+        {rowErrs.length > 0 && <Alert>{rowErrs.slice(0, 30).map((e, i) => <div key={i}>Row {e.row}: {e.message}</div>)}</Alert>}
         {lines.length > 0 && <p style={{ textAlign: 'center' }}>{lines.length} valid row(s), total qty {lines.reduce((n, l) => n + l.qty, 0)}</p>}
         <div className="dms-actions"><button type="submit" className="dms-btn" disabled={save.isPending}>Upload</button><BackBtn /></div>
       </form>

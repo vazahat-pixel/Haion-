@@ -270,3 +270,31 @@ test('uploads are all-or-nothing: one bad line rejects the whole document and ch
   assert.equal(after.ser, before.ser, 'no serial created');
   assert.deepEqual(after.stock.map((s) => [s.okQty, s.damageQty]), before.stock.map((s) => [s.okQty, s.damageQty]), 'stock untouched');
 });
+
+test('business dates use India time, not UTC (attendance day, financial year)', async () => {
+  const { fyLabel, localDay } = await import('../src/dms/services/core.service.js');
+  assert.equal(localDay(new Date('2026-03-31T19:00:00Z')), '2026-04-01', '00:30 IST on 1 April');
+  assert.equal(fyLabel(new Date('2026-03-31T19:00:00Z')), '26-27', 'first minutes of the new FY');
+  assert.equal(fyLabel(new Date('2026-03-31T18:00:00Z')), '25-26', '23:30 IST on 31 March');
+  assert.equal(localDay(new Date('2026-11-18T20:00:00Z')), '2026-11-19');
+});
+
+test('STN distribution: one source to many destinations, total checked first, all-or-nothing', async () => {
+  const a = api();
+  const before = ok(await a.get('/invoices?kind=STN&perPage=100')).length;
+  const tooMuch = await a.post('/invoices/stn-distribution', { from: ctx.ho._id, docType: 'DELIVERY CHALLAN', rows: [
+    { to: ctx.br._id, lines: [{ product: ctx.pPlain._id, qty: 60, price: 10 }] },
+    { to: ctx.dl._id, lines: [{ product: ctx.pPlain._id, qty: 60, price: 10 }] },
+  ] });
+  assert.equal(tooMuch.status, 422, 'each row fits but the total exceeds stock');
+  assert.equal(ok(await a.get('/invoices?kind=STN&perPage=100')).length, before, 'nothing created');
+  const r = ok(await a.post('/invoices/stn-distribution', { from: ctx.ho._id, docType: 'DELIVERY CHALLAN', rows: [
+    { to: ctx.br._id, lines: [{ product: ctx.pPlain._id, qty: 2, price: 10 }] },
+    { to: ctx.dl._id, lines: [{ product: ctx.pPlain._id, qty: 3, price: 10 }] },
+  ] }), 201);
+  assert.match(r.batch, /^DIST\/\d+$/);
+  assert.equal(r.documents.length, 2);
+  const listed = ok(await a.get('/invoices?kind=STN&distribution=1&perPage=100'));
+  assert.equal(listed.length, 2);
+  assert.ok(listed.every((d) => d.status === 'PFA' && d.refNo === r.batch));
+});

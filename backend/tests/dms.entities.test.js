@@ -180,3 +180,29 @@ test('attrs masters validate: coupon dates, tax percent, specification enrichmen
   assert.equal(spec.attrs.productLabel, 'Prod 1 | P1');
   assert.equal(spec.attrs.brandName, 'B');
 });
+
+test('mobile: selfie upload, offline punch time window, assigned user updates own task', async () => {
+  const e = api(ctx.emp.tok);
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  const up = await request(app).post('/api/dms/entities/attendance-photo').set('Authorization', `Bearer ${ctx.emp.tok}`).attach('photo', png, { filename: 'selfie.png', contentType: 'image/png' });
+  assert.equal(up.status, 201, JSON.stringify(up.body));
+  assert.match(up.body.data.url, /^\/uploads\/.+\.png$/);
+  const exe = await request(app).post('/api/dms/entities/attendance-photo').set('Authorization', `Bearer ${ctx.emp.tok}`).attach('photo', Buffer.from('MZ'), { filename: 'x.exe', contentType: 'application/x-msdownload' });
+  assert.equal(exe.status, 422, 'non-image refused');
+  assert.equal((await request(app).post('/api/dms/entities/attendance-photo').set('Authorization', `Bearer ${ctx.mgr.tok}`).attach('photo', png, { filename: 's.png', contentType: 'image/png' })).status, 403);
+  const old = new Date(Date.now() - 30 * 3600000).toISOString();
+  assert.equal((await e.post('/entities/attendance-punch', { kind: 'in', capturedAt: old })).status, 422, 'older than 24h refused');
+  const future = new Date(Date.now() + 3600000).toISOString();
+  assert.equal((await e.post('/entities/attendance-punch', { kind: 'in', capturedAt: future })).status, 422, 'future refused');
+
+  const a = api();
+  const task = ok(await a.post('/entities/apptask', { taskName: 'Collect cheque', subject: 'Shop A', assignedTo: ctx.emp.profile._id }), 201);
+  assert.equal((await api(ctx.emp.tok).get('/entities/apptask?view=mine')).status, 403, 'needs the my_beat (field) right');
+  const { DmsProfile } = await import('../src/dms/models/master.models.js');
+  await DmsProfile.updateOne({ _id: ctx.emp.profile._id }, { $addToSet: { pages: 'my_beat' } });
+  const mine = await api(ctx.emp.tok).get('/entities/apptask?view=mine');
+  assert.equal(mine.status, 200);
+  assert.equal(mine.body.data.length, 1);
+  ok(await api(ctx.emp.tok).post(`/entities/apptask/${task._id}/action`, { action: 'setStatus', status: 'Done' }));
+  assert.equal(ok(await a.get(`/entities/apptask/${task._id}`)).status, 'Done');
+});

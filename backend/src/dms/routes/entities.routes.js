@@ -11,13 +11,14 @@ import { DmsEntity } from '../models/entity.model.js';
 import { DmsLocation, DmsProduct, DmsProfile } from '../models/master.models.js';
 import { DmsInvoice, DmsPayment } from '../models/txn.models.js';
 import { ENTITY_TYPES, LEAD_STATUSES, MONTHS } from '../entities.config.js';
-import { DmsError, nextSeq, round2 } from '../services/core.service.js';
+import { DmsError, nextSeq, round2, localDay } from '../services/core.service.js';
+import { uploadImage } from '../../middleware/upload.middleware.js';
 
 const router = Router();
 const isId = (v) => mongoose.isValidObjectId(v);
 const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const lower = (s) => String(s || '').toLowerCase();
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDay();
 const hasPage = (req, ...keys) => req.dms.isAdmin || keys.some((k) => k && req.dms.pages.includes(k));
 const me = (req) => lower(req.dms.loginId);
 
@@ -221,25 +222,44 @@ router.get('/attendance-today', asyncHandler(async (req, res) => {
 router.post('/attendance-punch', asyncHandler(async (req, res) => {
   if (!hasPage(req, 'hr_attendance', 'e_attendance')) throw new DmsError('You do not have permission for this page', 403);
   const { kind, address = '', image = '' } = req.body;
+  // offline-captured punches (mobile app) carry capturedAt; accept up to 24 h old, never in the future
+  let when = new Date();
+  if (req.body.capturedAt) {
+    const c = new Date(req.body.capturedAt);
+    const age = Date.now() - c.getTime();
+    if (Number.isNaN(c.getTime()) || age < -120000 || age > 24 * 3600000) throw new DmsError('capturedAt must be within the last 24 hours', 422, { capturedAt: ['Invalid'] });
+    when = c;
+  }
+  const day = localDay(when);
   // optional device location (a mobile client sends it); stored only when it is a plausible coordinate
   const geo = (p) => (Number.isFinite(Number(req.body.lat)) && Math.abs(Number(req.body.lat)) <= 90 && Number.isFinite(Number(req.body.lng)) && Math.abs(Number(req.body.lng)) <= 180 && req.body.lat !== '' ? { [`${p}Lat`]: Number(req.body.lat), [`${p}Lng`]: Number(req.body.lng) } : {});
   if (!['in', 'out'].includes(kind)) throw new DmsError('kind must be in or out', 422);
-  const now = new Date().toISOString();
-  const rec = await DmsEntity.findOne({ type: 'attendance', ownerLoginId: me(req), 'data.date': today() });
+  const now = when.toISOString();
+  const rec = await DmsEntity.findOne({ type: 'attendance', ownerLoginId: me(req), 'data.date': day });
   if (kind === 'in') {
     if (rec) throw new DmsError('You have already logged in today', 422);
     const created = await DmsEntity.create({
       type: 'attendance', status: 'Present', ownerLoginId: me(req), ...stamp(req), location: req.dms.location?._id || null,
-      data: { date: today(), employeeName: req.dms.displayName, inAt: now, inAddress: String(address).slice(0, 300), inImage: String(image).slice(0, 500), ...geo('in') },
+      data: { date: day, employeeName: req.dms.displayName, inAt: now, inAddress: String(address).slice(0, 300), inImage: String(image).slice(0, 500), ...geo('in') },
     });
     return sendCreated(res, { data: created, message: 'Login time recorded' });
   }
   if (!rec) throw new DmsError('Log in first', 422);
   if (rec.data.outAt) throw new DmsError('You have already logged out today', 422);
+  if (now < rec.data.inAt) throw new DmsError('Logout time cannot be before login time', 422);
   rec.data = { ...rec.data, outAt: now, outAddress: String(address).slice(0, 300), outImage: String(image).slice(0, 500), ...geo('out') };
   rec.markModified('data');
   await rec.save();
   return sendSuccess(res, { data: rec, message: 'Logout time recorded' });
+}));
+
+/** Selfie for attendance (mobile app). Returns a /uploads URL to pass as `image` to attendance-punch. */
+router.post('/attendance-photo', (req, res, next) => {
+  if (!hasPage(req, 'hr_attendance', 'e_attendance')) return next(new DmsError('You do not have permission for this page', 403));
+  return uploadImage.single('photo')(req, res, (err) => (err ? next(new DmsError(err.message, 422)) : next()));
+}, asyncHandler(async (req, res) => {
+  if (!req.file) throw new DmsError('Attach a photo (JPEG, PNG or WebP, max 2 MB)', 422, { photo: ['Required'] });
+  sendCreated(res, { data: { url: `/uploads/${req.file.filename}` }, message: 'Photo saved' });
 }));
 
 /* ───────── salary ───────── */

@@ -23,7 +23,7 @@ import { DmsMaster, DmsScheme, DmsLocation } from '../models/master.models.js';
 import { requirePage, scopeFilter, assertCanSee } from '../middleware/context.js';
 import {
   DmsError, computeDocument, nextInvoiceNo, isInterState, assertStockAvailable, moveStock,
-  assertSerialsOut, assertSerialsNew, setSerials, postLedger, round2, nextReceiptNo,
+  assertSerialsOut, assertSerialsNew, setSerials, postLedger, round2, nextReceiptNo, nextSeq,
 } from '../services/core.service.js';
 import { buildParty, partyLabel } from '../services/party.service.js';
 import { logAudit } from '../../services/audit.service.js';
@@ -48,7 +48,7 @@ const RECEIVABLE = ['CORPORATE', 'UPLOAD_BILLING', 'RETAIL_LOCATION', 'STN', 'JO
 const DISPATCHABLE = ['CORPORATE', 'UPLOAD_BILLING', 'RETAIL_LOCATION', 'STN', 'JOBWORK', 'PRN'];
 
 const REPORT_PAGES = ['r_sale', 'r_return', 'r_vendor', 'dash_sale', 'dash_inventory', 'r_stock_ledger', 'r_isd'];
-const ALSO_READ = { RETAIL_CUSTOMER: ['customer_return'], CORPORATE: ['po', 'po_approval'], LOCAL_PURCHASE: ['vendor_po'] };
+const ALSO_READ = { STN: ['stn_distribution'], RETAIL_CUSTOMER: ['customer_return'], CORPORATE: ['po', 'po_approval'], LOCAL_PURCHASE: ['vendor_po'] };
 /** Page rights that may list documents for a given query. */
 function listPages({ queue, kind }) {
   if (queue === 'receive') return ['receive', 'receive_jobwork', 'local_purchase'];
@@ -157,6 +157,7 @@ router.get('/', (req, res, next) => requirePage(...listPages(req.query))(req, re
   if (req.query.status) q.status = { $in: String(req.query.status).split(',') };
   if (req.query.docType) q.docType = req.query.docType;
   if (req.query.customer && mongoose.isValidObjectId(req.query.customer)) q['to.customer'] = req.query.customer;
+  if (req.query.distribution === '1') q.refNo = /^DIST\//;
   if (req.query.fromLocation) q['from.location'] = req.query.fromLocation;
   if (req.query.toLocation) q['to.location'] = req.query.toLocation;
   if (req.query.from) q.invoiceDate = { ...(q.invoiceDate || {}), $gte: new Date(req.query.from) };
@@ -301,6 +302,29 @@ router.post('/', asyncHandler(async (req, res, next) => {
       sendCreated(res, { data: inv, message: `${inv.invoiceNo} created` });
     } catch (e) { next(e); }
   });
+}));
+
+/* ── STN Distribution: one source → many destinations in one go (one STN per destination, all pending approval) ── */
+router.post('/stn-distribution', requirePage('stn_distribution', 'stock_transfer'), asyncHandler(async (req, res) => {
+  const { from, docType, rows } = req.body;
+  if (!Array.isArray(rows) || !rows.length) throw new DmsError('Add at least one destination', 422, { rows: ['Required'] });
+  const dests = rows.map((r) => String(r.to));
+  if (new Set(dests).size !== dests.length) throw new DmsError('A destination is repeated', 422);
+  if (dests.includes(String(from))) throw new DmsError('Source cannot also be a destination', 422);
+  // validate the TOTAL across all destinations against the source stock before creating anything
+  const all = rows.flatMap((r) => (r.lines || []).filter((l) => Number(l.qty) > 0));
+  if (!all.length) throw new DmsError('Enter a quantity for at least one product', 422);
+  const { lines: totalLines } = await computeDocument(all.map((l) => ({ product: l.product, qty: Number(l.qty), price: Number(l.price || 0) })), { applyTax: false });
+  await assertStockAvailable(from, totalLines);
+  const batch = `DIST/${await nextSeq('DIST')}`;
+  const created = [];
+  for (const r of rows) {
+    const lines = (r.lines || []).filter((l) => Number(l.qty) > 0);
+    if (!lines.length) continue;
+    // eslint-disable-next-line no-await-in-loop
+    created.push(await createDocument(req, 'STN', { from, to: r.to, docType, refNo: batch, lines, remark: req.body.remark || 'STN distribution' }));
+  }
+  sendCreated(res, { data: { batch, documents: created.map((d) => ({ _id: d._id, invoiceNo: d.invoiceNo, to: d.to.name })) }, message: `${created.length} stock transfer(s) created (${batch}) — pending approval` });
 }));
 
 /* ── corporate invoice against an approved PO ── */

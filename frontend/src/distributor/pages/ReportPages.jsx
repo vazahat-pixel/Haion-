@@ -4,6 +4,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { dms, useDmsQuery, useLookups, apiError, fmt } from '../api';
 import { PageTitle, DataTable, Field, TextArea, Alert, Btn, Input, Status, locOpt, prodOpt, exportCsv } from '../components/ui';
 import { FilterBar } from './MasterPages';
+import { readList } from '../excel';
 
 export { exportCsv };
 
@@ -33,7 +34,7 @@ export function Report({ title, icon = FileBarChart, url, filters, columns, pick
       {error && <Alert>{apiError(error).message}</Alert>}
       {params !== null && !error && (
         <>
-          <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv(name || title, columns.filter((c) => c.key !== '#'), rows)}>Export to Excel (CSV)</Btn></div>
+          <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv(name || title, columns.filter((c) => c.key !== '#'), rows)}>Export to Excel</Btn></div>
           <DataTable columns={columns} rows={rows} loading={isFetching} rowKey="__k" />
           {footer?.(data?.data)}
         </>
@@ -118,7 +119,7 @@ export function PoReport() {
     <>
       <PageTitle icon={FileBarChart}>Purchase Report</PageTitle>
       <FilterBar defs={[...dates, { name: 'status', label: 'Status', options: ['PFA', 'Approved', 'Rejected', 'Processed', 'Cancelled'] }]} opts={opts} onGo={setP} />
-      {p !== null && <><div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv('purchase_report', columns.slice(1), data?.data || [])}>Export to Excel (CSV)</Btn></div><DataTable columns={columns} rows={data?.data} loading={isFetching} /></>}
+      {p !== null && <><div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv('purchase_report', columns.slice(1), data?.data || [])}>Export to Excel</Btn></div><DataTable columns={columns} rows={data?.data} loading={isFetching} /></>}
     </>
   );
 }
@@ -142,7 +143,7 @@ export function SerialTrack({ multi }) {
     setMsg('');
     try { setRows((await dms.post('/invoices/serials/track', { serials: list })).data); } catch (e) { setMsg(apiError(e).message); }
   };
-  const onFile = async (f) => { if (f) setTxt((await f.text()).replace(/\r/g, '')); };
+  const onFile = async (f) => { if (f) setTxt((await readList(f)).join('\n')); };
   return (
     <>
       <PageTitle icon={Search}>{multi ? 'Check Serial No.' : 'Single Serial No. Track'}</PageTitle>
@@ -151,7 +152,7 @@ export function SerialTrack({ multi }) {
         {multi ? (
           <>
             <div style={{ minWidth: 320 }}><Field label="Serial numbers (one per line) or upload a .csv/.txt"><TextArea rows={5} value={txt} onChange={(e) => setTxt(e.target.value)} /></Field></div>
-            <div><Field label="Upload Serial No."><Input type="file" accept=".csv,.txt" onChange={(e) => onFile(e.target.files?.[0])} /></Field></div>
+            <div><Field label="Upload Serial No."><Input type="file" accept=".xlsx,.csv,.txt" onChange={(e) => onFile(e.target.files?.[0])} /></Field></div>
           </>
         ) : <div style={{ minWidth: 280 }}><Field label="Enter Serial Number" required><Input required type="search" value={txt} onChange={(e) => setTxt(e.target.value)} /></Field></div>}
         <div><button type="submit" className="dms-btn">{multi ? 'Save' : 'SHOW'}</button></div>

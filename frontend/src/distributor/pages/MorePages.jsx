@@ -8,20 +8,12 @@ import { FilterBar } from './MasterPages';
 import { Report, useLocProdOpts } from './ReportPages';
 import { EntityList } from './EntityPages';
 import '../dms.css';
+import { readSheet, readList, downloadTemplate } from '../excel';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const COLORS = ['#337ab7', '#5cb85c', '#f0ad4e', '#d9534f', '#5bc0de', '#777', '#8e44ad', '#16a085', '#e67e22', '#2c3e50'];
 const years = () => { const y = new Date().getFullYear(); return Array.from({ length: 8 }, (_, i) => String(y - 5 + i)); };
 
-function parseCsv(text) {
-  const rows = text.replace(/\r/g, '').split('\n').filter((l) => l.trim());
-  const head = rows.shift()?.split(',').map((h) => h.trim()) || [];
-  return rows.map((r) => Object.fromEntries(r.split(',').map((c, i) => [head[i], c.trim()])));
-}
-function downloadText(name, text) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
-  const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
-}
 const useOpt = (kind) => useDmsQuery(`opt-${kind}`, `/entities/options/${kind}`, undefined, { staleTime: 30_000 }).data?.data || [];
 
 /* ───────── HR ───────── */
@@ -142,7 +134,7 @@ export function BeatScheduler() {
   const [msg, setMsg] = useState('');
   const [errs, setErrs] = useState([]);
   const up = useDmsMutation((b) => dms.post('/entities/beat-upload', b), { onSuccess: () => setRows([]) });
-  const onFile = async (f) => { setMsg(''); setErrs([]); if (!f) return; if (!/\.csv$/i.test(f.name)) { setMsg('Please upload a .csv file'); return; } setRows(parseCsv(await f.text())); };
+  const onFile = async (f) => { setMsg(''); setErrs([]); if (!f) return; try { setRows(await readSheet(f)); } catch (e) { setMsg(e.message); } };
   return (
     <>
       <PageTitle icon={Upload}>Upload Beat Scheduler</PageTitle>
@@ -150,8 +142,8 @@ export function BeatScheduler() {
       {errs.length > 0 && <Alert>{errs.map((e) => <div key={e}>{e}</div>)}</Alert>}
       <form onSubmit={(e) => { e.preventDefault(); setMsg(''); setErrs([]); up.mutate({ rows }, { onError: (err) => { const a = apiError(err); setMsg(a.message); setErrs(a.fieldErrors.rows || []); } }); }}>
         <div className="dms-form">
-          <Field label="Attach File (.csv)" required><Input type="file" accept=".csv,text/csv" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
-          <div><label className="dms-label">&nbsp;</label><Btn variant="default" onClick={() => downloadText('beat_template.csv', 'loginId,date,task,area\nINUSRBRUP900,2026-12-01,Dealer Visit,Agra\n')}>Download template</Btn></div>
+          <Field label="Attach File (.xlsx / .csv)" required><Input type="file" accept=".xlsx,.csv" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
+          <div><label className="dms-label">&nbsp;</label><Btn variant="default" onClick={() => downloadTemplate('beat_scheduler_template', ['loginId', 'date', 'task', 'area'], [['DEUSRDLUP6', '2026-12-01', 'Dealer Visit', 'Agra - Market Road']], ['date as YYYY-MM-DD', 'task: Collection, Dealer Visit, Feedback or Sale Order', 'The upload is rejected completely if any row is invalid.'])}>Download template</Btn></div>
         </div>
         {rows.length > 0 && <p style={{ textAlign: 'center' }}>{rows.length} row(s) ready. Tasks: Collection, Dealer Visit, Feedback, Sale Order.</p>}
         <div className="dms-actions"><button type="submit" className="dms-btn" disabled={!rows.length || up.isPending}>Upload</button></div>
@@ -306,7 +298,7 @@ export function SerialActivationUpload() {
   const up = useDmsMutation((b) => dms.post('/x/serial-activate', b), { onSuccess: (r) => setRes(r.data) });
   const L = lk?.data;
   const products = (L?.products || []).filter((p) => (!v.category || p.category === v.category) && (!v.brand || p.brand === v.brand));
-  const onFile = async (f) => { setMsg(''); if (!f) return; setSerials((await f.text()).replace(/\r/g, '').split(/[\n,;]+/).map((s) => s.trim()).filter((s) => s && s.toLowerCase() !== 'serial' && s.toLowerCase() !== 'serialno')); };
+  const onFile = async (f) => { setMsg(''); if (!f) return; try { setSerials(await readList(f)); } catch (e) { setMsg(e.message); } };
   return (
     <>
       <PageTitle icon={Upload}>Serial No. Activation</PageTitle>
@@ -316,7 +308,7 @@ export function SerialActivationUpload() {
           <Field label="Product Category"><Select value={v.category} options={(L?.categories || []).map((c) => ({ value: c._id, label: c.name }))} onChange={(e) => setV({ ...v, category: e.target.value, product: '' })} /></Field>
           <Field label="Brand"><Select value={v.brand} options={(L?.brands || []).map((c) => ({ value: c._id, label: c.name }))} onChange={(e) => setV({ ...v, brand: e.target.value, product: '' })} /></Field>
           <Field label="Product" required><Select required value={v.product} options={products.map(prodOpt)} onChange={(e) => setV({ ...v, product: e.target.value })} /></Field>
-          <Field label="Attach File (.csv / .txt, one serial per line)" required><Input type="file" accept=".csv,.txt" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
+          <Field label="Attach File (.xlsx / .csv / .txt, one serial per row)" required><Input type="file" accept=".xlsx,.csv,.txt" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
         </div>
         {serials.length > 0 && <p style={{ textAlign: 'center' }}>{serials.length} serial number(s) in file</p>}
         <div className="dms-actions"><button type="submit" className="dms-btn" disabled={up.isPending || !serials.length}>Upload</button></div>
@@ -332,15 +324,15 @@ export function DeliveryUpload() {
   const [errs, setErrs] = useState([]);
   const nav = useNavigate();
   const up = useDmsMutation((b) => dms.post('/x/delivery-bulk', b), { onSuccess: () => nav('/distributor/masters/productdelivery') });
-  const onFile = async (f) => { setMsg(''); setErrs([]); if (f) setRows(parseCsv(await f.text())); };
+  const onFile = async (f) => { setMsg(''); setErrs([]); if (!f) return; try { setRows(await readSheet(f)); } catch (e) { setMsg(e.message); } };
   return (
     <>
       <PageTitle icon={Upload}>Upload Delivery Matrix</PageTitle>
       <Alert>{msg}</Alert>{errs.length > 0 && <Alert>{errs.map((e) => <div key={e}>{e}</div>)}</Alert>}
       <form onSubmit={(e) => { e.preventDefault(); up.mutate({ rows }, { onError: (err) => { const a = apiError(err); setMsg(a.message); setErrs(a.fieldErrors.rows || []); } }); }}>
         <div className="dms-form">
-          <Field label="Attach File (.csv)" required><Input type="file" accept=".csv" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
-          <div><label className="dms-label">&nbsp;</label><Btn variant="default" onClick={() => downloadText('delivery_matrix.csv', 'fromCity,toCity,category,days\nAgra,Delhi,MOBILE,2\n')}>Download template</Btn></div>
+          <Field label="Attach File (.xlsx / .csv)" required><Input type="file" accept=".xlsx,.csv" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
+          <div><label className="dms-label">&nbsp;</label><Btn variant="default" onClick={() => downloadTemplate('delivery_matrix_template', ['fromCity', 'toCity', 'category', 'days'], [['Agra', 'Delhi', 'MOBILE', 2]], ['days: whole number of delivery days'])}>Download template</Btn></div>
         </div>
         {rows.length > 0 && <p style={{ textAlign: 'center' }}>{rows.length} row(s) ready</p>}
         <div className="dms-actions"><button type="submit" className="dms-btn" disabled={!rows.length || up.isPending}>Upload</button><BackBtn /></div>

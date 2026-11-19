@@ -24,10 +24,17 @@ export { round2 };
 
 /* ───────────────────────── numbering ───────────────────────── */
 
-/** Indian financial year label, e.g. 2026-11-19 → "26-27"; 2027-02-01 → "26-27". */
+/** Business timezone for calendar dates (attendance day, financial year). Default India. */
+export const DMS_TZ = process.env.DMS_TIMEZONE || 'Asia/Kolkata';
+/** YYYY-MM-DD of an instant in the business timezone (not UTC). */
+export function localDay(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: DMS_TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(date));
+}
+
+/** Indian financial year label, e.g. 2026-11-19 → "26-27"; 2027-02-01 → "26-27". Uses the business timezone. */
 export function fyLabel(date = new Date()) {
-  const d = new Date(date);
-  const startYear = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+  const [y, m] = localDay(date).split('-').map(Number);
+  const startYear = m >= 4 ? y : y - 1;
   const a = String(startYear % 100).padStart(2, '0');
   const b = String((startYear + 1) % 100).padStart(2, '0');
   return `${a}-${b}`;

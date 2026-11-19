@@ -73,13 +73,16 @@ const TrackLocation = mp('TrackLocation');
 const SerialActivationUpload = mp('SerialActivationUpload');
 const DeliveryUpload = mp('DeliveryUpload');
 const LocationMapping = mp('LocationMapping');
+const XP = () => import('./pages/ExtraPages');
+const StnDistributionForm = lazy(() => XP().then((m) => ({ default: m.StnDistributionForm })));
+const MyBeatPlan = lazy(() => XP().then((m) => ({ default: m.MyBeatPlan })));
 const PR = () => import('./pages/PrintPages');
 const PrintDoc = lazy(() => PR().then((m) => ({ default: m.PrintDoc })));
 const PrintPo = lazy(() => PR().then((m) => ({ default: m.PrintPo })));
 const PrintPayment = lazy(() => PR().then((m) => ({ default: m.PrintPayment })));
 
 const DOC_LIST_PATHS = [
-  'invoicing/invoices', 'invoicing/retail', 'invoicing/stock-transfer', 'invoicing/jobwork', 'invoicing/stock-transfer-approval',
+  'invoicing/invoices', 'invoicing/retail', 'invoicing/stn-distribution', 'invoicing/stock-transfer', 'invoicing/jobwork', 'invoicing/stock-transfer-approval',
   'purchase/local', 'purchase/opening', 'return/customer', 'return/purchase', 'return/approval', 'return/vendor',
   'logistic/dispatch', 'receive/location', 'receive/jobwork',
 ];
@@ -159,6 +162,8 @@ export default function DistributorRoutes() {
           <Route path="e/:type/:id" element={<EntityView />} />
           <Route path="e/:type/:id/edit" element={<EntityForm />} />
           <Route path="me/profile" element={<MyProfile />} />
+          <Route path="me/beat" element={<MyBeatPlan />} />
+          <Route path="invoicing/stn-distribution/new" element={<StnDistributionForm />} />
           <Route path="me/attendance-punch" element={<AttendancePage />} />
           <Route path="me/:type" element={<EntityList mode="mine" />} />
           <Route path="me/:type/new" element={<EntityForm mode="mine" />} />

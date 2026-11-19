@@ -104,7 +104,7 @@ async function at(dateIso, fn) {
 const PAGES = {
   ho: ['home', 'dash_yearly', 'dash_monthly', 'dash_inventory', 'dash_po', 'dash_sale', 'dash_lead', 'm_customer', 'm_price', 'm_scheme', 'm_product', 'm_vendor',
     'r_collection', 'r_inventory', 'r_aging', 'r_ledger', 'r_party_master', 'r_payment', 'r_po', 'r_return', 'r_sale', 'r_serial_activation', 'r_stock_ledger', 'r_vendor', 'r_isd', 'r_price_drop',
-    'dispatch', 'corporate', 'serial_track_multi', 'retail', 'serial_track', 'stock_transfer', 'stock_transfer_approval', 'jobwork', 'local_purchase', 'opening', 'po', 'po_approval', 'vendor_po',
+    'dispatch', 'corporate', 'serial_track_multi', 'retail', 'serial_track', 'stock_transfer', 'stock_transfer_approval', 'stn_distribution', 'jobwork', 'local_purchase', 'opening', 'po', 'po_approval', 'vendor_po',
     'customer_return', 'purchase_return', 'return_approval', 'vendor_return', 'payment_approval', 'payment_receive', 'acc_adjust', 'receive', 'receive_jobwork',
     'lead', 'quote', 'target', 'pjp', 'beat_sched', 'deviation', 'expense', 'query', 'app_feedback', 'app_task', 'app_track', 'attendance_report', 'tada_approval',
     'hr_activities', 'hr_application_approve', 'hr_attendance', 'hr_claim_approve', 'hr_claims', 'hr_department', 'hr_designation', 'hr_employee', 'hr_holiday', 'hr_leave_approve', 'hr_leave_master',
@@ -114,7 +114,7 @@ const PAGES = {
     'lead', 'quote', 'target', 'pjp', 'deviation', 'expense', 'query', 'app_feedback', 'app_task', 'tada_approval', 'hr_leave_approve', 'hr_claim_approve', 'hr_application_approve', 'hr_myteams',
     'my_beat', 'e_attendance', 'e_leave', 'e_claims', 'e_activities', 'e_profile', 'e_policies', 'e_salary', 'e_tada', 'e_application', 'e_documents', 'e_resign', 'attendance_report'],
   dealer: ['home', 'dash_sale', 'dash_inventory', 'po', 'receive', 'retail', 'customer_return', 'payment_receive', 'serial_track', 'r_inventory', 'r_ledger', 'r_sale', 'r_stock_ledger', 'm_customer',
-    'lead', 'quote', 'expense', 'query', 'app_feedback', 'my_beat', 'e_attendance', 'e_leave', 'e_claims', 'e_activities', 'e_profile', 'e_policies', 'e_salary', 'e_tada', 'e_application', 'e_documents', 'e_resign'],
+    'lead', 'quote', 'expense', 'query', 'app_feedback', 'app_track', 'my_beat', 'e_attendance', 'e_leave', 'e_claims', 'e_activities', 'e_profile', 'e_policies', 'e_salary', 'e_tada', 'e_application', 'e_documents', 'e_resign'],
 };
 
 const LOCS = [
