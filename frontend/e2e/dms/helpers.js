@@ -13,14 +13,13 @@ export const ROLES = {
 export const SHOTS = path.resolve(process.cwd(), '../reference-audit/final-screenshots/localhost');
 
 export async function login(page, email) {
-  await page.goto('/auth/login');
+  await page.goto('/distributor/login');
   await page.evaluate(() => localStorage.removeItem('erp:auth'));
-  await page.goto('/auth/login');
-  await page.locator('input[autocomplete="username"]').fill(email);
-  await page.locator('input[type="password"]').fill(DEMO_PASSWORD);
-  await page.getByRole('button', { name: /enter haion portal/i }).click();
-  await page.waitForURL((u) => !u.pathname.startsWith('/auth/login'), { timeout: 45_000, waitUntil: 'commit' });
-  await page.goto('/distributor/home');
+  await page.goto('/distributor/login');
+  await page.getByLabel('USER ID').fill(email);
+  await page.getByLabel('PASSWORD').fill(DEMO_PASSWORD);
+  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.waitForURL((u) => !u.pathname.startsWith('/distributor/login'), { timeout: 45_000, waitUntil: 'commit' });
   await expect(page.locator('.dms-side')).toBeVisible();
 }
 

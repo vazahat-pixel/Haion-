@@ -95,7 +95,7 @@ export function setupInterceptors(client) {
               useSessionStore.getState().saveLastPath(path);
             }
             useAuthStore.getState().clearAuth();
-            window.location.href = ROUTES.AUTH_SESSION_EXPIRED;
+            window.location.href = path.startsWith('/distributor') ? '/distributor/login?expired=1' : ROUTES.AUTH_SESSION_EXPIRED;
           }
           return Promise.reject(refreshError);
         } finally {

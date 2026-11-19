@@ -1,7 +1,17 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { AuthGuard } from '@/components/auth/AuthGuard';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import DmsLayout from './DmsLayout';
+import DmsLogin from './DmsLogin';
+
+/** The Distributor panel has its own sign-in page: anything under /distributor sends signed-out users there. */
+function DmsAuthGuard({ children }) {
+  const { isAuthenticated, isInitializing } = useAuth();
+  const location = useLocation();
+  if (isInitializing) return <div style={{ padding: 40, textAlign: 'center', color: '#777', fontFamily: 'Arial, sans-serif' }}>Loading…</div>;
+  if (!isAuthenticated) return <Navigate to="/distributor/login" state={{ from: location }} replace />;
+  return children;
+}
 
 /* Access to /distributor is decided server-side by /api/dms/me (MASTER_ADMIN or an active DmsProfile),
    so no PanelGuard role list here — DmsLayout shows the server's refusal when access is denied. */
@@ -93,7 +103,15 @@ function PrintShell() {
 
 export default function DistributorRoutes() {
   return (
-    <AuthGuard>
+    <Routes>
+      <Route path="login" element={<DmsLogin />} />
+      <Route path="*" element={<DmsAuthGuard><GuardedRoutes /></DmsAuthGuard>} />
+    </Routes>
+  );
+}
+
+function GuardedRoutes() {
+  return (
       <Routes>
         <Route path="print" element={<PrintShell />}>
           <Route path="doc/:id" element={<PrintDoc />} />
@@ -102,7 +120,7 @@ export default function DistributorRoutes() {
           <Route path="payslip/:id" element={<PrintPayslip />} />
         </Route>
         <Route element={<DmsLayout />}>
-          <Route index element={<Navigate to="home" replace />} />
+          <Route index element={<Navigate to="/distributor/home" replace />} />
           <Route path="home" element={<HomePage />} />
           <Route path="change-password" element={<ChangePassword />} />
 
@@ -189,9 +207,8 @@ export default function DistributorRoutes() {
           <Route path="masters-upload/delivery" element={<DeliveryUpload />} />
           <Route path="masters/locations/:id/mapping" element={<LocationMapping />} />
 
-          <Route path="*" element={<Navigate to="home" replace />} />
+          <Route path="*" element={<Navigate to="/distributor/home" replace />} />
         </Route>
       </Routes>
-    </AuthGuard>
   );
 }

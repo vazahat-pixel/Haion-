@@ -74,8 +74,12 @@ export function Router() {
             />
           </Route>
         ) : (
-          <Route path="/" element={<RootRedirect />} />
+          /* The domain root opens the Distributor panel (its own sign-in page when signed out). */
+          <Route path="/" element={<Navigate to="/distributor" replace />} />
         )}
+        {/* The previous home (Haion ERP: login or each role's dashboard) now lives at /erp; /old is an alias. */}
+        <Route path="/erp" element={<RootRedirect />} />
+        <Route path="/old" element={<Navigate to="/erp" replace />} />
 
         <Route element={<LandingLayout />}>
           <Route
@@ -101,6 +105,7 @@ export function Router() {
         <Route path="/employee/*" element={<EmployeeRoutes />} />
         <Route path="/service/*" element={<ServiceRoutes />} />
         <Route path="/distributor/*" element={<DistributorRoutes />} />
+        <Route path="/dms" element={<Navigate to="/distributor/login" replace />} />
 
         <Route element={<PublicLayout />}>
           <Route path="/customer/access" element={<CustomerAccessPage />} />

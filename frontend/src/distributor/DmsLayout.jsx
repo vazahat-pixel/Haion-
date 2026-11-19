@@ -31,14 +31,14 @@ export default function DmsLayout() {
     setDrawer(false);
   }, [loc.pathname, menu]);
 
-  const doLogout = async () => { await logout(); nav('/auth/login', { replace: true }); };
+  const doLogout = async () => { await logout(); nav('/distributor/login', { replace: true }); };
 
   if (isLoading) return <div className="dms"><div className="dms-loading">Loading…</div></div>;
   if (error) {
     return (
       <div className="dms"><div className="dms-loading">
         <p>{error?.response?.data?.message || 'Unable to open the Distributor panel.'}</p>
-        <button type="button" className="dms-btn" onClick={() => nav('/', { replace: true })}>Go back</button>
+        <button type="button" className="dms-btn" onClick={doLogout}>Sign in with another account</button>
       </div></div>
     );
   }

@@ -2,16 +2,14 @@
   "config": {
     "argv": [
       "C:\\Program Files\\nodejs\\node.exe",
-      "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "c:\\Users\\admin\\Desktop\\Haion-\\frontend\\node_modules\\@playwright\\test\\cli.js",
       "test",
       "-c",
       "playwright.dms.config.js",
-      "e2e/dms/02-workflows.spec.js",
-      "-g",
-      "PO →"
+      "e2e/dms/00-login.spec.js"
     ],
-    "configFile": "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\playwright.dms.config.js",
-    "rootDir": "C:/Users/admin/Desktop/Haion-/frontend/e2e/dms",
+    "configFile": "c:\\Users\\admin\\Desktop\\Haion-\\frontend\\playwright.dms.config.js",
+    "rootDir": "c:/Users/admin/Desktop/Haion-/frontend/e2e/dms",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
@@ -27,7 +25,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "C:/Users/admin/Desktop/Haion-/frontend/test-results",
+        "outputDir": "c:/Users/admin/Desktop/Haion-/frontend/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -35,7 +33,7 @@
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "C:/Users/admin/Desktop/Haion-/frontend/e2e/dms",
+        "testDir": "c:/Users/admin/Desktop/Haion-/frontend/e2e/dms",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -70,167 +68,123 @@
   },
   "suites": [
     {
-      "title": "02-workflows.spec.js",
-      "file": "02-workflows.spec.js",
+      "title": "00-login.spec.js",
+      "file": "00-login.spec.js",
       "column": 0,
       "line": 0,
-      "specs": [],
-      "suites": [
+      "specs": [
         {
-          "title": "PO → approval → invoice → dispatch → receive → stock & ledger",
-          "file": "02-workflows.spec.js",
-          "line": 29,
-          "column": 15,
-          "specs": [
+          "title": "signed-out visit to any Distributor page lands on the Distributor sign-in page, then returns there after login",
+          "ok": true,
+          "tags": [],
+          "tests": [
             {
-              "title": "dealer raises a PO from the UI",
-              "ok": true,
-              "tags": [],
-              "tests": [
+              "timeout": 2400000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
                 {
-                  "timeout": 2400000,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5368,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T12:58:23.871Z",
                   "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 10492,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-11-19T12:17:14.657Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
+                  "attachments": []
                 }
               ],
-              "id": "bd57e3baa69fb9bfa035-eb0d285e314672c76523",
-              "file": "02-workflows.spec.js",
-              "line": 31,
-              "column": 3
-            },
-            {
-              "title": "branch approves, invoices and dispatches it",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 2400000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 11084,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-11-19T12:17:25.552Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "bd57e3baa69fb9bfa035-50ea735826d19b2c2b89",
-              "file": "02-workflows.spec.js",
-              "line": 53,
-              "column": 3
-            },
-            {
-              "title": "dealer receives; stock increases by exactly the billed qty",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 2400000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 6634,
-                      "error": {
-                        "message": "Error: locator.click: Error: strict mode violation: getByRole('button', { name: 'Receive' }) resolved to 2 elements:\n    1) <button type=\"button\" class=\"dms-mi\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Receive Stock' })\n    2) <button type=\"submit\" class=\"dms-btn\">Receive</button> aka getByRole('button', { name: 'Receive', exact: true })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Receive' })\u001b[22m\n",
-                        "stack": "Error: locator.click: Error: strict mode violation: getByRole('button', { name: 'Receive' }) resolved to 2 elements:\n    1) <button type=\"button\" class=\"dms-mi\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Receive Stock' })\n    2) <button type=\"submit\" class=\"dms-btn\">Receive</button> aka getByRole('button', { name: 'Receive', exact: true })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Receive' })\u001b[22m\n\n    at C:\\Users\\admin\\Desktop\\Haion-\\frontend\\e2e\\dms\\02-workflows.spec.js:95:57",
-                        "location": {
-                          "file": "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\e2e\\dms\\02-workflows.spec.js",
-                          "column": 57,
-                          "line": 95
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 93 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'textarea'\u001b[39m)\u001b[33m.\u001b[39mlast()\u001b[33m.\u001b[39mfill(\u001b[32m'Received in E2E'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 94 |\u001b[39m     \u001b[36mawait\u001b[39m shot(page\u001b[33m,\u001b[39m \u001b[32m'05-dealer-receive'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 95 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'Receive'\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 96 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/receive\\/location/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 97 |\u001b[39m     expect((\u001b[36mawait\u001b[39m api(page\u001b[33m,\u001b[39m \u001b[32m`/invoices/${ctx.invId}`\u001b[39m))\u001b[33m.\u001b[39mbody\u001b[33m.\u001b[39mdata\u001b[33m.\u001b[39mstatus)\u001b[33m.\u001b[39mtoBe(\u001b[32m'Received'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 98 |\u001b[39m     expect(\u001b[36mawait\u001b[39m okQty(page\u001b[33m,\u001b[39m ctx\u001b[33m.\u001b[39mdealerLoc\u001b[33m,\u001b[39m \u001b[32m'CH-20W'\u001b[39m))\u001b[33m.\u001b[39mtoBe(ctx\u001b[33m.\u001b[39mbefore \u001b[33m+\u001b[39m \u001b[35m5\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\e2e\\dms\\02-workflows.spec.js",
-                            "column": 57,
-                            "line": 95
-                          },
-                          "message": "Error: locator.click: Error: strict mode violation: getByRole('button', { name: 'Receive' }) resolved to 2 elements:\n    1) <button type=\"button\" class=\"dms-mi\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Receive Stock' })\n    2) <button type=\"submit\" class=\"dms-btn\">Receive</button> aka getByRole('button', { name: 'Receive', exact: true })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Receive' })\u001b[22m\n\n\n  93 |     await page.locator('textarea').last().fill('Received in E2E');\n  94 |     await shot(page, '05-dealer-receive');\n> 95 |     await page.getByRole('button', { name: 'Receive' }).click();\n     |                                                         ^\n  96 |     await expect(page).toHaveURL(/receive\\/location/);\n  97 |     expect((await api(page, `/invoices/${ctx.invId}`)).body.data.status).toBe('Received');\n  98 |     expect(await okQty(page, ctx.dealerLoc, 'CH-20W')).toBe(ctx.before + 5);\n    at C:\\Users\\admin\\Desktop\\Haion-\\frontend\\e2e\\dms\\02-workflows.spec.js:95:57"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-11-19T12:17:36.717Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\test-results\\02-workflows-PO-→-approval-5990c-s-by-exactly-the-billed-qty-chromium\\test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\test-results\\02-workflows-PO-→-approval-5990c-s-by-exactly-the-billed-qty-chromium\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\admin\\Desktop\\Haion-\\frontend\\e2e\\dms\\02-workflows.spec.js",
-                        "column": 57,
-                        "line": 95
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "bd57e3baa69fb9bfa035-af0485ab682b89f0cece",
-              "file": "02-workflows.spec.js",
-              "line": 90,
-              "column": 3
+              "status": "expected"
             }
-          ]
+          ],
+          "id": "b63fff450a7c50dda52b-9f3016c304d68fa8ca9d",
+          "file": "00-login.spec.js",
+          "line": 9,
+          "column": 1
+        },
+        {
+          "title": "wrong password shows an error and stays on the page; /dms is a short link to the sign-in page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 2400000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2421,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T12:58:29.543Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b63fff450a7c50dda52b-df66fffa0cc9f3bb547c",
+          "file": "00-login.spec.js",
+          "line": 25,
+          "column": 1
+        },
+        {
+          "title": "domain root opens the Distributor; the old ERP home moved to /erp",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 2400000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2118,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T12:58:31.989Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b63fff450a7c50dda52b-7a38e143898ba46a4558",
+          "file": "00-login.spec.js",
+          "line": 38,
+          "column": 1
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-19T12:17:05.678Z",
-    "duration": 38085.324,
-    "expected": 2,
+    "startTime": "2026-11-19T12:58:22.933Z",
+    "duration": 11338.217999999999,
+    "expected": 3,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }
