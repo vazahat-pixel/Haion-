@@ -24,7 +24,7 @@ function crud(path, { model, page, readPages = [], search = [], filters = [], po
   router.get(path, requirePage(page, ...readPages), asyncHandler(async (req, res) => {
     const { skip, perPage, page: pg } = parsePagination(req.query);
     const q = { ...(scope ? scopeFilter(req, scope) : {}) };
-    for (const f of filters) if (req.query[f] !== undefined && req.query[f] !== '') q[f] = req.query[f];
+    for (const f of filters) if (req.query[f] !== undefined && req.query[f] !== '' && (f !== '_id' || isId(req.query[f]))) q[f] = req.query[f];
     if (req.query.search && search.length) {
       const rx = new RegExp(esc(req.query.search), 'i');
       q.$and = [...(q.$and || []), { $or: search.map((f) => ({ [f]: rx })) }];
@@ -103,6 +103,7 @@ router.get('/masters/:mtype', (req, res, next) => requirePage(MASTER_PAGE[req.pa
   if (req.query.status) q.status = req.query.status;
   if (req.query.parent && isId(req.query.parent)) q.parent = req.query.parent;
   if (req.query.search) q.name = new RegExp(esc(req.query.search), 'i');
+  for (const [k, v] of Object.entries(req.query)) if (/^a_[A-Za-z]{1,30}$/.test(k) && v !== '') q[`attrs.${k.slice(2)}`] = String(v);
   const [data, total] = await Promise.all([
     DmsMaster.find(q).populate('parent', 'name code').sort({ name: 1 }).skip(skip).limit(perPage).lean(),
     DmsMaster.countDocuments(q),
@@ -138,7 +139,7 @@ crud('/hsn', {
 
 /* ── Products ── */
 crud('/products', {
-  model: DmsProduct, page: 'm_product', search: ['productCode', 'name'], filters: ['status', 'brand', 'category', 'subCategory'],
+  model: DmsProduct, page: 'm_product', search: ['productCode', 'name'], filters: ['status', 'brand', 'category', 'subCategory', '_id'],
   populate: [{ path: 'brand', select: 'name' }, { path: 'category', select: 'name' }, { path: 'subCategory', select: 'name' }],
   editable: ['productCode', 'name', 'category', 'subCategory', 'brand', 'color', 'hsnCode', 'description', 'warrantyDays',
     'eol', 'warrantyTerms', 'rewardPoint', 'rewardStartDate', 'rewardEndDate', 'isSerialized', 'status'],
@@ -181,7 +182,8 @@ router.put('/locations/:id/mapping', requirePage('m_location'), asyncHandler(asy
 /* ── Vendors ── */
 crud('/vendors', {
   model: DmsVendor, page: 'm_vendor', search: ['code', 'name', 'city'], filters: ['status', 'isForeign'],
-  editable: ['name', 'isForeign', 'contactPerson', 'phone', 'email', 'address', 'city', 'state', 'stateCode', 'country', 'gstNo', 'panNo', 'status'],
+  editable: ['name', 'isForeign', 'contactPerson', 'phone', 'email', 'address', 'city', 'state', 'stateCode', 'country', 'gstNo', 'panNo', 'status',
+    'billingAddress', 'shippingAddress', 'vendorOrigin', 'modeOfShipment', 'taxRegistration', 'fax'],
   prepare: async (b, req, existing) => {
     if (!existing) b.code = `VNDR${await nextSeq('VENDOR')}`;
     return b;
@@ -195,7 +197,10 @@ crud('/customers', {
   editable: ['name', 'phone', 'email', 'country', 'state', 'stateCode', 'city', 'location', 'address', 'customerType', 'gstin', 'status'],
   prepare: async (b, req, existing) => {
     assertCanSee(req, b.location || existing?.location);
-    if (!existing) b.customerId = `CUST${String(await nextSeq('CUSTOMER')).padStart(5, '0')}`;
+    if (!existing) {
+      b.customerId = `CUST${String(await nextSeq('CUSTOMER')).padStart(5, '0')}`;
+      b.history = [{ at: new Date(), by: req.dms.loginId, change: 'Created' }];
+    } else existing.history.push({ at: new Date(), by: req.dms.loginId, change: `Updated: ${Object.keys(b).join(', ')}` });
     return b;
   },
 });
@@ -219,7 +224,7 @@ router.get('/price-lookup', asyncHandler(async (req, res) => {
 crud('/schemes', {
   model: DmsScheme, page: 'm_scheme', readPages: ['corporate', 'retail'], search: ['name', 'code'], filters: ['status'],
   populate: { path: 'products', select: 'productCode name' },
-  editable: ['name', 'fromDate', 'toDate', 'products', 'discountType', 'discountValue', 'status'],
+  editable: ['name', 'fromDate', 'toDate', 'products', 'discountType', 'discountValue', 'status', 'applicableOn', 'schemeGiven', 'remark', 'attachment'],
   prepare: async (b, req, existing) => {
     if (b.fromDate && b.toDate && new Date(b.toDate) < new Date(b.fromDate)) throw new DmsError('Scheme To date must be after From date');
     if (!existing) b.code = `SCH/${new Date().getFullYear()}/${await nextSeq(`SCH:${new Date().getFullYear()}`)}`;
@@ -342,7 +347,7 @@ function productScope(req) {
 /* ── lookups for dropdowns ── */
 router.get('/lookups', asyncHandler(async (req, res) => {
   const locQ = { status: 'Active', ...scopeFilter(req, ['_id']) };
-  const [locations, allLocations, products, vendors, couriers, brands, categories, subcategories, colors, executives, hsn, schemes] = await Promise.all([
+  const [locations, allLocations, products, vendors, couriers, brands, categories, subcategories, colors, cities, executives, hsn, schemes] = await Promise.all([
     DmsLocation.find(locQ).select('code name city state stateCode locationType parent mappedLocations creditLimit billingAddress dispatchAddress docPrefix').sort({ name: 1 }).lean(),
     DmsLocation.find({ status: 'Active' }).select('code name city state stateCode locationType parent billingAddress dispatchAddress pincode panNo gstNo cstNo stNo').sort({ name: 1 }).lean(),
     DmsProduct.find({ status: 'Active', ...productScope(req) }).select('productCode name color hsnCode isSerialized brand category subCategory warrantyDays').sort({ name: 1 }).lean(),
@@ -352,6 +357,7 @@ router.get('/lookups', asyncHandler(async (req, res) => {
     DmsMaster.find({ type: 'category', status: 'Active' }).select('name').sort({ name: 1 }).lean(),
     DmsMaster.find({ type: 'subcategory', status: 'Active' }).select('name parent').sort({ name: 1 }).lean(),
     DmsMaster.find({ type: 'color', status: 'Active' }).select('name').sort({ name: 1 }).lean(),
+    DmsMaster.find({ type: 'city', status: 'Active' }).select('name attrs.state').sort({ name: 1 }).lean(),
     DmsProfile.find({ status: 'Active', userType: { $ne: 'Admin' } }).select('displayName loginId userType').lean(),
     DmsHsn.find({ status: 'Active' }).select('hsnCode cgst sgst igst').lean(),
     DmsScheme.find({ status: 'Active', toDate: { $gte: new Date() } }).select('name code products discountType discountValue').lean(),
@@ -359,6 +365,7 @@ router.get('/lookups', asyncHandler(async (req, res) => {
   sendSuccess(res, {
     data: {
       locations, allLocations, products, vendors, couriers, brands, categories, subcategories, colors, executives, hsn, schemes,
+      cities: cities.map((c) => ({ name: c.name, state: c.attrs?.state || '' })),
       locationTypes: Object.keys(LOCATION_TYPES), userTypes: DMS_USER_TYPES, userTypeCodes: DMS_USER_TYPE_CODES, regions: DMS_REGIONS, pages: DMS_PAGES,
     },
   });

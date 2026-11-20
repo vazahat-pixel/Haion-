@@ -253,3 +253,6 @@
 /* ── table inputs on generic records (quote lines, claim travel lines, target products) ── */
 .dms-lines input, .dms-lines select { width: 100%; min-width: 70px; height: 30px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 12px; box-sizing: border-box; }
 .dms-totals { max-width: 560px; margin: 10px 0 0 auto; }
+
+.dms-btn.disabled { opacity: .55; pointer-events: none; }
+.dms-checklist .dms-perm-tools { justify-content: flex-start; }

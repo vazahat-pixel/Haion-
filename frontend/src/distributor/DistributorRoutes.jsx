@@ -20,6 +20,9 @@ const ChangePassword = lazy(() => import('./pages/ChangePassword'));
 const M = () => import('./pages/MasterPages');
 const MasterList = lazy(() => M().then((m) => ({ default: m.MasterList })));
 const MasterForm = lazy(() => M().then((m) => ({ default: m.MasterForm })));
+const MX = () => import('./pages/MasterExtras');
+const MasterHistory = lazy(() => MX().then((m) => ({ default: m.MasterHistory })));
+const MasterMapping = lazy(() => MX().then((m) => ({ default: m.MasterMapping })));
 const U = () => import('./pages/UserPages');
 const UserList = lazy(() => U().then((m) => ({ default: m.UserList })));
 const UserForm = lazy(() => U().then((m) => ({ default: m.UserForm })));
@@ -138,6 +141,8 @@ function GuardedRoutes() {
           <Route path="masters/users/:id/history" element={<UserHistory />} />
           <Route path="masters/:key" element={<MasterList />} />
           <Route path="masters/:key/:id" element={<MasterForm />} />
+          <Route path="masters/:key/:id/history" element={<MasterHistory />} />
+          <Route path="masters/:key/:id/map-locations" element={<MasterMapping />} />
 
           <Route path="reports/inventory" element={<InventoryReport />} />
           <Route path="reports/aging" element={<AgingReport />} />

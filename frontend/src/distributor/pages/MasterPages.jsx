@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { Database } from 'lucide-react';
 import { dms, useDmsQuery, useDmsMutation, useLookups, apiError, fmt } from '../api';
 import {
@@ -7,8 +7,10 @@ import {
 } from '../components/ui';
 import { MASTERS } from './masters.config';
 import './masters.extra.config';
+import './masters.reference';
 import { Link } from 'react-router-dom';
 import { exportCsv } from '../components/ui';
+import { ContactButtons, MasterFile } from './MasterExtras';
 
 const getPath = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 function setPath(o, p, v) {
@@ -29,12 +31,15 @@ export function useOptions(lk) {
       case 'categories': case 'brands': case 'colors':
         return (L[def.optionsFrom] || []).map((x) => (def.byName ? x.name : { value: x._id, label: x.name }));
       case 'subcategories':
-        return (L.subcategories || []).filter((s) => !def.dependsOn || !values[def.dependsOn] || String(s.parent) === String(values[def.dependsOn])).map((x) => ({ value: x._id, label: x.name }));
+        return (L.subcategories || []).filter((s) => !def.dependsOn || !values[def.dependsOn] || String(s.parent) === String(values[def.dependsOn])).map((x) => (def.byName ? x.name : { value: x._id, label: x.name }));
+      case 'productsPicked': // products narrowed by the Product Category / Sub Category / Brand pickers on the form
+        return (L.products || []).filter((p) => (!values.categoryPick || String(p.category) === String(values.categoryPick)) && (!values.subCategoryPick || String(p.subCategory) === String(values.subCategoryPick)) && (!values.brandPick || String(p.brand) === String(values.brandPick))).map(prodOpt);
       case 'hsn': return (L.hsn || []).map((h) => ({ value: h.hsnCode, label: `${h.hsnCode} (IGST ${h.igst}%)` }));
       case 'locations': return (L.locations || []).map(locOpt);
       case 'allLocations': return (L.allLocations || []).map(locOpt);
       case 'products': return (L.products || []).map(prodOpt);
       case 'locationTypes': return L.locationTypes || [];
+      case 'cities': return (L.cities || []).filter((c) => !def.dependsOn || !values[def.dependsOn] || c.state === values[def.dependsOn]).map((c) => c.name);
       default: return [];
     }
   };
@@ -55,7 +60,9 @@ export function MasterList() {
       if (c.link) return { ...c, sortable: false, align: 'c', render: (r) => <Link to={c.link(r)}>{c.linkText || 'Open'}</Link> };
       return c.text && !c.render ? { ...c, render: c.text } : c;
     }),
-    { key: 'edit', label: 'View/Edit', sortable: false, align: 'c', render: (r) => <EditLink to={`/distributor/masters/${key}/${r._id}`} /> },
+    { key: 'edit', label: cfg.editLabel || 'View/Edit', sortable: false, align: 'c', render: (r) => <EditLink to={`/distributor/masters/${key}/${r._id}`} /> },
+    ...(cfg.afterEdit || []).map((c) => (c.link ? { ...c, sortable: false, align: 'c', render: (r) => <Link to={c.link(r)}>{c.linkText || 'Open'}</Link> } : c)),
+    ...(cfg.historyCol ? [{ key: 'hist', label: 'History', sortable: false, align: 'c', render: (r) => <Link className="dms-icon-btn" to={`/distributor/masters/${key}/${r._id}/history`} title="History"><i className="fa fa-history fa-lg" aria-hidden="true" /></Link> }] : []),
   ];
   return (
     <>
@@ -67,6 +74,7 @@ export function MasterList() {
       <Toolbar>
         {cfg.exportable && <Btn variant="default" onClick={() => exportCsv(cfg.title, cfg.columns.filter((c) => c.key !== '#'), data?.data || [])}>Export to Excel</Btn>}
         {(cfg.toolbar || []).map((b) => <Btn key={b.to} variant="default" to={b.to}>{b.label}</Btn>)}
+        {cfg.contactButtons && <ContactButtons rows={data?.data || []} />}
         <Btn to={`/distributor/masters/${key}/new`}>{cfg.addLabel}</Btn>
       </Toolbar>
       <DataTable columns={columns} rows={data?.data} total={data?.pagination?.total ?? 0} loading={isFetching && !data} {...list.tableProps} />
@@ -98,7 +106,11 @@ export function FormField({ def, values, setValues, errors, opts, isEdit }) {
   const set = (x) => setValues((s) => setPath(s, def.name, x));
   const common = { id: `f-${def.name}`, required: def.required, disabled: isEdit && def.lockOnEdit, error: err };
   let input;
-  if (def.type === 'select') {
+  const cityList = def.optionsFrom === 'cities' ? opts(def, values) : null;
+  if (def.type === 'select' && cityList && !cityList.length) {
+    // no City Master entry for this state yet: type the city
+    input = <Input {...common} value={val} onChange={(e) => set(e.target.value)} />;
+  } else if (def.type === 'select') {
     input = <Select {...common} value={val} placeholder={def.placeholder ?? 'Please Select'} options={opts(def, values)} onChange={(e) => set(e.target.value)} />;
   } else if (def.type === 'multiselect') {
     input = (
@@ -107,6 +119,17 @@ export function FormField({ def, values, setValues, errors, opts, isEdit }) {
         {opts(def, values).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     );
+  } else if (def.type === 'checklist') {
+    const all = opts(def, values).map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
+    const cur = Array.isArray(val) ? val : [];
+    input = (
+      <div className="dms-checklist">
+        <div className="dms-perm-tools"><button type="button" className="dms-btn sm" onClick={() => set(all.map((o) => o.value))}>Check All</button><button type="button" className="dms-btn sm" onClick={() => set([])}>Uncheck All</button></div>
+        <div className="dms-perm-grid">{all.map((o) => <label key={o.value}><input type="checkbox" checked={cur.includes(o.value)} onChange={() => set(cur.includes(o.value) ? cur.filter((x) => x !== o.value) : [...cur, o.value])} /> {o.label}</label>)}</div>
+      </div>
+    );
+  } else if (def.type === 'file') {
+    input = <MasterFile value={val} onChange={set} label={def.label} />;
   } else if (def.type === 'textarea') {
     input = <TextArea {...common} value={val} onChange={(e) => set(e.target.value)} />;
   } else {
@@ -123,14 +146,26 @@ export function MasterForm() {
   const { data: lk } = useLookups();
   const opts = useOptions(lk?.data);
   const { data: rec, isLoading } = useDmsQuery(`m-${key}-one`, `${cfg?.endpoint}/${id}`, undefined, { enabled: Boolean(cfg && isEdit) });
-  const [values, setValues] = useState({ status: 'Active', ...(cfg?.defaults || {}) });
+  const [sp] = useSearchParams();
+  const [values, setValues] = useState(() => ({ status: 'Active', ...(cfg?.defaults || {}), ...Object.fromEntries((cfg?.queryDefaults ? cfg.queryDefaults(sp) : [])) }));
   const [errors, setErrors] = useState({});
   const [msg, setMsg] = useState('');
   useEffect(() => { if (rec?.data) setValues(cfg.toForm ? cfg.toForm(rec.data) : rec.data); }, [rec]); // eslint-disable-line react-hooks/exhaustive-deps
-  const save = useDmsMutation((payload) => (isEdit ? dms.put(`${cfg.endpoint}/${id}`, payload) : dms.post(cfg.endpoint, payload)), {
+  const save = useDmsMutation(async (payload) => {
+    if (isEdit) return dms.put(`${cfg.endpoint}/${id}`, payload);
+    // e.g. Price Master: one record per ticked state, as the reference creates them
+    if (cfg.multiCreate && Array.isArray(payload[cfg.multiCreate.from])) {
+      const { [cfg.multiCreate.from]: many, ...rest } = payload;
+      if (!many.length) throw Object.assign(new Error('Tick at least one state'), { response: { data: { message: 'Tick at least one state', errors: { [cfg.multiCreate.from]: ['Required'] } } } });
+      let last;
+      for (const one of many) last = await dms.post(cfg.endpoint, cfg.multiCreate.build(rest, one)); // eslint-disable-line no-await-in-loop
+      return last;
+    }
+    return dms.post(cfg.endpoint, payload);
+  }, {
     onSuccess: () => nav(`/distributor/masters/${key}`),
   });
-  const fields = useMemo(() => cfg?.fields || [], [cfg]);
+  const fields = useMemo(() => (cfg?.fields || []).filter((x) => !(isEdit ? x.addOnly : x.editOnly)), [cfg, isEdit]);
   if (!cfg) return <Navigate to="/distributor/home" replace />;
   if (isEdit && isLoading) return <div className="dms-loading">Loading…</div>;
 
@@ -143,7 +178,7 @@ export function MasterForm() {
   };
   return (
     <>
-      <PageTitle icon={Database}>{isEdit ? `Edit ${cfg.title.replace(' Master', '')}` : cfg.addLabel}</PageTitle>
+      <PageTitle icon={Database}>{isEdit ? (cfg.editTitle || `Edit ${cfg.title.replace(' Master', '')}`) : (cfg.addTitle || cfg.addLabel)}</PageTitle>
       <Alert>{msg}</Alert>
       {isEdit && rec?.data?.code && <p style={{ textAlign: 'center' }} className="dms-muted">Code: <b>{rec.data.code}</b></p>}
       <form onSubmit={submit} noValidate={false}>
@@ -151,7 +186,7 @@ export function MasterForm() {
           {fields.map((f) => <FormField key={f.name} def={f} values={values} setValues={setValues} errors={errors} opts={opts} isEdit={isEdit} />)}
         </div>
         <div className="dms-actions">
-          <button type="submit" className="dms-btn" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save'}</button>
+          <button type="submit" className="dms-btn" disabled={save.isPending}>{save.isPending ? 'Saving…' : isEdit ? (cfg.updateLabel || 'Update') : (cfg.submitLabel || 'Save')}</button>
           <BackBtn to={`/distributor/masters/${key}`} />
         </div>
       </form>

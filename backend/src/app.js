@@ -163,9 +163,13 @@ app.use('/uploads', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, '../uploads')));
 
+// Behind nginx on the same host: take the client IP from X-Forwarded-For only when the request comes from a
+// loopback proxy, so each user gets their own rate-limit bucket (without this every user shares nginx's IP).
+app.set('trust proxy', process.env.TRUST_PROXY || 'loopback');
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: env.isDev ? 1000 : 200,
+  // a Distributor page makes several API calls; RATE_LIMIT_MAX overrides the per-IP limit
+  max: Number(process.env.RATE_LIMIT_MAX) || (env.isDev ? 5000 : 1000),
   standardHeaders: true,
   legacyHeaders: false,
 });
