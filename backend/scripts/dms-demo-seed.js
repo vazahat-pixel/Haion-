@@ -18,6 +18,7 @@
  *
  *  All people, phone numbers and addresses are synthetic. Demo password for every account: DmsDemo@123
  */
+import crypto from 'node:crypto';
 import express from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
@@ -29,14 +30,37 @@ import { errorHandler } from '../src/middleware/errorHandler.middleware.js';
 import { DmsEntity } from '../src/dms/models/entity.model.js';
 import * as TX from '../src/dms/models/txn.models.js';
 
-const URI = process.env.MONGODB_URI || '';
-const DB = process.env.DMS_DEMO_DB || 'dms_demo';
+/*
+ * LIVE MODE (server demo):  DMS_SEED_PASSWORD='<strong password>' node scripts/dms-demo-seed.js --live --confirm=<db name>
+ *  - Uses the server's own MONGODB_URI / MONGODB_DB_NAME from backend/.env.
+ *  - Writes only dms_* collections and users ending in @demo.haion.local (plus audit-log lines). No other ERP data is touched.
+ *  - Demo users get DMS_SEED_PASSWORD (must be strong); the public demo password is never used on a server.
+ *  - The internal seeding admin gets a random, never-printed password and is deactivated at the end:
+ *    sign in with your own Haion Master Admin account to see everything.
+ *  - Refuses if any Distributor data already exists. --reset is not allowed in live mode.
+ *  - Clean-up later:  node scripts/dms-demo-seed.js --live --remove --confirm=<db name>
+ *    (deletes ALL dms_* collections and the @demo.haion.local users; run it before entering real Distributor data).
+ */
+const LIVE = process.argv.includes('--live');
 const RESET = process.argv.includes('--reset');
-const PASSWORD = 'DmsDemo@123';
+const REMOVE = process.argv.includes('--remove');
 const DOMAIN = '@demo.haion.local';
+const URI = LIVE ? env.mongodbUri : process.env.MONGODB_URI || '';
+const DB = LIVE ? env.mongodbDbName : process.env.DMS_DEMO_DB || 'dms_demo';
+const PASSWORD = LIVE ? process.env.DMS_SEED_PASSWORD || '' : 'DmsDemo@123';
 
-if (!/^mongodb:\/\/(127\.0\.0\.1|localhost)[:/]/.test(URI)) { console.error('Refusing to seed: MONGODB_URI must point at a local database.'); process.exit(1); }
-if (DB === 'haion_erp') { console.error('Refusing to seed into haion_erp. Use the isolated demo database.'); process.exit(1); }
+if (LIVE) {
+  const confirm = (process.argv.find((a) => a.startsWith('--confirm=')) || '').slice('--confirm='.length);
+  if (confirm !== DB) { console.error(`Live mode works on the server database "${DB}". Re-run with --confirm=${DB} to proceed.`); process.exit(1); }
+  if (RESET) { console.error('--reset is not allowed with --live. Use --live --remove first, then seed again.'); process.exit(1); }
+  if (!REMOVE && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,}$/.test(PASSWORD)) {
+    console.error('Set DMS_SEED_PASSWORD: at least 10 characters with upper case, lower case, a digit and a symbol. The public demo password is never used on a server.');
+    process.exit(1);
+  }
+} else {
+  if (!/^mongodb:\/\/(127\.0\.0\.1|localhost)[:/]/.test(URI)) { console.error('Refusing to seed: MONGODB_URI must point at a local database (use --live for the server).'); process.exit(1); }
+  if (DB === 'haion_erp') { console.error('Refusing to seed into haion_erp. Use the isolated demo database.'); process.exit(1); }
+}
 
 /* ───────────── plumbing ───────────── */
 const sapp = express();
@@ -160,16 +184,27 @@ const LAST = ['Verma', 'Singh', 'Yadav', 'Gupta', 'Mishra', 'Khan', 'Ansari', 'J
 /* ───────────── main ───────────── */
 await mongoose.connect(URI, { dbName: DB });
 const db = mongoose.connection.db;
-if (RESET) {
+const DEMO_EMAIL = new RegExp(`${DOMAIN.replace(/\./g, '\\.')}$`);
+if (RESET || REMOVE) {
   for (const c of await db.listCollections().toArray()) if (c.name.startsWith('dms_')) await db.dropCollection(c.name);
-  await User.deleteMany({ email: new RegExp(`${DOMAIN.replace('.', '\\.')}$`) });
-  console.log('Reset: dms_* collections and demo users removed.');
+  await User.deleteMany({ email: DEMO_EMAIL });
+  console.log(`Removed from "${DB}": all dms_* collections and the ${DOMAIN} users.`);
+  if (REMOVE) { await mongoose.disconnect(); process.exit(0); }
 }
-if (await db.collection('dms_locations').countDocuments()) { console.error('Demo data already present. Re-run with --reset to rebuild it.'); await mongoose.disconnect(); process.exit(1); }
+if (await db.collection('dms_locations').countDocuments()) {
+  console.error(LIVE ? 'Distributor data already exists in this database; nothing was changed.' : 'Demo data already present. Re-run with --reset to rebuild it.');
+  await mongoose.disconnect(); process.exit(1);
+}
+if (LIVE && await User.exists({ email: DEMO_EMAIL })) {
+  console.error(`Old ${DOMAIN} users exist (an earlier run stopped half-way). Run with --live --remove --confirm=${DB} first.`);
+  await mongoose.disconnect(); process.exit(1);
+}
+console.log(`Seeding demo Distributor data into "${DB}"${LIVE ? ' (LIVE server database)' : ''}…`);
 
 const t0All = Date.now();
 await ensureIndexes();
-const hash = await User.hashPassword(PASSWORD);
+// On a server the seeding admin never gets a usable password (random, never printed) and is deactivated at the end.
+const hash = await User.hashPassword(LIVE ? crypto.randomBytes(32).toString('base64url') : PASSWORD);
 const adminUser = await User.create({ email: `dms.admin${DOMAIN}`, password: hash, firstName: 'DMS', lastName: 'Admin', phone: '9000000100', role: 'MASTER_ADMIN', isActive: true });
 const sign = (u) => jwt.sign({ userId: u._id }, env.jwtAccessSecret, { expiresIn: '12h' });
 const ADMIN = sign(adminUser);
@@ -604,5 +639,11 @@ const counts = {};
 for (const c of (await db.listCollections().toArray()).map((x) => x.name).filter((n) => n.startsWith('dms_')).sort()) counts[c] = await db.collection(c).countDocuments();
 console.log('\nSeed complete in', Math.round((Date.now() - t0All) / 1000), 's. Record counts:');
 console.table(counts);
-console.log(`Logins (password ${PASSWORD}): admin dms.admin${DOMAIN} · HQ ${USER.ho.loginId} · Agra ${USER.agra.loginId} · Krishna Mobiles ${USER.kma.loginId}  (e-mail <key>${DOMAIN} also works)`);
+if (LIVE) {
+  await User.updateOne({ _id: adminUser._id }, { $set: { isActive: false } });
+  console.log('\nDemo logins (password: the DMS_SEED_PASSWORD you set). Full access: sign in with your own Haion Master Admin account.');
+  console.table(Object.fromEntries(Object.entries(USER).map(([k, u]) => [k, { loginId: u.loginId, name: u.name, email: `${k}${DOMAIN}` }])));
+} else {
+  console.log(`Logins (password ${PASSWORD}): admin dms.admin${DOMAIN} · HQ ${USER.ho.loginId} · Agra ${USER.agra.loginId} · Krishna Mobiles ${USER.kma.loginId}  (e-mail <key>${DOMAIN} also works)`);
+}
 await mongoose.disconnect();
