@@ -256,3 +256,6 @@
 
 .dms-btn.disabled { opacity: .55; pointer-events: none; }
 .dms-checklist .dms-perm-tools { justify-content: flex-start; }
+
+.dms-table thead tr.dms-group-row th { text-align: center; border-bottom: 1px solid rgba(255,255,255,.35); }
+.dms-check-head { background: #337ab7; color: #fff; font-weight: 700; padding: 6px 8px; font-size: 12px; }

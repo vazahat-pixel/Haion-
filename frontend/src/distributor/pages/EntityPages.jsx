@@ -43,7 +43,7 @@ function FilterField({ fd, value, onChange }) {
 }
 
 /** mode: all | mine | approval */
-export function EntityList({ mode = 'all', type: typeProp, title: titleProp, extraToolbar }) {
+export function EntityList({ mode = 'all', type: typeProp, title: titleProp, extraToolbar, goFirst: goFirstProp, filterNames, filterLabels: filterLabelsProp, createdRange, noAdd, statusLabel }) {
   const params = useParams();
   const type = typeProp || params.type;
   const { data: sc } = useSchemas();
@@ -51,6 +51,7 @@ export function EntityList({ mode = 'all', type: typeProp, title: titleProp, ext
   const list = useListState();
   const [filters, setFilters] = useState({});
   const [draft, setDraft] = useState({});
+  const [went, setWent] = useState(false); // filter-first pages load after GO / Show
   const q = useMemo(() => {
     const o = { ...list.params };
     if (mode === 'mine') o.view = 'mine';
@@ -58,13 +59,15 @@ export function EntityList({ mode = 'all', type: typeProp, title: titleProp, ext
     for (const [k, v] of Object.entries(filters)) if (v !== '' && v != null) o[k] = v;
     return o;
   }, [list.params, mode, filters]);
-  const { data, isFetching, error } = useDmsQuery(`ent-${type}-${mode}`, `/entities/${type}`, q, { enabled: Boolean(cfg) });
+  const goFirst = goFirstProp ?? cfg?.goFirst;
+  const { data, isFetching, error } = useDmsQuery(`ent-${type}-${mode}`, `/entities/${type}`, q, { enabled: Boolean(cfg) && (!goFirst || went) });
   if (!sc) return <div className="dms-loading">Loading…</div>;
   if (!cfg) return <Navigate to="/distributor/home" replace />;
   const base = `/distributor/${ROUTE_BASE[mode]}/${type}`;
-  const filterFields = cfg.filters.map((n) => cfg.fields.find((f) => f.n === n)).filter(Boolean);
+  const filterFields = (filterNames || cfg.filters).map((n) => cfg.fields.find((f) => f.n === n)).filter(Boolean);
+  const fl = { ...(cfg.filterLabels || {}), ...(filterLabelsProp || {}) };
   const editable = !cfg.noEdit && mode !== 'approval';
-  const canAdd = !cfg.noCreate && mode !== 'approval';
+  const canAdd = !cfg.noCreate && mode !== 'approval' && !noAdd;
   const view = cfg.modeCols?.[mode] || {}; // per-mode list columns (e.g. approval queues)
   const actionCol = view.actionCol || cfg.actionCol;
   const viewTo = (r) => `/distributor/e/${type}/${r._id}${mode === 'mine' ? '?m=1' : ''}`;
@@ -83,9 +86,10 @@ export function EntityList({ mode = 'all', type: typeProp, title: titleProp, ext
   const columns = [
     ...(cfg.snoLabel === null ? [] : [{ key: '#', label: cfg.snoLabel || 'S.No' }]),
     ...(view.cols || cfg.cols).map((c) => ({
+      ...(cfg.linkCol === c ? { linkTo: true } : {}),
       key: c, label: view.colLabels?.[c] || cfg.colLabels?.[c] || (c === 'docNo' ? cfg.docLabel || BUILTIN.docNo : BUILTIN[c] || cfg.fields.find((f) => f.n === c)?.label || c),
       text: (r) => { const v = r.data?.[c]; return c === 'docNo' ? r.docNo : c === 'status' ? r.status : c === 'createdAt' ? fmt.date(r.createdAt) : c === 'createdByName' ? r.createdByName : r.data?.[`${c}_label`] || (v ?? ''); },
-      render: (r) => cellValue(cfg, r, c),
+      render: (r) => (cfg.linkCol === c ? <Link to={viewTo(r)}>{cellValue(cfg, r, c)}</Link> : cellValue(cfg, r, c)),
     })),
     ...(actionCols[actionCol] && actionCol !== 'view+edit' ? actionCols[actionCol] : [...actionCols.view, ...actionCols.edit]),
     ...(type === 'salary' ? [{ key: 'pr', label: 'Pay Slip', sortable: false, align: 'c', render: (r) => <a className="dms-icon-btn" href={`/distributor/print/payslip/${r._id}`} target="_blank" rel="noreferrer">Print</a> }] : []),
@@ -95,20 +99,25 @@ export function EntityList({ mode = 'all', type: typeProp, title: titleProp, ext
     <>
       <PageTitle icon={FileText}>{titleProp || cfg.titles?.[mode] || cfg.title}</PageTitle>
       {cfg.formWithList && canAdd && <EntityForm mode={mode} inline typeProp={type} />}
+      {cfg.formOnly?.includes(mode) ? null : (<>
       {error && <Alert>{apiError(error).message}</Alert>}
-      {(filterFields.length > 0 || cfg.statusFilter || dateField) && (
-        <form className="dms-filter" onSubmit={(e) => { e.preventDefault(); const f = {}; for (const [k, v] of Object.entries(draft)) if (v) f[k] = v; setFilters(f); list.setFilters({}); }}>
-          {filterFields.map((fd) => <div key={fd.n}><label className="dms-label">{cfg.filterLabels?.[fd.n] || fd.label}</label><FilterField fd={fd} value={draft[`f_${fd.n}`]} onChange={(v) => setDraft({ ...draft, [`f_${fd.n}`]: v })} /></div>)}
-          {cfg.statusFilter && <div><label className="dms-label">{cfg.filterLabels?.status || 'Status'}</label><Select placeholder="All" value={draft.status || ''} options={cfg.statusFilter} onChange={(e) => setDraft({ ...draft, status: e.target.value })} /></div>}
+      {(filterFields.length > 0 || cfg.statusFilter || dateField || cfg.byFilter || createdRange || goFirst) && (
+        <form className="dms-filter" onSubmit={(e) => { e.preventDefault(); const f = {}; for (const [k, v] of Object.entries(draft)) if (v) f[k] = v; setFilters(f); list.setFilters({}); setWent(true); }}>
+          {filterFields.map((fd) => <div key={fd.n}><label className="dms-label">{fl[fd.n] || fd.label}</label><FilterField fd={fd} value={draft[`f_${fd.n}`]} onChange={(v) => setDraft({ ...draft, [`f_${fd.n}`]: v })} /></div>)}
+          {cfg.statusFilter && <div><label className="dms-label">{statusLabel || fl.status || 'Status'}</label><Select placeholder="All" value={draft.status || ''} options={cfg.statusFilter} onChange={(e) => setDraft({ ...draft, status: e.target.value })} /></div>}
           {dateField && <><div><label className="dms-label">{cfg.dateLabels?.[0] || 'From Date'}</label><Input type="date" value={draft.from || ''} onChange={(e) => setDraft({ ...draft, from: e.target.value })} /></div>
             <div><label className="dms-label">{cfg.dateLabels?.[1] || 'To Date'}</label><Input type="date" value={draft.to || ''} onChange={(e) => setDraft({ ...draft, to: e.target.value })} /></div></>}
-          <div style={{ minWidth: 0 }}><button type="submit" className="dms-btn">GO</button></div>
+          {cfg.byFilter && <div><label className="dms-label">{cfg.byFilter}</label><Input value={draft.by || ''} onChange={(e) => setDraft({ ...draft, by: e.target.value })} /></div>}
+          {createdRange && <><div><label className="dms-label">From Date</label><Input type="date" value={draft.cfrom || ''} onChange={(e) => setDraft({ ...draft, cfrom: e.target.value })} /></div>
+            <div><label className="dms-label">To Date</label><Input type="date" value={draft.cto || ''} onChange={(e) => setDraft({ ...draft, cto: e.target.value })} /></div></>}
+          <div style={{ minWidth: 0 }}><button type="submit" className="dms-btn">{cfg.goLabel || 'GO'}</button></div>
         </form>
       )}
       <Toolbar>{extraToolbar}{canAdd && !cfg.formWithList && (cfg.addButtons
         ? cfg.addButtons.map((b) => <Btn key={b.label} to={`${base}/new?${new URLSearchParams(b.q)}`}>{b.label}</Btn>)
         : <Btn to={`${base}/new`}>{cfg.addLabel || 'Add New'}</Btn>)}</Toolbar>
-      <DataTable columns={columns} rows={data?.data} total={data?.pagination?.total ?? 0} loading={isFetching && !data} {...list.tableProps} />
+      {(!goFirst || went) && <DataTable columns={columns} rows={data?.data} total={data?.pagination?.total ?? 0} loading={isFetching && !data} {...list.tableProps} />}
+      </>)}
     </>
   );
 }
@@ -124,6 +133,47 @@ function MultiRef({ fd, value, onChange }) {
     <select multiple style={{ height: 110 }} value={Array.isArray(value) ? value : []} onChange={(e) => onChange([...e.target.selectedOptions].map((o) => o.value))}>
       {(data?.data || []).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
+  );
+}
+
+/** Bulk upload (reference "Upload Lead"): Excel / CSV with one column per form field; all rows or none are saved. */
+function BulkUpload({ type, cfg, onDone }) {
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState([]);
+  const [msg, setMsg] = useState('');
+  const [errs, setErrs] = useState([]);
+  const cols = cfg.fields.filter((x) => x.form !== false && !['file', 'lines', 'grid', 'ref', 'multiref'].includes(x.t));
+  const up = useDmsMutation((b) => dms.post(`/entities/${type}/bulk`, b), { onSuccess: () => onDone() });
+  const onFile = async (file) => {
+    setMsg(''); setErrs([]); setRows([]);
+    if (!file) return;
+    try {
+      const { readSheet } = await import('../excel');
+      const raw = await readSheet(file);
+      // header cells may be the field name or its label
+      setRows(raw.map((r) => Object.fromEntries(cols.map((c) => [c.n, r[c.n] ?? r[c.label] ?? r[c.l] ?? '']).filter(([, v]) => v !== '' && v != null).map(([k, v]) => [k, String(v)]))));
+    } catch (e) { setMsg(e.message); }
+  };
+  const template = async () => {
+    const { downloadTemplate } = await import('../excel');
+    downloadTemplate(`${type}_upload_template`, cols.map((c) => c.n), [cols.map((c) => (c.opts ? c.opts[0] : ''))], [...cols.filter((c) => c.opts).map((c) => `${c.n}: ${c.opts.join(', ')}`), 'Every row must be valid; otherwise nothing is saved.']);
+  };
+  return (
+    <div className="dms-toolbar" style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+      <button type="button" className="dms-btn" onClick={() => setOpen(!open)}>{`Upload ${cfg.label.replace(' Details', '')}`}</button>
+      {open && (
+        <div className="dms-panel" style={{ width: '100%', marginTop: 8 }}><div className="hd">{`Upload ${cfg.label.replace(' Details', '')}`}</div><div className="bd">
+          {msg && <div className="dms-alert">{msg}</div>}
+          {errs.length > 0 && <div className="dms-alert">{errs.map((e) => <div key={e}>{e}</div>)}</div>}
+          <div className="dms-filter" style={{ alignItems: 'flex-end' }}>
+            <div><label className="dms-label" htmlFor="bulk-file">Attach File (.xlsx / .csv)</label><input id="bulk-file" type="file" accept=".xlsx,.csv" onChange={(e) => onFile(e.target.files?.[0])} /></div>
+            <button type="button" className="dms-btn default" onClick={template}>Download template</button>
+            <button type="button" className="dms-btn" disabled={!rows.length || up.isPending} onClick={() => { setMsg(''); setErrs([]); up.mutate({ rows }, { onError: (err) => { const a = apiError(err); setMsg(a.message); setErrs(a.fieldErrors.rows || []); } }); }}>Upload</button>
+          </div>
+          {rows.length > 0 && <p className="dms-muted">{rows.length} row(s) read.</p>}
+        </div></div>
+      )}
+    </div>
   );
 }
 
@@ -223,6 +273,7 @@ export function EntityForm({ mode = 'all', inline = false, typeProp }) {
   };
   return (
     <>
+      {!inline && cfg.bulk && !isEdit && <BulkUpload type={type} cfg={cfg} onDone={() => nav(back)} />}
       {!inline && <PageTitle icon={FileText}>{isEdit ? (cfg.editTitle || `Edit ${cfg.label}`) : cfg.addButtons && sp.get('type') ? `${cfg.addTitle} ${sp.get('type')}` : (cfg.addTitle || `Add ${cfg.label}`)}</PageTitle>}
       <Alert>{msg}</Alert>
       <form onSubmit={submit}>
@@ -344,7 +395,20 @@ export function MyProfile() {
   if (isLoading) return <div className="dms-loading">Loading…</div>;
   const row = data?.data?.[0];
   if (!row) return <><PageTitle icon={FileText}>My Profile</PageTitle><Alert>No employee record is linked to your login ID. Ask HR to create one in Employee Master with your Login ID.</Alert></>;
-  return <EntityView typeProp="employee" idProp={row._id} />;
+  const d = row.data || {};
+  // reference "My Profile" fields
+  const pairs = [
+    ['Employee Name', d.name], ['Email', d.email], ['Company Name', d.location_label || ''], ['Reporting manager', d.manager_label || ''],
+    ['Date of Birth', d.dob ? fmt.dmy(d.dob) : ''], ['Anniversary Date', d.marriageDate ? fmt.dmy(d.marriageDate) : ''], ['Contact No.', d.phone], ['Address', d.address],
+    ['Date of Joining', d.joiningDate ? fmt.dmy(d.joiningDate) : ''], ['EMP Code', row.docNo], ['Alternate Email', d.email2 || ''], ['Alternate Number', d.phone2 || ''],
+    ['Password', <Link key="pw" to="/distributor/change-password">Change Password</Link>], ['', ''],
+  ];
+  return (
+    <>
+      <PageTitle icon={FileText}>My Profile</PageTitle>
+      <Panel title={d.name}><KV pairs={pairs} /></Panel>
+    </>
+  );
 }
 
 export { Link };

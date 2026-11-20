@@ -62,7 +62,8 @@ export function PoForm({ vendor }) {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const nav = useNavigate();
-  const [v, setV] = useState({ fromLocation: '', toLocation: '', toVendor: '', salesExecutive: '', currency: 'INR', deliveryAddress: '', paymentTerms: '', remark: '' });
+  const [v, setV] = useState({ fromLocation: '', toLocation: '', toVendor: '', salesExecutive: '', currency: 'INR', deliveryAddress: '', paymentTerms: '', remark: '', vendorTaxType: '', vendorTaxPer: '', vendorInvoiceNo: '', vendorInvoiceDate: '' });
+  const { data: taxes } = useDmsQuery('othertax-active', '/masters/othertax', { status: 'Active', perPage: 200 }, { enabled: Boolean(vendor) });
   const [lines, setLines] = useState([emptyLine()]);
   const [errors, setErrors] = useState({});
   const [msg, setMsg] = useState('');
@@ -122,6 +123,21 @@ export function PoForm({ vendor }) {
         </div>
         <LineItems lines={lines} setLines={setLines} products={lk?.products || []} cols={vendor ? ['delivery', 'stock'] : ['discount', 'warranty', 'delivery']} colLabels={vendor ? { price: 'Price ()', stock: 'Available Stock', delivery: 'Delivery Schedule' } : { discount: 'Discount' }} preview={preview} stockOf={ctx.stockOf} errors={errors} />
         <TotalsBox totals={preview.totals} />
+        {vendor && (() => {
+          // reference vendor PO: Tax Type (Tax Master) → Tax %, Tax Total and Grand Total; vendor's Invoice No. / Date
+          const taxable = (preview.totals?.subTotal || 0) - (preview.totals?.discount || 0);
+          const taxTotal = Math.round(taxable * (Number(v.vendorTaxPer) || 0)) / 100;
+          return (
+            <div className="dms-form two" style={{ marginTop: 12 }}>
+              <Field label="Tax Type"><Select value={v.vendorTaxType} options={(taxes?.data || []).map((t) => t.name)} onChange={(e) => { const t = (taxes?.data || []).find((x) => x.name === e.target.value); setV({ ...v, vendorTaxType: e.target.value, vendorTaxPer: t ? String(t.attrs?.percent ?? '') : v.vendorTaxPer }); }} /></Field>
+              <Field label="Tax %" error={errors.vendorTaxPer}><Input type="number" min="0" max="100" step="any" value={v.vendorTaxPer} onChange={set('vendorTaxPer')} /></Field>
+              <Field label="Tax Total"><Input readOnly value={fmt.money(taxTotal)} /></Field>
+              <Field label="Grand Total"><Input readOnly value={fmt.money((preview.totals?.grand || 0) + taxTotal)} /></Field>
+              <Field label="Invoice No."><Input value={v.vendorInvoiceNo} onChange={set('vendorInvoiceNo')} /></Field>
+              <Field label="Invoice Date"><Input type="date" value={v.vendorInvoiceDate} onChange={set('vendorInvoiceDate')} /></Field>
+            </div>
+          );
+        })()}
         <div className="dms-form" style={{ marginTop: 12 }}>
           <Field label="Delivery Address" required><TextArea required value={v.deliveryAddress} onChange={set('deliveryAddress')} /></Field>
           <Field label="Remark"><TextArea value={v.remark} onChange={set('remark')} /></Field>

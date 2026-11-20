@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tag, ShoppingCart, ShoppingBag, Briefcase, Boxes, Scale } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { useDmsQuery, useLookups, fmt } from '../api';
 import { locOpt } from '../components/ui';
 
@@ -24,8 +24,10 @@ function ChartBox({ title, children }) {
 export default function HomePage() {
   const [txn, setTxn] = useState('both');
   const [location, setLocation] = useState('');
+  const [applied, setApplied] = useState({ txn: 'both', location: '' });
+  const [chart, setChart] = useState('Plain');
   const { data: lk } = useLookups();
-  const { data, isLoading } = useDmsQuery('dash', '/reports/dashboard', { txn, ...(location ? { location } : {}) });
+  const { data, isLoading } = useDmsQuery('dash', '/reports/dashboard', { txn: applied.txn, ...(applied.location ? { location: applied.location } : {}) });
   const d = data?.data;
   const t = d?.tiles;
   return (
@@ -38,6 +40,7 @@ export default function HomePage() {
           <option value="">Select Location</option>
           {(lk?.data?.locations || []).map((l) => { const o = locOpt(l); return <option key={o.value} value={o.value}>{o.label}</option>; })}
         </select>
+        <button type="button" className="dms-btn" onClick={() => setApplied({ txn, location })}>GO</button>
       </div>
       {isLoading || !t ? <div className="dms-loading">Loading…</div> : (
         <>
@@ -63,9 +66,20 @@ export default function HomePage() {
               <PieChart><Pie data={d.invoiceStatus} dataKey="count" nameKey="status" outerRadius={90} label>{d.invoiceStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /><Legend /></PieChart>
             </ChartBox>
           </div>
+          <div className="dms-chart" style={{ marginBottom: 14 }}>
+            <table className="dms-table"><thead><tr><th colSpan={2} className="c">Current Month PO Status</th></tr><tr><th>PO Status</th><th>Count</th></tr></thead>
+              <tbody>{(d.poStatus || []).length ? d.poStatus.map((x) => <tr key={x.status}><td>{x.status}</td><td className="r">{x.count}</td></tr>) : <tr><td colSpan={2} className="c">No PO this month</td></tr>}</tbody></table>
+          </div>
           <div className="dms-chart" style={{ marginBottom: 14 }}><h4>Last 12 Months Sale</h4>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={d.monthly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
+            <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginBottom: 6 }}>{['Plain', 'Inverted', 'Polar'].map((k) => <button key={k} type="button" className={`dms-btn sm ${chart === k ? '' : 'default'}`} onClick={() => setChart(k)}>{k}</button>)}</div>
+            <ResponsiveContainer width="100%" height={chart === 'Polar' ? 320 : 260}>
+              {chart === 'Polar' ? (
+                <RadarChart data={d.monthly}><PolarGrid /><PolarAngleAxis dataKey="month" /><PolarRadiusAxis tickFormatter={fmt.short} /><Tooltip /><Radar dataKey="amount" name="Amount (₹)" stroke="#17a2b8" fill="#17a2b8" fillOpacity={0.5} /></RadarChart>
+              ) : chart === 'Inverted' ? (
+                <BarChart data={d.monthly} layout="vertical"><CartesianGrid strokeDasharray="3 3" /><XAxis type="number" tickFormatter={fmt.short} /><YAxis type="category" dataKey="month" width={70} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
+              ) : (
+                <BarChart data={d.monthly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
+              )}
             </ResponsiveContainer>
           </div>
         </>

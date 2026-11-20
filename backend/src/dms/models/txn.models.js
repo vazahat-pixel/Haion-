@@ -98,6 +98,12 @@ const poSchema = new Schema(
     deliveryAddress: String,
     paymentTerms: String,
     remark: String,
+    // vendor PO (reference "Add New Vendor Purchase Order"): one tax on the order, the vendor's invoice reference
+    vendorTaxType: String,
+    vendorTaxPer: { type: Number, default: 0 },
+    vendorTaxTotal: { type: Number, default: 0 },
+    vendorInvoiceNo: String,
+    vendorInvoiceDate: Date,
     status: { type: String, enum: PO_STATUS, default: 'PFA', index: true },
     actions: [actionSchema],
     invoices: [{ type: Schema.Types.ObjectId, ref: 'DmsInvoice' }],

@@ -97,6 +97,18 @@ async function buildPoPayload(req, body) {
     if (!se) throw new DmsError('Sales executive not found');
     salesExecutiveName = `${se.displayName} | ${se.loginId}`;
   }
+  let vendorTax = {};
+  if (poType === 'VENDOR') {
+    const per = Number(body.vendorTaxPer || 0);
+    if (!(per >= 0 && per <= 100)) throw new DmsError('Tax % must be between 0 and 100', 422, { vendorTaxPer: ['0 to 100'] });
+    const taxable = (totals.subTotal || 0) - (totals.totalDiscount || 0);
+    const taxTotal = Math.round(taxable * per) / 100;
+    vendorTax = {
+      vendorTaxType: body.vendorTaxType ? String(body.vendorTaxType).slice(0, 60) : '', vendorTaxPer: per, vendorTaxTotal: taxTotal,
+      vendorInvoiceNo: body.vendorInvoiceNo ? String(body.vendorInvoiceNo).slice(0, 60) : '', vendorInvoiceDate: body.vendorInvoiceDate ? new Date(body.vendorInvoiceDate) : undefined,
+    };
+    totals.grandTotal = Math.round(((totals.grandTotal || 0) + taxTotal) * 100) / 100;
+  }
   return {
     poType,
     from: from.party,
@@ -110,6 +122,7 @@ async function buildPoPayload(req, body) {
     deliveryAddress: body.deliveryAddress || from.doc.dispatchAddress || from.doc.billingAddress,
     paymentTerms: body.paymentTerms,
     remark: body.remark,
+    ...vendorTax,
   };
 }
 

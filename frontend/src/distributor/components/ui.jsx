@@ -112,7 +112,7 @@ export function Modal({ open, title, onClose, children, footer }) {
  * Server mode: pass `total`, `page`, `perPage`, `onPage`, `onPerPage`, `search`, `onSearch`.
  * Client mode: omit `total` — rows are searched/sorted/paged locally.
  */
-export function DataTable({ columns, rows = [], loading, total, page = 1, perPage = 10, onPage, onPerPage, search = '', onSearch, rowKey = '_id', emptyText = 'No data available in table' }) {
+export function DataTable({ columns, rows = [], loading, total, page = 1, perPage = 10, onPage, onPerPage, search = '', onSearch, rowKey = '_id', emptyText = 'No data available in table', groups }) {
   const server = total !== undefined;
   const [lp, setLp] = useState(1);
   const [lpp, setLpp] = useState(10);
@@ -170,7 +170,7 @@ export function DataTable({ columns, rows = [], loading, total, page = 1, perPag
       </div>
       <div className="dms-table-wrap">
         <table className="dms-table">
-          <thead><tr>
+          <thead>{groups && <tr className="dms-group-row">{groups.map((g, i) => <th key={i} colSpan={g.span} className="c">{g.label}</th>)}</tr>}<tr>
             {columns.map((c) => (
               <th key={c.key} className={c.sortable === false ? '' : 'sortable'} style={c.width ? { width: c.width } : undefined}
                 onClick={() => c.sortable !== false && setSort((s) => ({ key: c.key, dir: s?.key === c.key && s.dir === 'asc' ? 'desc' : 'asc' }))}>

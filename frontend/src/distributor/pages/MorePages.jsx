@@ -36,7 +36,6 @@ export function AttendancePage() {
           <Btn variant="danger" disabled={punch.isPending || !rec || Boolean(rec?.outAt)} onClick={() => go('out')}>Logout</Btn>
         </div>
       </Panel>
-      <EntityList mode="mine" type="attendance" title="My Attendance" />
     </>
   );
 }
@@ -86,11 +85,11 @@ export function MyTeams() {
 
 export function RpPage() {
   const { type } = useParams();
-  if (type === 'attendance') return <EntityList type="attendance" title="Attendance Report" />;
-  if (type === 'employee') return <EntityList type="employee" title="Employee Details Report" />;
-  if (type === 'leave') return <EntityList type="leave" title="Leave Report" />;
-  if (type === 'salary') return <EntityList type="salary" title="Salary Report" />;
-  if (type === 'slip') return <EntityList type="salary" title="Salary Slip" />;
+  if (type === 'attendance') return <EntityList type="attendance" title="Attendance Report" goFirst noAdd />;
+  if (type === 'employee') return <EntityList type="employee" title="Employee Details Report" goFirst noAdd filterNames={['name']} filterLabels={{ name: 'Employee Name' }} />;
+  if (type === 'leave') return <EntityList type="leave" title="Leave Report" goFirst noAdd statusLabel="Leave Status" />;
+  if (type === 'salary') return <EntityList type="salary" title="Salary Report" goFirst noAdd filterNames={[]} createdRange />;
+  if (type === 'slip') return <EntityList type="salary" title="Salary Slip" goFirst noAdd filterNames={[]} createdRange />;
   return <Navigate to="/distributor/home" replace />;
 }
 
@@ -131,6 +130,7 @@ export function PrintPayslip() {
 /* ───────── Sale Force ───────── */
 export function BeatScheduler() {
   const [rows, setRows] = useState([]);
+  const [check, setCheck] = useState(false);
   const [msg, setMsg] = useState('');
   const [errs, setErrs] = useState([]);
   const up = useDmsMutation((b) => dms.post('/entities/beat-upload', b), { onSuccess: () => setRows([]) });
@@ -142,13 +142,13 @@ export function BeatScheduler() {
       {errs.length > 0 && <Alert>{errs.map((e) => <div key={e}>{e}</div>)}</Alert>}
       <form onSubmit={(e) => { e.preventDefault(); setMsg(''); setErrs([]); up.mutate({ rows }, { onError: (err) => { const a = apiError(err); setMsg(a.message); setErrs(a.fieldErrors.rows || []); } }); }}>
         <div className="dms-form">
-          <Field label="Attach File (.xlsx / .csv)" required><Input type="file" accept=".xlsx,.csv" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
+          <Field label="Attach File" required><Input type="file" accept=".xlsx,.csv" required aria-label="Browse…" onChange={(e) => onFile(e.target.files?.[0])} /></Field>
           <div><label className="dms-label">&nbsp;</label><Btn variant="default" onClick={() => downloadTemplate('beat_scheduler_template', ['loginId', 'date', 'task', 'area'], [['DEUSRDLUP6', '2026-12-01', 'Dealer Visit', 'Agra - Market Road']], ['date as YYYY-MM-DD', 'task: Collection, Dealer Visit, Feedback or Sale Order', 'The upload is rejected completely if any row is invalid.'])}>Download template</Btn></div>
         </div>
         {rows.length > 0 && <p style={{ textAlign: 'center' }}>{rows.length} row(s) ready. Tasks: Collection, Dealer Visit, Feedback, Sale Order.</p>}
-        <div className="dms-actions"><button type="submit" className="dms-btn" disabled={!rows.length || up.isPending}>Upload</button></div>
+        <div className="dms-actions"><button type="submit" className="dms-btn" disabled={!rows.length || up.isPending}>Upload</button><button type="button" className="dms-btn" onClick={() => setCheck(!check)}>Check Beat Scheduled</button></div>
       </form>
-      <EntityList type="beat" title="Check Beat Scheduled" />
+      {check && <EntityList type="beat" title="Beat Scheduled" noAdd />}
     </>
   );
 }
@@ -204,7 +204,7 @@ export function DashLead() {
       <PageTitle icon={Gauge}>Lead Dashboard</PageTitle>
       <FilterBar opts={(x) => x.options || []} onGo={setP} defs={[{ name: 'from', label: 'From Date', type: 'date' }, { name: 'to', label: 'To Date', type: 'date' }]} />
       <h4 style={{ margin: '10px 0' }}>Lead Conversion</h4>
-      <DataTable rows={d?.conversion || []} rowKey="area" columns={[{ key: '#', label: 'S.No' }, { key: 'area', label: 'Area' }, { key: 'lead', label: 'Lead', align: 'r' }, { key: 'quote', label: 'Quote', align: 'r' }, { key: 'quotePct', label: 'Quote %', align: 'r' }, { key: 'order', label: 'Sale Order', align: 'r' }, { key: 'orderPct', label: 'Sale Order %', align: 'r' }]} />
+      <DataTable rows={d?.conversion || []} rowKey="area" groups={[{ label: 'Lead Conversion', span: 7 }]} columns={[{ key: '#', label: 'S.No' }, { key: 'area', label: 'Area' }, { key: 'lead', label: 'Lead', align: 'r' }, { key: 'quote', label: 'Quote', align: 'r' }, { key: 'quotePct', label: 'Quote %', align: 'r' }, { key: 'order', label: 'Sale Order', align: 'r' }, { key: 'orderPct', label: 'Sale Order %', align: 'r' }]} />
       <h4 style={{ margin: '14px 0 10px' }}>Upcoming Task</h4>
       <DataTable rows={d?.upcoming || []} columns={[{ key: '#', label: 'Sno' }, { key: 'lead', label: 'Lead' }, { key: 'party', label: 'Party Name' }, { key: 'priority', label: 'Priority' }, { key: 'status', label: 'Status' }, { key: 'date', label: 'Follow-up Date' }]} />
       <h4 style={{ margin: '14px 0 10px' }}>Top 10 Lead Conversion Ratio</h4>
@@ -225,9 +225,9 @@ export function CollectionReport() {
       <PageTitle icon={FileBarChart}>Collection Sheet</PageTitle>
       <FilterBar opts={opts} onGo={setP} initial={{ date: fmt.date(new Date()) }} defs={[{ name: 'date', label: 'Date', type: 'date', required: true }, { name: 'location', label: 'Location Name', optionsFrom: 'locations' }]} />
       {error && <Alert>{apiError(error).message}</Alert>}
+      <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => { if (!p) setP({ date: fmt.date(new Date()) }); setShowPrev(!showPrev); }}>View Previous Collection</Btn></div>
       {d && (
         <>
-          <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => setShowPrev(!showPrev)}>View Previous Collection</Btn></div>
           <DataTable rows={d.rows} columns={[{ key: '#', label: 'S.No' }, { key: 'docNo', label: 'Receipt No' }, { key: 'f', label: 'From', render: (r) => r.fromLocation?.name, text: (r) => r.fromLocation?.name }, { key: 't', label: 'To', render: (r) => r.toLocation?.name, text: (r) => r.toLocation?.name }, { key: 'payMode', label: 'Mode' }, { key: 'receivedAmount', label: 'Collected', align: 'r', render: (r) => fmt.money(r.receivedAmount) }]} />
           <p style={{ textAlign: 'right' }}><b>Total collection: {fmt.money(d.total)}</b></p>
           {showPrev && <DataTable rows={d.previous} rowKey="date" columns={[{ key: 'date', label: 'Date' }, { key: 'count', label: 'Receipts', align: 'r' }, { key: 'amount', label: 'Amount', align: 'r', render: (r) => fmt.money(r.amount) }]} />}
@@ -249,11 +249,11 @@ export const PriceDropReport = () => (
       { key: 'oldPrice', label: 'Old Price', align: 'r' }, { key: 'newPrice', label: 'New Price', align: 'r' }, { key: 'change', label: 'Change', align: 'r' }, { key: 'percent', label: '%', align: 'r' }]} />
 );
 export const PartyMasterReport = () => (
-  <Report title="Party Master Report" url="/x/party-master" name="party_master" requireGo={false} filters={[{ name: 'location', label: 'Party Name', optionsFrom: 'locations' }]}
+  <Report title="Party Master Report" url="/x/party-master" name="party_master" requireGo={false} filters={[{ name: 'location', label: 'Party Name', optionsFrom: 'locations' }, { name: 'mapped', label: 'Location Name', optionsFrom: 'allLocations' }]}
     columns={[{ key: '#', label: 'SNo.' }, { key: 'party', label: 'Party Name' }, { key: 'mapped', label: 'Mapped Location Name' }, { key: 'status', label: 'Status' }]} />
 );
 export const IsdReport = () => (
-  <Report title="ISP Report" url="/x/isd" name="isd" filters={[{ name: 'from', label: 'From Date', type: 'date' }, { name: 'to', label: 'To Date', type: 'date' }, { name: 'location', label: 'Location', optionsFrom: 'locations' }]}
+  <Report title="ISP Report" url="/x/isd" name="isd" headersBeforeGo filters={[{ name: 'from', label: 'From Date', type: 'date' }, { name: 'to', label: 'To Date', type: 'date' }, { name: 'location', label: 'Location', optionsFrom: 'locations' }]}
     columns={[{ key: '#', label: 'S.NO.' }, { key: 'isp', label: 'ISP Name' }, { key: 'serial', label: 'Serial No.' }, { key: 'customer', label: 'Customer Name' }, { key: 'location', label: 'Location' }, { key: 'phone', label: 'Contact No.' },
       { key: 'state', label: 'State' }, { key: 'city', label: 'City' }, { key: 'date', label: 'Entry Date', render: (r) => fmt.date(r.date), text: (r) => fmt.date(r.date) }]} />
 );
@@ -297,7 +297,7 @@ export function SerialActivationUpload() {
   const [res, setRes] = useState(null);
   const up = useDmsMutation((b) => dms.post('/x/serial-activate', b), { onSuccess: (r) => setRes(r.data) });
   const L = lk?.data;
-  const products = (L?.products || []).filter((p) => (!v.category || p.category === v.category) && (!v.brand || p.brand === v.brand));
+  const products = (L?.products || []).filter((p) => (!v.category || p.category === v.category) && (!v.brand || p.brand === v.brand) && (!v.subCategory || String(p.subCategory) === String(v.subCategory)));
   const onFile = async (f) => { setMsg(''); if (!f) return; try { setSerials(await readList(f)); } catch (e) { setMsg(e.message); } };
   return (
     <>
@@ -306,9 +306,10 @@ export function SerialActivationUpload() {
       <form onSubmit={(e) => { e.preventDefault(); setMsg(''); setRes(null); up.mutate({ product: v.product, serials }, { onError: (err) => setMsg(apiError(err).message) }); }}>
         <div className="dms-form">
           <Field label="Product Category"><Select value={v.category} options={(L?.categories || []).map((c) => ({ value: c._id, label: c.name }))} onChange={(e) => setV({ ...v, category: e.target.value, product: '' })} /></Field>
+          <Field label="Sub-Category"><Select value={v.subCategory || ''} options={(L?.subcategories || []).filter((x) => !v.category || String(x.parent) === String(v.category)).map((c) => ({ value: c._id, label: c.name }))} onChange={(e) => setV({ ...v, subCategory: e.target.value, product: '' })} /></Field>
           <Field label="Brand"><Select value={v.brand} options={(L?.brands || []).map((c) => ({ value: c._id, label: c.name }))} onChange={(e) => setV({ ...v, brand: e.target.value, product: '' })} /></Field>
           <Field label="Product" required><Select required value={v.product} options={products.map(prodOpt)} onChange={(e) => setV({ ...v, product: e.target.value })} /></Field>
-          <Field label="Attach File (.xlsx / .csv / .txt, one serial per row)" required><Input type="file" accept=".xlsx,.csv,.txt" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
+          <Field label="Attach File" required><Input type="file" accept=".xlsx,.csv,.txt" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
         </div>
         {serials.length > 0 && <p style={{ textAlign: 'center' }}>{serials.length} serial number(s) in file</p>}
         <div className="dms-actions"><button type="submit" className="dms-btn" disabled={up.isPending || !serials.length}>Upload</button></div>
@@ -331,7 +332,7 @@ export function DeliveryUpload() {
       <Alert>{msg}</Alert>{errs.length > 0 && <Alert>{errs.map((e) => <div key={e}>{e}</div>)}</Alert>}
       <form onSubmit={(e) => { e.preventDefault(); up.mutate({ rows }, { onError: (err) => { const a = apiError(err); setMsg(a.message); setErrs(a.fieldErrors.rows || []); } }); }}>
         <div className="dms-form">
-          <Field label="Attach File (.xlsx / .csv)" required><Input type="file" accept=".xlsx,.csv" required onChange={(e) => onFile(e.target.files?.[0])} /></Field>
+          <Field label="Attach File" required><Input type="file" accept=".xlsx,.csv" required aria-label="Browse…" onChange={(e) => onFile(e.target.files?.[0])} /></Field>
           <div><label className="dms-label">&nbsp;</label><Btn variant="default" onClick={() => downloadTemplate('delivery_matrix_template', ['fromCity', 'toCity', 'category', 'days'], [['Agra', 'Delhi', 'MOBILE', 2]], ['days: whole number of delivery days'])}>Download template</Btn></div>
         </div>
         {rows.length > 0 && <p style={{ textAlign: 'center' }}>{rows.length} row(s) ready</p>}
@@ -367,3 +368,8 @@ export function LocationMapping() {
   );
 }
 export { TextArea };
+
+/** Report Master → Beat Report: beats of a user in a period (reference: From Date, To Date, Select User). */
+export function BeatReport() {
+  return <EntityList type="beat" title="Beat Report" goFirst noAdd filterNames={['assignedTo']} filterLabels={{ assignedTo: 'Select User' }} />;
+}

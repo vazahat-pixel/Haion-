@@ -266,7 +266,7 @@ const REFERENCE_UI = {
       keep('contactPerson', 'Contact Person'), keep('phone', 'Phone', 'tel'), keep('email', 'Email', 'email'), keep('expectedValue', 'Expected Value', 'number'), keep('followUpDate', 'Follow-up Date', 'date'),
     ],
     cols: ['docNo', 'partyName', 'priority', 'createdAt', 'status'], colLabels: { partyName: 'Party Name', createdAt: 'Create Date' }, actionCol: 'action',
-    filters: [], dateField: undefined, addLabel: 'Add Lead', addTitle: 'Add New Lead',
+    filters: [], dateField: undefined, addLabel: 'Add Lead', addTitle: 'Add New Lead', bulk: true,
   },
   quote: {
     fields: [
@@ -295,7 +295,7 @@ const REFERENCE_UI = {
       keep('assignedTo', 'Assigned To', 'ref', { ref: 'profile' }), keep('locations', 'Locations', 'multiref', { ref: 'location' }), keep('remark', 'Remark', 'textarea'),
     ],
     cols: ['name', 'fromDate', 'toDate', 'createdByName', 'createdAt'], colLabels: { fromDate: 'Start Date', toDate: 'End Date', createdAt: 'Entry Date' },
-    snoLabel: '#', actionCol: 'view', dateLabels: ['PJP From', 'PJP To'], addLabel: 'Add PJP', addTitle: 'Add PJP',
+    snoLabel: '#', actionCol: 'none', linkCol: 'name', dateLabels: ['PJP From', 'PJP To'], addLabel: 'Add PJP', addTitle: 'Add PJP',
   },
   expense: {
     fields: [
@@ -322,7 +322,7 @@ const REFERENCE_UI = {
   appfeedback: {
     cols: ['feedbackType', 'subject', 'feedback', 'createdByName', 'createdAt', 'address', 'imageUrl'],
     colLabels: { createdByName: 'Updated By', createdAt: 'Updated Date', address: 'View Location', imageUrl: 'Image' }, snoLabel: 'S.No.', actionCol: 'none',
-    dateLabels: ['Feedback From', 'Feedback To'],
+    dateLabels: ['Feedback From', 'Feedback To'], byFilter: 'Feedback By',
   },
   apptask: {
     fields: [
@@ -434,8 +434,9 @@ const REFERENCE_UI = {
   },
   resign: {
     fields: [f('reason', 'Reason', 'text', { req: 1 }), f('reasonDetails', 'Reason Details', 'textarea', { req: 1, full: 1 }), f('lastWorkingDate', 'Offer Last Working Date', 'date', { req: 1 }), fileF('resignDoc', 'Resign Document')],
-    formWithList: true, submitLabel: 'Request', actionCol: 'view',
+    formWithList: true, formOnly: ['mine'], submitLabel: 'Request', actionCol: 'view',
   },
+  salary: { goFirst: true, goLabel: 'Show', filterLabels: { employee: 'Employee Name' } },
   mydoc: {
     fields: [f('fileName', 'Doc. Name', 'text', { req: 1 }), fileF('fileUrl', 'Attached Document', { req: 1 })],
     colLabels: { fileName: 'File Name', createdByName: 'Enter By', createdAt: 'Enter Date', fileUrl: 'Download' }, actionCol: 'none',

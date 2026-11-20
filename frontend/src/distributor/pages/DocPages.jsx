@@ -72,7 +72,7 @@ export function DocForm() {
   const { kind } = useParams();
   const cfg = DOC_FORMS[kind];
   const nav = useNavigate();
-  const [v, setV] = useState({ from: '', to: '', docType: 'INVOICE', taxType: 'Productwise Tax', currency: 'INR', refNo: '', refDate: '', invoiceDate: '', deliveryAddress: '', remark: '', sourceInvoice: '' });
+  const [v, setV] = useState({ from: '', to: '', docType: 'INVOICE', taxType: 'Productwise Tax', discountType: 'Productwise Discount', billDiscount: '', currency: 'INR', refNo: '', refDate: '', invoiceDate: '', deliveryAddress: '', remark: '', sourceInvoice: '' });
   const [lines, setLines] = useState([emptyLine()]);
   const [errors, setErrors] = useState({});
   const [msg, setMsg] = useState('');
@@ -101,6 +101,17 @@ export function DocForm() {
   };
   const fs = partyState('from'); const ts = cfg?.to === 'none' ? fs : partyState('to');
   const applyTax = !cfg?.noTax && v.taxType !== 'NONE';
+  // Total Discount: spread the bill discount over the lines by value (stored as discount per unit, so the server keeps computing tax)
+  const spreadDiscount = (amount) => {
+    setV((x) => ({ ...x, billDiscount: amount }));
+    const amt = Number(amount) || 0;
+    const value = lines.reduce((n, l) => n + (Number(l.qty) || 0) * (Number(l.price) || 0), 0);
+    setLines((ls) => ls.map((l) => {
+      const q = Number(l.qty) || 0; const lineValue = q * (Number(l.price) || 0);
+      if (!q || !value) return { ...l, discountPerUnit: '' };
+      return { ...l, discountPerUnit: String(Math.round(((amt * lineValue) / value / q) * 100) / 100) };
+    }));
+  };
   const preview = previewTotals(lines, { ...ctx, interState: Boolean(fs && ts && fs !== ts), applyTax, roundOff: cfg?.roundOff });
   const save = useDmsMutation((b) => dms.post('/invoices', b), { onSuccess: (res) => nav(`/distributor/doc/${res.data._id}`) });
   if (!cfg) return <Navigate to="/distributor/home" replace />;
@@ -146,6 +157,7 @@ export function DocForm() {
   const order = cfg.from === 'customer' ? ['to', 'from'] : ['from', 'to'];
   return (
     <>
+      {cfg.listLink && <Toolbar><Btn variant="default" to={cfg.listLink.to}>{cfg.listLink.label}</Btn></Toolbar>}
       <PageTitle icon={FileText}>{cfg.title}</PageTitle>
       <Alert>{msg}</Alert>
       <form onSubmit={submit}>
@@ -157,6 +169,8 @@ export function DocForm() {
             </Field>
           )}
           {cfg.docType && <Field label="Document Type"><Select placeholder={false} value={v.docType} options={[{ value: 'DELIVERY CHALLAN', label: 'Delivery Challan' }, { value: 'INVOICE', label: 'Invoice' }]} onChange={set('docType')} /></Field>}
+          {cfg.discountType && <Field label="Discount Type"><Select placeholder={false} value={v.discountType} options={['Productwise Discount', 'Total Discount']} onChange={(e) => setV({ ...v, discountType: e.target.value })} /></Field>}
+          {cfg.discountType && v.discountType === 'Total Discount' && <Field label="Discount"><Input type="number" min="0" step="any" value={v.billDiscount} onChange={(e) => spreadDiscount(e.target.value)} /></Field>}
           {cfg.taxType && <Field label="Tax Type"><Select placeholder={false} value={v.taxType} options={[{ value: 'NONE', label: 'NONE' }, { value: 'Productwise Tax', label: 'Productwise Tax' }]} onChange={set('taxType')} /></Field>}
           {cfg.currency && <Field label="Currency Type"><Select placeholder={false} value={v.currency} options={['INR', 'USD']} onChange={set('currency')} /></Field>}
           {cfg.ref && <Field label={kind === 'OPENING' ? 'Ref. No.' : 'Invoice No. (vendor / ref)'} required={kind === 'LOCAL_PURCHASE'}><Input required={kind === 'LOCAL_PURCHASE'} value={v.refNo} onChange={set('refNo')} /></Field>}

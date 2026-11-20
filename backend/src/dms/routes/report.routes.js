@@ -4,7 +4,7 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { sendSuccess, sendPaginated } from '../../utils/apiResponse.js';
 import { parsePagination } from '../../utils/pagination.util.js';
 import { DmsInvoice, DmsPurchaseOrder, DmsPayment, DmsStock, DmsStockLedger, DmsLedger } from '../models/txn.models.js';
-import { DmsLocation, DmsProduct } from '../models/master.models.js';
+import { DmsLocation, DmsProduct, DmsVendor } from '../models/master.models.js';
 import { requirePage } from '../middleware/context.js';
 import { DmsError, round2 } from '../services/core.service.js';
 
@@ -175,6 +175,9 @@ router.get('/party-ledger', requirePage('r_ledger'), asyncHandler(async (req, re
   if (!req.query.location) throw new DmsError('Select a party', 422, { location: ['Required'] });
   const [party] = locIds(req);
   const q = { party, ...dateRange(req, 'txnDate') };
+  // reference filters: Party Name (the other location) and Vendor Name (vendor documents carry the vendor's name)
+  if (req.query.counterparty && mongoose.isValidObjectId(req.query.counterparty)) q.counterparty = oid(req.query.counterparty);
+  if (req.query.vendor && mongoose.isValidObjectId(req.query.vendor)) q.counterpartyName = (await DmsVendor.findById(req.query.vendor).select('name').lean())?.name || '-';
   const rows = await DmsLedger.find(q).sort({ txnDate: 1, createdAt: 1 }).lean();
   const before = req.query.from ? await DmsLedger.aggregate([{ $match: { party, txnDate: { $lt: new Date(req.query.from) } } }, { $group: { _id: null, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } }]) : [];
   let bal = round2((before[0]?.dr || 0) - (before[0]?.cr || 0));

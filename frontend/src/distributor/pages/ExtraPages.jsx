@@ -4,7 +4,6 @@ import { Monitor, CalendarDays } from 'lucide-react';
 import { dms, useDmsQuery, useDmsMutation, apiError } from '../api';
 import { PageTitle, Field, Select, TextArea, Alert, Btn, BackBtn, Modal, Input, locOpt, prodOpt } from '../components/ui';
 import { useFormCtx } from './PoPages';
-import { EntityList } from './EntityPages';
 
 /* ───────── STN Distribution: one source → several destinations ───────── */
 export function StnDistributionForm() {
@@ -43,8 +42,8 @@ export function StnDistributionForm() {
       <form onSubmit={submit}>
         <div className="dms-form">
           <Field label="Distribution From" required><Select required value={from} options={(lk?.locations || []).map(locOpt)} onChange={(e) => { setFrom(e.target.value); setApplied(false); }} /></Field>
-          <Field label="Distribution To (Ctrl+click for several)" required>{multi(dests, setDests, (lk?.allLocations || []).filter((l) => l._id !== from).map(locOpt))}</Field>
-          <Field label="Product (Ctrl+click for several)" required>{multi(prods, setProds, (lk?.products || []).filter((p) => !p.isSerialized).map(prodOpt))}</Field>
+          <Field label="Distribution To" required><div>{multi(dests, setDests, (lk?.allLocations || []).filter((l) => l._id !== from).map(locOpt))}<div className="dms-muted">Ctrl+click to choose several</div></div></Field>
+          <Field label="Product" required><div>{multi(prods, setProds, (lk?.products || []).filter((p) => !p.isSerialized).map(prodOpt))}<div className="dms-muted">Ctrl+click to choose several</div></div></Field>
           <Field label="Document Type"><Select placeholder={false} value={docType} options={[{ value: 'DELIVERY CHALLAN', label: 'Delivery Challan' }, { value: 'INVOICE', label: 'Invoice' }]} onChange={(e) => setDocType(e.target.value)} /></Field>
         </div>
         <div className="dms-actions"><Btn disabled={!from || !dests.length || !prods.length} onClick={() => setApplied(true)}>Apply</Btn></div>
@@ -119,7 +118,6 @@ export function MyBeatPlan() {
         <Field label="Area To Visit" required><Input value={task?.area || ''} onChange={(e) => setTask({ ...task, area: e.target.value })} /></Field>
         <Field label="Date" required><Input type="date" value={task?.date || ''} onChange={(e) => setTask({ ...task, date: e.target.value })} /></Field>
       </Modal>
-      <div style={{ marginTop: 16 }}><EntityList mode="mine" type="beat" title="Task Details" /></div>
     </>
   );
 }

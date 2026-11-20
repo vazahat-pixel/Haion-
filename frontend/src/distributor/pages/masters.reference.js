@@ -116,12 +116,14 @@ set('prices', {
   fields: [
     { name: 'product', label: 'Product', type: 'select', required: true, optionsFrom: 'products', placeholder: '--Please Select--' },
     { name: 'price', label: 'Product Price', type: 'number', required: true }, { name: 'mrp', label: 'Product Mrp', type: 'number', required: true },
-    { name: 'locationType', label: 'Location Type', type: 'select', required: true, optionsFrom: 'locationTypes' },
-    { name: 'states', label: 'State', type: 'checklist', options: STATES.map((s) => s.value), full: true, addOnly: true },
-    { name: 'state', label: 'State', type: 'select', required: true, options: STATES, editOnly: true }, STATUS,
+    { name: 'states', label: 'State', tableHeader: 'State *', type: 'checklist', options: STATES.map((s) => s.value), full: true, addOnly: true },
+    { name: 'locationTypes', label: 'Location Type', tableHeader: 'Location Type *', type: 'checklist', optionsFrom: 'locationTypes', full: true, addOnly: true },
+    { name: 'state', label: 'State', type: 'select', required: true, options: STATES, editOnly: true },
+    { name: 'locationType', label: 'Location Type', type: 'select', required: true, optionsFrom: 'locationTypes', editOnly: true }, STATUS,
   ],
-  multiCreate: { from: 'states', build: (rest, st) => ({ ...rest, state: st }) },
-  defaults: { states: [] },
+  // one price record per ticked state × location type, as the reference creates them
+  multiCreate: { expand: ({ states = [], locationTypes = [], ...rest }) => states.flatMap((st) => locationTypes.map((lt) => ({ ...rest, state: st, locationType: lt }))), message: 'Tick at least one state and one location type' },
+  defaults: { states: [], locationTypes: [] },
 });
 
 /* Product Category: S.No / Product Name columns, Category Name + Short Code */
@@ -176,7 +178,12 @@ set('products', {
 
 /* Scheme: reference filters and form */
 set('schemes', {
-  filters: [{ name: 'status', label: 'Scheme Status', options: ['Active', 'Deactive'] }],
+  filters: [
+    { name: 'schemeFrom', label: 'Scheme From', type: 'date' }, { name: 'schemeTo', label: 'Scheme To', type: 'date' },
+    { name: 'category', label: 'Product Category', optionsFrom: 'categories' }, { name: 'subCategory', label: 'Product Sub Category', optionsFrom: 'subcategories', dependsOn: 'category' },
+    { name: 'brand', label: 'Brand', optionsFrom: 'brands' }, { name: 'product', label: 'Product', optionsFrom: 'products' },
+    { name: 'status', label: 'Scheme Status', options: ['Active', 'Deactive'] },
+  ],
   columns: [
     { key: '#', label: '#' }, { key: 'name', label: 'Scheme Name' },
     { key: 'period', label: 'Scheme Period', text: (r) => `${fmt.date(r.fromDate)} to ${fmt.date(r.toDate)}` },

@@ -159,8 +159,10 @@ router.get('/price-drop', requirePage('r_price_drop'), asyncHandler(async (req, 
 router.get('/party-master', requirePage('r_party_master'), asyncHandler(async (req, res) => {
   const q = { ...(req.dms.allowedLocationIds === null ? {} : { _id: { $in: req.dms.allowedLocationIds } }) };
   if (req.query.location && isId(req.query.location)) q._id = req.query.location;
+  if (req.query.mapped && isId(req.query.mapped)) q.mappedLocations = req.query.mapped;
   const locs = await DmsLocation.find(q).populate('mappedLocations', 'name code').sort({ name: 1 }).lean();
-  sendSuccess(res, { data: locs.flatMap((l) => (l.mappedLocations.length ? l.mappedLocations.map((m) => ({ party: l.name, mapped: `${m.name} (${m.code})`, status: l.status })) : [{ party: l.name, mapped: '—', status: l.status }])) });
+  const only = req.query.mapped && isId(req.query.mapped) ? String(req.query.mapped) : null;
+  sendSuccess(res, { data: locs.flatMap((l) => (l.mappedLocations.length ? l.mappedLocations.filter((m) => !only || String(m._id) === only).map((m) => ({ party: l.name, mapped: `${m.name} (${m.code})`, status: l.status })) : [{ party: l.name, mapped: '—', status: l.status }])) });
 }));
 
 /* ── ISD report: serials sold to customers ── */

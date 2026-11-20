@@ -26,8 +26,8 @@ client's names and locations.
 |---|---|
 | Reference pages read (sidebar of the reference account) | 114 |
 | Local pages read | 117 (3 local-only pages exist for menu items this reference account does not show) |
-| Pages whose structure is **identical** to the reference | **73** (17 at the start of this pass) |
-| Pages with a remaining difference | 41 — classified below |
+| Pages whose structure is **identical** to the reference | **87** (17 at the start of this pass) |
+| Pages with a remaining difference | 27 — mostly comparison artefacts (below); real gaps closed in the follow-up pass are listed under "Follow-up pass" |
 
 ### Remaining differences that are comparison artefacts (verified, not product gaps)
 
@@ -117,3 +117,18 @@ Not run in this pass: the long role crawl `01-role-crawl.spec.js`.
 final commit of this report.
 
 Nothing was deployed and nothing on the reference or the live server was changed by this pass.
+
+## Follow-up pass (remaining gaps)
+
+Closed: Home (GO, Current Month PO Status table, Plain / Inverted / Polar), Lead Dashboard "Lead Conversion", Inventory Aging
+grouped header, ISD / ledgers header before GO, Party Ledger Party Name / Vendor Name, Party Master Location Name, Collection
+"View Previous Collection", Beat Report page (Select User), Beat Scheduler (Attach File, Check Beat Scheduled), My Beat Plan
+calendar only, Lead "Upload Lead" (bulk, all-or-nothing), Scheme filters (server-side), Serial No. Activation Sub-Category /
+Attach File, Multiple Serial No. Track "Show", Stock Transfer menu opens the form, STN Distribution labels, Vendor PO Tax Type /
+Tax % / Tax Total / Invoice No. / Date, Retail Discount Type (Productwise / Total Discount), App Feedback "Feedback By",
+PJP name link, Attendance Login / Logout only, Resign Request form only (employee), Salary Sheet Show, HRMS reports filter-first,
+My Profile reference fields, Price Master State × Location Type tick tables.
+
+Still different by design: inline serial entry on Opening / Local Purchase (the reference attaches serials afterwards);
+return forms show the empty item grid before an invoice is chosen; HR keeps the Resign Request list for approvals.
+Result after this pass: 87 of 114 pages structurally identical; the rest are the artefacts listed above.

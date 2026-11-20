@@ -20,10 +20,10 @@ const isId = (v) => mongoose.isValidObjectId(v);
  * Generic list/get/create/update for one master.
  * Masters have no hard delete — the reference only toggles Active/Deactive.
  */
-function crud(path, { model, page, readPages = [], search = [], filters = [], populate = '', editable, prepare, scope, sort = { createdAt: -1 } }) {
+function crud(path, { model, page, readPages = [], search = [], filters = [], populate = '', editable, prepare, scope, extra, sort = { createdAt: -1 } }) {
   router.get(path, requirePage(page, ...readPages), asyncHandler(async (req, res) => {
     const { skip, perPage, page: pg } = parsePagination(req.query);
-    const q = { ...(scope ? scopeFilter(req, scope) : {}) };
+    const q = { ...(scope ? scopeFilter(req, scope) : {}), ...(extra ? await extra(req) : {}) };
     for (const f of filters) if (req.query[f] !== undefined && req.query[f] !== '' && (f !== '_id' || isId(req.query[f]))) q[f] = req.query[f];
     if (req.query.search && search.length) {
       const rx = new RegExp(esc(req.query.search), 'i');
@@ -223,6 +223,17 @@ router.get('/price-lookup', asyncHandler(async (req, res) => {
 /* ── Schemes ── */
 crud('/schemes', {
   model: DmsScheme, page: 'm_scheme', readPages: ['corporate', 'retail'], search: ['name', 'code'], filters: ['status'],
+  // reference filters: Scheme From / To (schemes running in the period), Product Category / Sub Category / Brand / Product
+  extra: async (req) => {
+    const q = {};
+    if (req.query.schemeFrom) q.toDate = { $gte: new Date(req.query.schemeFrom) };
+    if (req.query.schemeTo) q.fromDate = { $lte: new Date(`${req.query.schemeTo}T23:59:59`) };
+    const pq = {};
+    for (const k of ['category', 'subCategory', 'brand']) if (isId(req.query[k])) pq[k] = req.query[k];
+    if (isId(req.query.product)) pq._id = req.query.product;
+    if (Object.keys(pq).length) q.products = { $in: (await DmsProduct.find(pq).select('_id').lean()).map((p) => p._id) };
+    return q;
+  },
   populate: { path: 'products', select: 'productCode name' },
   editable: ['name', 'fromDate', 'toDate', 'products', 'discountType', 'discountValue', 'status', 'applicableOn', 'schemeGiven', 'remark', 'attachment'],
   prepare: async (b, req, existing) => {

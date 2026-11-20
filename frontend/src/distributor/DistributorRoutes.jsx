@@ -75,6 +75,7 @@ const RpPage = mp('RpPage');
 const OtherRequests = mp('OtherRequests');
 const PrintPayslip = mp('PrintPayslip');
 const BeatScheduler = mp('BeatScheduler');
+const BeatReport = mp('BeatReport');
 const DashYearly = mp('DashYearly');
 const DashMonthly = mp('DashMonthly');
 const DashLead = mp('DashLead');
@@ -204,6 +205,7 @@ function GuardedRoutes() {
           <Route path="rp/other" element={<OtherRequests />} />
           <Route path="rp/:type" element={<RpPage />} />
           <Route path="sf/beat-scheduler" element={<BeatScheduler />} />
+          <Route path="reports/beat" element={<BeatReport />} />
           <Route path="sf/track" element={<TrackLocation />} />
           <Route path="dashboard/yearly" element={<DashYearly />} />
           <Route path="dashboard/monthly" element={<DashMonthly />} />

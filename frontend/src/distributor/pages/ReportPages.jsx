@@ -15,7 +15,7 @@ export function useLocProdOpts() {
 }
 
 /** Generic report: filter bar → GO → table (+ Excel/CSV export). */
-export function Report({ title, icon = FileBarChart, url, filters, columns, pick = (d) => d, requireGo = true, name, footer, headersBeforeGo = false }) {
+export function Report({ title, icon = FileBarChart, url, filters, columns, pick = (d) => d, requireGo = true, name, footer, headersBeforeGo = false, groups }) {
   const opts = useLocProdOpts();
   const [params, setParams] = useState(requireGo ? null : {});
   const { data, isFetching, error } = useDmsQuery(`rep-${url}`, url, params, { enabled: params !== null });
@@ -28,8 +28,8 @@ export function Report({ title, icon = FileBarChart, url, filters, columns, pick
       {params === null && headersBeforeGo && <DataTable columns={columns} rows={[]} rowKey="__k" />}
       {params !== null && !error && (
         <>
-          <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv(name || title, columns.filter((c) => c.key !== '#'), rows)}>Export to Excel</Btn></div>
-          <DataTable columns={columns} rows={rows} loading={isFetching} rowKey="__k" />
+          <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv(name || title, columns.filter((c) => c.key !== '#').map((c) => (c.exportLabel ? { ...c, label: c.exportLabel } : c)), rows)}>Export to Excel</Btn></div>
+          <DataTable columns={columns} rows={rows} loading={isFetching} rowKey="__k" groups={groups} />
           {footer?.(data?.data)}
         </>
       )}
@@ -56,10 +56,11 @@ export const InventoryReport = ({ title = 'Inventory', icon, dashboard = false }
 
 export const AgingReport = () => (
   <Report title="Inventory Aging" url="/reports/aging" filters={[...productFilters, loc(false)]} requireGo={false}
+    groups={[{ label: '', span: 6 }, { label: '0 - 15 days', span: 3 }, { label: '16 - 30 days', span: 3 }, { label: 'Above 30 days', span: 3 }]}
     columns={[
       { key: '#', label: 'S.No' }, { key: 'location', label: 'Location Name' }, { key: 'locationType', label: 'Location Type' }, { key: 'productCode', label: 'Product Code' },
       { key: 'productName', label: 'Product Name' }, { key: 'nature', label: 'Product Nature' },
-      ...[['b0', '0 - 15 days'], ['b16', '16 - 30 days'], ['b31', 'Above 30 days']].flatMap(([b, l]) => ['ok', 'dm', 'ms'].map((k) => ({ key: `${b}${k}`, label: `${l} ${k.toUpperCase()}`, align: 'r', text: (r) => r[b][k] || 0, render: (r) => r[b][k] || 0 }))),
+      ...[['b0', '0 - 15 days'], ['b16', '16 - 30 days'], ['b31', 'Above 30 days']].flatMap(([b, l]) => ['ok', 'dm', 'ms'].map((k) => ({ key: `${b}${k}`, label: k.toUpperCase(), exportLabel: `${l} ${k.toUpperCase()}`, align: 'r', text: (r) => r[b][k] || 0, render: (r) => r[b][k] || 0 }))),
     ]} />
 );
 
@@ -75,7 +76,7 @@ export const StockLedgerReport = () => (
 
 /* Column order, captions and number style follow the live reference Party Ledger (verified 19-Nov-2026). */
 export const PartyLedgerReport = () => (
-  <Report title="Party Ledger" url="/reports/party-ledger" headersBeforeGo filters={[{ ...loc(true), label: 'Location Name :' }, ...dates]} pick={(d) => d.rows}
+  <Report title="Party Ledger" url="/reports/party-ledger" headersBeforeGo filters={[{ name: 'counterparty', label: 'Party Name', optionsFrom: 'allLocations' }, { name: 'vendor', label: 'Vendor Name', optionsFrom: 'vendors' }, { ...loc(true), label: 'Location Name' }, ...dates]} pick={(d) => d.rows}
     footer={(d) => d && <p style={{ textAlign: 'right' }}><b>Total CR:</b> {fmt.amt(d.totalCr)} &nbsp; <b>Total DR:</b> {fmt.amt(d.totalDr)} &nbsp; <b>Opening:</b> {fmt.amt(d.opening)} &nbsp; <b>Closing (DR − CR):</b> {fmt.amt(d.closing)}</p>}
     columns={[
       { key: '#', label: 'SNo.' }, { key: 'locationName', label: 'Location Name' }, { key: 'counterpartyName', label: 'Party Name' }, { key: 'docNo', label: 'Document No.' }, { key: 'docTypeLabel', label: 'Document Type' },
@@ -157,7 +158,7 @@ export function SerialTrack({ multi }) {
             <div><Field label="Upload Serial No."><Input type="file" accept=".xlsx,.csv,.txt" onChange={(e) => onFile(e.target.files?.[0])} /></Field></div>
           </>
         ) : <div style={{ minWidth: 280 }}><Field label="Enter Serial Number" required><Input required type="search" value={txt} onChange={(e) => setTxt(e.target.value)} /></Field></div>}
-        <div><button type="submit" className="dms-btn">{multi ? 'Save' : 'SHOW'}</button></div>
+        <div><button type="submit" className="dms-btn">{multi ? 'Show' : 'SHOW'}</button></div>
       </form>
       {rows && <SerialTable rows={rows} />}
     </>

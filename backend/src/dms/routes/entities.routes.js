@@ -246,7 +246,7 @@ router.get('/schemas', (req, res) => {
       actions: (c.actions || []).map(({ key, label, from, to, page, remark, statuses, owner }) => ({ key, label, from, to, page, remark, statuses, owner })), editStatuses: EDITABLE(c),
       // presentation (reference list / form wording): column labels, action column style, add button / form title, filter labels
       colLabels: c.colLabels || {}, actionCol: c.actionCol || 'view+edit', addLabel: c.addLabel, addTitle: c.addTitle, editTitle: c.editTitle,
-      dateLabels: c.dateLabels, filterLabels: c.filterLabels || {}, noList: c.noList, snoLabel: c.snoLabel, colFormat: c.colFormat, titles: c.titles, modeCols: c.modeCols,
+      dateLabels: c.dateLabels, filterLabels: c.filterLabels || {}, noList: c.noList, bulk: c.bulk, byFilter: c.byFilter, goFirst: c.goFirst, goLabel: c.goLabel, linkCol: c.linkCol, formOnly: c.formOnly, snoLabel: c.snoLabel, colFormat: c.colFormat, titles: c.titles, modeCols: c.modeCols,
       addButtons: c.addButtons, submitLabel: c.submitLabel, formWithList: c.formWithList,
     };
   }
@@ -437,7 +437,13 @@ router.get('/:type', asyncHandler(async (req, res) => {
   } else if (req.query.status) q.status = { $in: String(req.query.status).split(',') };
   for (const fd of cfg.fields) {
     const v = req.query[`f_${fd.n}`];
-    if (v !== undefined && v !== '') q[`data.${fd.n}`] = fd.t === 'number' ? Number(v) : String(v);
+    if (v === undefined || v === '') continue;
+    if (['text', 'textarea', 'tel', 'email'].includes(fd.t)) q[`data.${fd.n}`] = new RegExp(esc(String(v)), 'i');
+    else q[`data.${fd.n}`] = fd.t === 'number' ? Number(v) : String(v);
+  }
+  if (req.query.by) q.createdByName = new RegExp(esc(String(req.query.by)), 'i'); // "Feedback By" / "Task By"
+  if (req.query.cfrom || req.query.cto) {
+    q.createdAt = { ...(req.query.cfrom ? { $gte: new Date(req.query.cfrom) } : {}), ...(req.query.cto ? { $lte: new Date(`${req.query.cto}T23:59:59`) } : {}) };
   }
   if (cfg.dateField && (req.query.from || req.query.to)) {
     q[`data.${cfg.dateField}`] = {
@@ -482,6 +488,39 @@ router.get('/:type/:id', asyncHandler(async (req, res) => {
   const doc = isId(req.params.id) ? await DmsEntity.findOne({ _id: req.params.id, type: req.params.type }).lean() : null;
   if (!doc || !canRead(req, cfg, doc)) throw new DmsError('Record not found', 404);
   sendSuccess(res, { data: await decorate(cfg, doc) });
+}));
+
+router.post('/:type/bulk', asyncHandler(async (req, res) => {
+  const cfg = cfgOf(req.params.type);
+  if (cfg.noCreate || !cfg.bulk) throw new DmsError('Bulk upload is not available for this record type', 400);
+  if (!hasPage(req, cfg.page, cfg.selfPage)) throw new DmsError('You do not have permission for this page', 403);
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  if (!rows.length) throw new DmsError('The file has no rows', 422, { rows: ['The file has no rows'] });
+  if (rows.length > 1000) throw new DmsError('Upload at most 1000 rows at a time', 422, { rows: ['Too many rows'] });
+  const ready = []; const errs = [];
+  for (const [i, row] of rows.entries()) {
+    try {
+      const { data, status } = await buildData(cfg, row); // eslint-disable-line no-await-in-loop
+      await assertUnique(cfg, req.params.type, data); // eslint-disable-line no-await-in-loop
+      const owner = await ownerOf(cfg, req, data, row); // eslint-disable-line no-await-in-loop
+      await applyComputed(cfg, req, data, owner); // eslint-disable-line no-await-in-loop
+      ready.push({ data, status, owner });
+    } catch (e) {
+      const detail = e.errors ? Object.entries(e.errors).map(([k, v]) => `${cfg.fields.find((x) => x.n === k)?.l || k}: ${[].concat(v)[0]}`).join('; ') : e.message;
+      errs.push(`Row ${i + 2}: ${detail}`);
+    }
+  }
+  if (errs.length) throw new DmsError(`${errs.length} row(s) have errors; nothing was saved`, 422, { rows: errs.slice(0, 50) });
+  const location = req.dms.location?._id || null;
+  const created = [];
+  for (const r of ready) {
+    const docNo = cfg.prefix ? `${cfg.prefix}${String(await nextSeq(`ENT:${req.params.type}`)).padStart(cfg.pad || 4, '0')}` : undefined; // eslint-disable-line no-await-in-loop
+    created.push(await DmsEntity.create({ // eslint-disable-line no-await-in-loop
+      type: req.params.type, docNo, data: r.data, status: r.status || cfg.initial || 'Active', location, ownerLoginId: r.owner, ...stamp(req),
+      actions: [{ by: req.dms.displayName, action: 'Created (upload)' }],
+    }));
+  }
+  sendCreated(res, { data: { count: created.length, docNos: created.map((d) => d.docNo).filter(Boolean) }, message: `${created.length} record(s) uploaded` });
 }));
 
 router.post('/:type', asyncHandler(async (req, res) => {

@@ -129,6 +129,7 @@ export function FormField({ def, values, setValues, errors, opts, isEdit }) {
     input = (
       <div className="dms-checklist">
         <div className="dms-perm-tools"><button type="button" className="dms-btn sm" onClick={() => set(all.map((o) => o.value))}>Check All</button><button type="button" className="dms-btn sm" onClick={() => set([])}>Uncheck All</button></div>
+        {def.tableHeader && <div className="dms-check-head">{def.tableHeader}</div>}
         <div className="dms-perm-grid">{all.map((o) => <label key={o.value}><input type="checkbox" checked={cur.includes(o.value)} onChange={() => set(cur.includes(o.value) ? cur.filter((x) => x !== o.value) : [...cur, o.value])} /> {o.label}</label>)}</div>
       </div>
     );
@@ -158,11 +159,11 @@ export function MasterForm() {
   const save = useDmsMutation(async (payload) => {
     if (isEdit) return dms.put(`${cfg.endpoint}/${id}`, payload);
     // e.g. Price Master: one record per ticked state, as the reference creates them
-    if (cfg.multiCreate && Array.isArray(payload[cfg.multiCreate.from])) {
-      const { [cfg.multiCreate.from]: many, ...rest } = payload;
-      if (!many.length) throw Object.assign(new Error('Tick at least one state'), { response: { data: { message: 'Tick at least one state', errors: { [cfg.multiCreate.from]: ['Required'] } } } });
+    if (cfg.multiCreate) {
+      const many = cfg.multiCreate.expand(payload);
+      if (!many.length) throw Object.assign(new Error(cfg.multiCreate.message), { response: { data: { message: cfg.multiCreate.message } } });
       let last;
-      for (const one of many) last = await dms.post(cfg.endpoint, cfg.multiCreate.build(rest, one)); // eslint-disable-line no-await-in-loop
+      for (const one of many) last = await dms.post(cfg.endpoint, one); // eslint-disable-line no-await-in-loop
       return last;
     }
     return dms.post(cfg.endpoint, payload);

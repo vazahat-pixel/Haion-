@@ -48,7 +48,7 @@ export const MENU = [
   },
   {
     label: 'Report Master', icon: FileBarChart, color: '#5bc0de', items: [
-      { label: 'Beat Report', to: `${D}/e/beat`, page: 'beat_sched' },
+      { label: 'Beat Report', to: `${D}/reports/beat`, page: 'beat_sched' },
       { label: 'Collection', to: `${D}/reports/collection`, page: 'r_collection' },
       { label: 'Inventory', to: `${D}/reports/inventory`, page: 'r_inventory' },
       { label: 'Inventory Aging', to: `${D}/reports/aging`, page: 'r_aging' },
@@ -73,7 +73,7 @@ export const MENU = [
       { label: 'Retail', to: `${D}/invoicing/retail`, page: 'retail' },
       { label: 'Single Serial No. Track', to: `${D}/invoicing/serial-track`, page: 'serial_track' },
       { label: 'STN Distribution', to: `${D}/invoicing/stn-distribution`, page: 'stn_distribution' },
-      { label: 'Stock Transfer', to: `${D}/invoicing/stock-transfer`, page: 'stock_transfer' },
+      { label: 'Stock Transfer', to: `${D}/new/STN`, page: 'stock_transfer' },
       { label: 'Stock Transfer Approval', to: `${D}/invoicing/stock-transfer-approval`, page: 'stock_transfer_approval' },
       { label: 'Stock Transfer for Job work', to: `${D}/invoicing/jobwork`, page: 'jobwork' },
     ],
