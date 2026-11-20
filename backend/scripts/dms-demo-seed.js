@@ -19,6 +19,7 @@
  *  All people, phone numbers and addresses are synthetic. Demo password for every account: DmsDemo@123
  */
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import express from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
@@ -29,6 +30,7 @@ import dmsRoutes from '../src/dms/index.js';
 import { errorHandler } from '../src/middleware/errorHandler.middleware.js';
 import { DmsEntity } from '../src/dms/models/entity.model.js';
 import * as TX from '../src/dms/models/txn.models.js';
+import { DmsProfile } from '../src/dms/models/master.models.js';
 
 /*
  * LIVE MODE (server demo):  DMS_SEED_PASSWORD='<strong password>' node scripts/dms-demo-seed.js --live --confirm=<db name>
@@ -47,7 +49,27 @@ const REMOVE = process.argv.includes('--remove');
 const DOMAIN = '@demo.haion.local';
 const URI = LIVE ? env.mongodbUri : process.env.MONGODB_URI || '';
 const DB = LIVE ? env.mongodbDbName : process.env.DMS_DEMO_DB || 'dms_demo';
-const PASSWORD = LIVE ? process.env.DMS_SEED_PASSWORD || '' : 'DmsDemo@123';
+/*
+ * --logins=<file.json>  Chosen Login IDs / passwords for the demo users (keep the file on the server, never in git):
+ *   { "admin": { "loginId": "admin", "password": "..." }, "ho": { "loginId": "INUSRHOUP002", "password": "..." }, ... }
+ *   Keys: "admin" (a Distributor-only Admin: full DMS rights, no Haion ERP access) or a demo location key
+ *   (ho, agra, jaipur, lucknow, mumbai, kma, sdm, pct, rrj, nwb, gmc, bmh, adg). If the demo data already exists,
+ *   only these logins are applied. With --logins, DMS_SEED_PASSWORD is optional (other demo users get a random one).
+ */
+const LOGINS_FILE = (process.argv.find((a) => a.startsWith('--logins=')) || '').slice('--logins='.length);
+let LOGINS = null;
+if (LOGINS_FILE) {
+  try { LOGINS = JSON.parse(fs.readFileSync(LOGINS_FILE, 'utf8')); } catch (e) { console.error(`Cannot read ${LOGINS_FILE}: ${e.message}`); process.exit(1); }
+  const ids = new Set();
+  for (const [k, v] of Object.entries(LOGINS || {})) {
+    const id = String(v?.loginId || '').toUpperCase();
+    if (!/^[A-Z0-9]{3,30}$/.test(id)) { console.error(`${k}: loginId must be 3–30 letters/digits`); process.exit(1); }
+    if (String(v?.password || '').length < 8) { console.error(`${k}: password must be at least 8 characters`); process.exit(1); }
+    if (ids.has(id)) { console.error(`${k}: loginId ${id} is used twice`); process.exit(1); }
+    ids.add(id);
+  }
+}
+const PASSWORD = LIVE ? process.env.DMS_SEED_PASSWORD || (LOGINS ? `${crypto.randomBytes(18).toString('base64url')}aA1#` : '') : 'DmsDemo@123';
 
 if (LIVE) {
   const confirm = (process.argv.find((a) => a.startsWith('--confirm=')) || '').slice('--confirm='.length);
@@ -191,7 +213,42 @@ if (RESET || REMOVE) {
   console.log(`Removed from "${DB}": all dms_* collections and the ${DOMAIN} users.`);
   if (REMOVE) { await mongoose.disconnect(); process.exit(0); }
 }
+/** Give chosen demo users the Login ID / password from --logins. "admin" = Distributor-only Admin (role DMS_USER). */
+function checkLoginKeys() {
+  const known = new Set(['admin', ...LOCS.map((l) => l.k)]);
+  const bad = Object.keys(LOGINS).filter((k) => !known.has(k));
+  if (bad.length) throw new Error(`Unknown key(s) in ${LOGINS_FILE}: ${bad.join(', ')}. Use: ${[...known].join(', ')}`);
+}
+async function applyLogins() {
+  checkLoginKeys();
+  const rows = {};
+  for (const [k, v] of Object.entries(LOGINS)) {
+    const loginId = String(v.loginId).toUpperCase();
+    let user = await User.findOne({ email: k === 'admin' ? `dmsadmin${DOMAIN}` : `${k}${DOMAIN}` });
+    let profile = user && await DmsProfile.findOne({ user: user._id });
+    if (!user && k !== 'admin') throw new Error(`${k}: demo user ${k}${DOMAIN} not found (seed the demo data first)`);
+    const clash = await DmsProfile.findOne({ loginId, ...(profile ? { _id: { $ne: profile._id } } : {}) }).lean();
+    if (clash) throw new Error(`${k}: Login ID ${loginId} already belongs to another user`);
+    const password = await User.hashPassword(String(v.password));
+    if (!user) {
+      user = await User.create({ email: `dmsadmin${DOMAIN}`, password, firstName: 'DMS', lastName: 'Administrator', phone: '9000000101', role: 'DMS_USER', isActive: true });
+    } else {
+      await User.updateOne({ _id: user._id }, { $set: { password, isActive: true, failedLoginAttempts: 0, lockedUntil: null } });
+    }
+    if (!profile) profile = await DmsProfile.create({ user: user._id, loginId, displayName: 'DMS Administrator', userType: 'Admin', status: 'Active', pages: [] });
+    else await DmsProfile.updateOne({ _id: profile._id }, { $set: { loginId, status: 'Active' } });
+    rows[k] = { loginId, name: profile.displayName, type: k === 'admin' ? 'Admin (Distributor only)' : profile.userType };
+  }
+  console.log(`\nLogins applied from ${LOGINS_FILE} (passwords as written in that file):`);
+  console.table(rows);
+}
+
 if (await db.collection('dms_locations').countDocuments()) {
+  if (LOGINS) {
+    try { await applyLogins(); } catch (e) { console.error(e.message); await mongoose.disconnect(); process.exit(1); }
+    console.log('Demo data was already there, so only the logins were updated.');
+    await mongoose.disconnect(); process.exit(0);
+  }
   console.error(LIVE ? 'Distributor data already exists in this database; nothing was changed.' : 'Demo data already present. Re-run with --reset to rebuild it.');
   await mongoose.disconnect(); process.exit(1);
 }
@@ -199,6 +256,7 @@ if (LIVE && await User.exists({ email: DEMO_EMAIL })) {
   console.error(`Old ${DOMAIN} users exist (an earlier run stopped half-way). Run with --live --remove --confirm=${DB} first.`);
   await mongoose.disconnect(); process.exit(1);
 }
+if (LOGINS) { try { checkLoginKeys(); } catch (e) { console.error(e.message); await mongoose.disconnect(); process.exit(1); } }
 console.log(`Seeding demo Distributor data into "${DB}"${LIVE ? ' (LIVE server database)' : ''}…`);
 
 const t0All = Date.now();
@@ -641,8 +699,13 @@ console.log('\nSeed complete in', Math.round((Date.now() - t0All) / 1000), 's. R
 console.table(counts);
 if (LIVE) {
   await User.updateOne({ _id: adminUser._id }, { $set: { isActive: false } });
-  console.log('\nDemo logins (password: the DMS_SEED_PASSWORD you set). Full access: sign in with your own Haion Master Admin account.');
-  console.table(Object.fromEntries(Object.entries(USER).map(([k, u]) => [k, { loginId: u.loginId, name: u.name, email: `${k}${DOMAIN}` }])));
+  if (process.env.DMS_SEED_PASSWORD) {
+    console.log('\nDemo logins (password: the DMS_SEED_PASSWORD you set). Full access: sign in with your own Haion Master Admin account.');
+    console.table(Object.fromEntries(Object.entries(USER).map(([k, u]) => [k, { loginId: u.loginId, name: u.name, email: `${k}${DOMAIN}` }])));
+  }
+  if (LOGINS) await applyLogins();
+} else if (LOGINS) {
+  await applyLogins();
 } else {
   console.log(`Logins (password ${PASSWORD}): admin dms.admin${DOMAIN} · HQ ${USER.ho.loginId} · Agra ${USER.agra.loginId} · Krishna Mobiles ${USER.kma.loginId}  (e-mail <key>${DOMAIN} also works)`);
 }
