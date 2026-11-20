@@ -131,7 +131,7 @@ function GuardedRoutes() {
           <Route path="home" element={<HomePage />} />
           <Route path="change-password" element={<ChangePassword />} />
 
-          <Route path="dashboard/inventory" element={<InventoryReport title="Inventory Dashboard" />} />
+          <Route path="dashboard/inventory" element={<InventoryReport title="Inventory Dashboard" dashboard />} />
           <Route path="dashboard/purchase" element={<PoReport dashboard />} />
           <Route path="dashboard/sale" element={<SaleDashboard />} />
 

@@ -56,7 +56,7 @@ export function MasterList() {
   const [filters, setFilters] = useState({});
   const { data, isFetching, error } = useDmsQuery(`m-${key}`, cfg?.endpoint, { ...list.params, ...filters }, { enabled: Boolean(cfg) });
   if (!cfg) return <Navigate to="/distributor/home" replace />;
-  const columns = [
+  const built = [
     ...cfg.columns.map((c) => {
       if (c.key === 'status') return { ...c, render: (r) => <Status value={r.status} /> };
       if (c.link) return { ...c, sortable: false, align: 'c', render: (r) => <Link to={c.link(r)}>{c.linkText || 'Open'}</Link> };
@@ -66,6 +66,8 @@ export function MasterList() {
     ...(cfg.afterEdit || []).map((c) => (c.link ? { ...c, sortable: false, align: 'c', render: (r) => <Link to={c.link(r)}>{c.linkText || 'Open'}</Link> } : c)),
     ...(cfg.historyCol ? [{ key: 'hist', label: 'History', sortable: false, align: 'c', render: (r) => <Link className="dms-icon-btn" to={`/distributor/masters/${key}/${r._id}/history`} title="History"><i className="fa fa-history fa-lg" aria-hidden="true" /></Link> }] : []),
   ];
+  // Vendor Master (reference): Status and Edit lead the row
+  const columns = cfg.editFirst ? [...built.filter((c) => ['status', 'edit'].includes(c.key)), ...built.filter((c) => !['status', 'edit'].includes(c.key))] : built;
   return (
     <>
       <PageTitle icon={Database}>{cfg.title}</PageTitle>

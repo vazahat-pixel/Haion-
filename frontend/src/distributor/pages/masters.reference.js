@@ -66,7 +66,7 @@ set('customers', {
   ],
   columns: [
     { key: '#', label: '#' }, { key: 'customerId', label: 'Customer Id' }, { key: 'name', label: 'Customer Name' },
-    { key: 'state', label: 'State' }, { key: 'city', label: 'City' }, { key: 'customerType', label: 'Customer Type' }, { key: 'status', label: 'Status' },
+    { key: 'state', label: 'State' }, { key: 'customerType', label: 'Customer Type' }, { key: 'status', label: 'Status' },
   ],
   historyCol: true, contactButtons: true, addTitle: 'Enter New Customer Details', submitLabel: 'Add',
   fields: [
@@ -88,7 +88,8 @@ set('locations', {
     { name: 'state', label: 'Location State', options: STATES }, { name: 'city', label: 'Location City', optionsFrom: 'cities', dependsOn: 'state' },
     { name: 'locationType', label: 'Location Type', optionsFrom: 'locationTypes' }, { name: 'status', label: 'Location Status', options: ['Active', 'Deactive'] },
   ],
-  columns: MASTERS.locations.columns.filter((c) => c.key !== 'parent'),
+  columns: MASTERS.locations.columns.filter((c) => !['parent', 'map'].includes(c.key)),
+  afterEdit: [{ key: 'map', label: 'Mapping', link: (r) => `/distributor/masters/locations/${r._id}/mapping`, linkText: 'Mapping' }],
   historyCol: true,
   fields: [
     relabel('region', 'Region/Circle'), relabel('state', 'State'), { name: 'city', label: 'City', type: 'select', required: true, optionsFrom: 'cities', dependsOn: 'state' },
@@ -126,7 +127,7 @@ set('prices', {
 /* Product Category: S.No / Product Name columns, Category Name + Short Code */
 set('category', {
   addLabel: 'Add New Category', addTitle: 'Product Category', editTitle: 'Product Category',
-  columns: [{ key: '#', label: 'S.No' }, { key: 'name', label: 'Product Name' }, { key: 'code', label: 'Short Code' }, { key: 'status', label: 'Status' }],
+  columns: [{ key: '#', label: 'S.No' }, { key: 'name', label: 'Product Name' }, { key: 'status', label: 'Status' }],
   fields: [{ name: 'name', label: 'Category Name', required: true }, { name: 'code', label: 'Short Code' }, STATUS],
 });
 
@@ -139,6 +140,7 @@ set('subcategory', {
 
 /* Product Delivery: filters From / To Location, Product Category */
 set('productdelivery', {
+  columns: MASTERS.productdelivery.columns.filter((c) => c.key !== 'status'),
   filters: [{ name: 'a_fromCity', label: 'From Location', optionsFrom: 'cities' }, { name: 'a_toCity', label: 'To Location', optionsFrom: 'cities' }, { name: 'a_category', label: 'Product Category', optionsFrom: 'categories', byName: true }],
 });
 
@@ -209,8 +211,8 @@ set('hsn', { fields: MASTERS.hsn.fields.map((x) => (x.name === 'chapterNo' ? { .
 
 /* Vendor: "Edit" column, "Add Foreign Vendor", form "Enter The New Vendor Details" */
 set('vendors', {
-  columns: MASTERS.vendors.columns.filter((c) => c.key !== 'code'),
-  editLabel: 'Edit', toolbar: [{ label: 'Add Foreign Vendor', to: '/distributor/masters/vendors/new?foreign=1' }],
+  columns: [MASTERS.vendors.columns.find((c) => c.key === 'status'), ...MASTERS.vendors.columns.filter((c) => !['code', 'status'].includes(c.key))],
+  editLabel: 'Edit', editFirst: true, toolbar: [{ label: 'Add Foreign Vendor', to: '/distributor/masters/vendors/new?foreign=1' }],
   addTitle: 'Enter The New Vendor Details', submitLabel: 'Add',
   queryDefaults: (sp) => (sp.get('foreign') ? [['isForeign', 'true'], ['vendorOrigin', 'Foreign'], ['country', '']] : []),
   fields: [

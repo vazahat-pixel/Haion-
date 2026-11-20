@@ -1,8 +1,8 @@
 # Reference vs local — page structure diff
 
-Generated 2026-11-20 08:38 by tools/compare-structure.mjs.
+Generated 2026-11-20 08:53 by tools/compare-structure.mjs.
 Reference pages read: **114** (sidebar of the logged-in reference account + each page's Add form). Local pages read: **117**.
-Pages with no structural difference: **71**. Pages with differences: **43**.
+Pages with no structural difference: **73**. Pages with differences: **41**.
 
 Compared: page title, main table columns (set and order), form labels, buttons, tabs, and the same for the Add page. Ignored: DataTables paging/search chrome.
 
@@ -27,7 +27,7 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 17 | Master Management | Other Tax Master | admin/other_tax.php | /distributor/masters/othertax | none |
 | 18 | Master Management | Parameter Master | admin/parameter_master.php | /distributor/masters/parameter | none |
 | 19 | Master Management | Price Master | admin/price_master.php | /distributor/masters/prices | **add page:** missingColumns: state |
-| 20 | Master Management | Product Category | admin/productcat_master.php | /distributor/masters/category | extraColumns: short code; **add page:** missingButtons: update |
+| 20 | Master Management | Product Category | admin/productcat_master.php | /distributor/masters/category | **add page:** missingButtons: update |
 | 21 | Master Management | Product Delivery | admin/product_delivery.php | /distributor/masters/productdelivery | none |
 | 22 | Master Management | Product Image | admin/product_image_list.php | /distributor/masters/productimage | none |
 | 23 | Master Management | Product Master | admin/model_master.php | /distributor/masters/products | none |
@@ -43,7 +43,7 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 33 | Report Master | Inventory | reports/inventory_stock.php | /distributor/reports/inventory | none |
 | 34 | Report Master | Inventory Aging | reports/inventory_aging.php | /distributor/reports/aging | missingColumns: 0 - 15 days, 16 - 30 days, above 30 days, ok, dm, ms; extraColumns: 0 - 15 days ok, 0 - 15 days dm, 0 - 15 days ms, 16 - 30 days ok, 16 - 30 days dm, 16 - 30 days ms, above 30 days ok, above 30 days dm, above 30 days ms |
 | 35 | Report Master | ISD | reports/isd_report.php | /distributor/reports/isd | missingColumns: s.no., isp name, serial no., customer name, location, contact no., state, city, entry date |
-| 36 | Report Master | Party Ledger | reports/partyledger.php | /distributor/reports/party-ledger | missingColumns: sno., location name, party name, document no., document type, transaction date, entry date, payment remark, approval remark, amount cr, amount dr; missingLabels: party name, vendor name |
+| 36 | Report Master | Party Ledger | reports/partyledger.php | /distributor/reports/party-ledger | missingLabels: party name, vendor name |
 | 37 | Report Master | Party Master Report | reports/mapping_report.php | /distributor/reports/party-master | missingLabels: location name |
 | 38 | Report Master | Payment | reports/payment_status.php | /distributor/reports/payment | none |
 | 39 | Report Master | Price Drop | reports/pricedrop.php | /distributor/reports/price-drop | none |
@@ -51,12 +51,12 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 41 | Report Master | Return | reports/return_report.php | /distributor/reports/return | none |
 | 42 | Report Master | Sale Report | reports/invoice_report.php | /distributor/reports/sale | none |
 | 43 | Report Master | Serial No. Activation Report | reports/imei_activation_rpt.php | /distributor/reports/serial-activation | none |
-| 44 | Report Master | Stock Ledger List | reports/stock_ledger_list.php | /distributor/reports/stock-ledger | missingColumns: s.no, date & time, item, opening stock, in, out, closing stock, system ref. no., transfer type, stock transfer |
+| 44 | Report Master | Stock Ledger List | reports/stock_ledger_list.php | /distributor/reports/stock-ledger | none |
 | 45 | Report Master | Vendor Purchase | reports/vendor_report.php | /distributor/reports/vendor | none |
 | 46 | Logistic | Update Dispatch | logistic/updateInvLogistic.php | /distributor/logistic/dispatch | none |
 | 47 | Invoicing | Corporate | invoice/corporateInvoice.php | /distributor/invoicing/corporate | none |
 | 48 | Invoicing | Multiple Serial No. Track | invoice/imei_track.php | /distributor/invoicing/multi-serial-track | missingButtons: show |
-| 49 | Invoicing | Retail | invoice/retailbillinglist.php | /distributor/invoicing/retail | missingColumns: invoice no., invoice date; **add page:** extraColumns: value, avl stock, serial / imei no.; missingLabels: discount type, total qty, sub total, discount, tax amount, grand total |
+| 49 | Invoicing | Retail | invoice/retailbillinglist.php | /distributor/invoicing/retail | **add page:** extraColumns: value, avl stock, serial / imei no.; missingLabels: discount type, total qty, sub total, discount, tax amount, grand total |
 | 50 | Invoicing | Single Serial No. Track | invoice/check_imei.php | /distributor/invoicing/serial-track | none |
 | 51 | Invoicing | STN Distribution | invoice/stndistribution_list.php | /distributor/invoicing/stn-distribution | **add page:** missingLabels: distribution to, product |
 | 52 | Invoicing | Stock Transfer | invoice/stock_transfer.php | /distributor/invoicing/stock-transfer | title: Add Stock Transfer, Stock Transfer List; missingColumns: product, qty, price, value, discount, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock; extraColumns: s.no, stock transfer to, stock transfer from, document no., document date, entry by, status, view, cancel; missingLabels: stock transfer from, stock transfer to, document type, sub total, total qty, total discount, grand total, delivery address, remark; missingButtons: save, back |
@@ -97,7 +97,7 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 87 | HRMS HR. | Employee Master | hrms/employee_master_list.php | /distributor/e/employee | none |
 | 88 | HRMS HR. | Holidays Master | hrms/holidays_list.php | /distributor/e/holiday | none |
 | 89 | HRMS HR. | Leave Approve | hrms/leave_approve_list.php | /distributor/approve/leave | none |
-| 90 | HRMS HR. | Leave Master | hrms/leave_list.php | /distributor/e/leavetype | missingColumns: effective date; extraColumns: effetcive date |
+| 90 | HRMS HR. | Leave Master | hrms/leave_list.php | /distributor/e/leavetype | none |
 | 91 | HRMS HR. | My Teams | hrms/my_teams_list.php | /distributor/hr/my-teams | none |
 | 92 | HRMS HR. | Notice | hrms/notice_list.php | /distributor/e/notice | none |
 | 93 | HRMS HR. | Policies | hrms/policies_admin_list.php | /distributor/e/policy | none |

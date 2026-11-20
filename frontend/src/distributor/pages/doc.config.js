@@ -13,7 +13,7 @@ export const DOC_LISTS = {
   'invoicing/retail': {
     title: 'Retail Billing List', icon: Monitor, params: { kind: 'RETAIL_LOCATION,RETAIL_CUSTOMER' },
     buttons: [{ label: 'Add Retail Billing To Location', to: '/distributor/new/RETAIL_LOCATION' }, { label: 'Add Retail Billing To Customer', to: '/distributor/new/RETAIL_CUSTOMER' }],
-    cols: ['from', 'to', 'no', 'date', 'status', 'serials'], actions: ['print', 'view', 'cancel'], fromFirst: true, labels: { from: 'Billing From', to: 'Billing To' }, order: ['#', 'from', 'to', 'no', 'date', 'status', 'pr', 'serials', 'vw', 'cn'],
+    cols: ['from', 'to', 'no', 'date', 'status', 'serials'], actions: ['print', 'view', 'cancel'], fromFirst: true, labels: { from: 'Billing From', to: 'Billing To' }, order: ['#', 'from', 'to', 'invoiceNo', 'invoiceDate', 'status', 'pr', 'serials', 'vw', 'cn'],
   },
   'invoicing/stn-distribution': {
     title: 'STN Distribution List', icon: Monitor, params: { kind: 'STN', distribution: '1' },

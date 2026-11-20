@@ -354,7 +354,7 @@ const REFERENCE_UI = {
       f('typeOfLeave', 'Type of Leave', 'text', { req: 1 }), f('noOfDays', 'No. of Days', 'number', { req: 1, min: 0 }), f('effectiveDate', 'Effetcive Date', 'date'), // reference spelling
       f('employmentType', 'Employment Type', 'select', { opts: ['Bench', 'On Notice Period', 'Permanent', 'Probation', 'Stipend', 'Training'], legacy: ['All', 'Contract', 'Intern'] }), STATUS,
     ],
-    actionCol: 'view-edit', addLabel: 'Add Leave', addTitle: 'Add Leave',
+    colLabels: { effectiveDate: 'Effective Date' }, actionCol: 'view-edit', addLabel: 'Add Leave', addTitle: 'Add Leave',
   },
   employee: {
     fields: [

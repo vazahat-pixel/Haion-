@@ -15,7 +15,7 @@ export function useLocProdOpts() {
 }
 
 /** Generic report: filter bar → GO → table (+ Excel/CSV export). */
-export function Report({ title, icon = FileBarChart, url, filters, columns, pick = (d) => d, requireGo = true, name, footer }) {
+export function Report({ title, icon = FileBarChart, url, filters, columns, pick = (d) => d, requireGo = true, name, footer, headersBeforeGo = false }) {
   const opts = useLocProdOpts();
   const [params, setParams] = useState(requireGo ? null : {});
   const { data, isFetching, error } = useDmsQuery(`rep-${url}`, url, params, { enabled: params !== null });
@@ -25,6 +25,7 @@ export function Report({ title, icon = FileBarChart, url, filters, columns, pick
       <PageTitle icon={icon}>{title}</PageTitle>
       <FilterBar defs={filters} opts={opts} onGo={setParams} />
       {error && <Alert>{apiError(error).message}</Alert>}
+      {params === null && headersBeforeGo && <DataTable columns={columns} rows={[]} rowKey="__k" />}
       {params !== null && !error && (
         <>
           <div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv(name || title, columns.filter((c) => c.key !== '#'), rows)}>Export to Excel</Btn></div>
@@ -44,10 +45,11 @@ const productFilters = [
   { name: 'brand', label: 'Brand', optionsFrom: 'brands' }, { name: 'product', label: 'Product', optionsFrom: 'products' },
 ];
 
-export const InventoryReport = ({ title = 'Inventory', icon }) => (
-  <Report title={title} icon={icon} url="/reports/inventory" requireGo={false}
+// Inventory report waits for GO; the Inventory Dashboard shows product-wise stock straight away (reference columns)
+export const InventoryReport = ({ title = 'Inventory', icon, dashboard = false }) => (
+  <Report title={title} icon={icon} url="/reports/inventory" requireGo={!dashboard}
     filters={[loc(false), { name: 'inventoryType', label: 'Inventory Type', options: ['IMEI INVENTORY', 'QTY INVENTORY'] }, ...productFilters]}
-    columns={[{ key: '#', label: 'S.No.' }, { key: 'location', label: 'Location' }, { key: 'productCode', label: 'Product Code' }, { key: 'productName', label: 'Product' }, { key: 'color', label: 'Color' },
+    columns={dashboard ? [{ key: '#', label: 'S.No.' }, { key: 'productName', label: 'Product', text: (r) => `${r.productName} | ${r.productCode}`, render: (r) => `${r.productName} | ${r.productCode}` }, { key: 'okQty', label: 'Ok Qty', align: 'r' }, { key: 'damageQty', label: 'Damage Qty', align: 'r' }, { key: 'missingQty', label: 'Missing Qty', align: 'r' }] : [{ key: '#', label: 'S.No.' }, { key: 'location', label: 'Location' }, { key: 'productCode', label: 'Product Code' }, { key: 'productName', label: 'Product' }, { key: 'color', label: 'Color' },
       { key: 'type', label: 'Inventory Type', text: (r) => (r.isSerialized ? 'IMEI INVENTORY' : 'QTY INVENTORY'), render: (r) => (r.isSerialized ? 'IMEI INVENTORY' : 'QTY INVENTORY') },
       { key: 'okQty', label: 'Ok Qty', align: 'r' }, { key: 'damageQty', label: 'Damage Qty', align: 'r' }, { key: 'missingQty', label: 'Missing Qty', align: 'r' }]} />
 );
@@ -62,7 +64,7 @@ export const AgingReport = () => (
 );
 
 export const StockLedgerReport = () => (
-  <Report title="Stock Ledger" url="/reports/stock-ledger" filters={[...dates, loc(true), ...productFilters]}
+  <Report title="Stock Ledger" url="/reports/stock-ledger" headersBeforeGo filters={[...dates, loc(true), ...productFilters]}
     columns={[
       { key: '#', label: 'S.No' }, { key: 'createdAt', label: 'Date & Time', render: (r) => fmt.dt(r.createdAt), text: (r) => fmt.dt(r.createdAt) },
       { key: 'item', label: 'Item', text: (r) => `${r.product?.name} | ${r.product?.productCode}${r.bucket !== 'OK' ? ` (${r.bucket})` : ''}`, render: (r) => `${r.product?.name} | ${r.product?.productCode}${r.bucket !== 'OK' ? ` (${r.bucket})` : ''}` },
@@ -73,7 +75,7 @@ export const StockLedgerReport = () => (
 
 /* Column order, captions and number style follow the live reference Party Ledger (verified 19-Nov-2026). */
 export const PartyLedgerReport = () => (
-  <Report title="Party Ledger" url="/reports/party-ledger" filters={[{ ...loc(true), label: 'Location Name :' }, ...dates]} pick={(d) => d.rows}
+  <Report title="Party Ledger" url="/reports/party-ledger" headersBeforeGo filters={[{ ...loc(true), label: 'Location Name :' }, ...dates]} pick={(d) => d.rows}
     footer={(d) => d && <p style={{ textAlign: 'right' }}><b>Total CR:</b> {fmt.amt(d.totalCr)} &nbsp; <b>Total DR:</b> {fmt.amt(d.totalDr)} &nbsp; <b>Opening:</b> {fmt.amt(d.opening)} &nbsp; <b>Closing (DR − CR):</b> {fmt.amt(d.closing)}</p>}
     columns={[
       { key: '#', label: 'SNo.' }, { key: 'locationName', label: 'Location Name' }, { key: 'counterpartyName', label: 'Party Name' }, { key: 'docNo', label: 'Document No.' }, { key: 'docTypeLabel', label: 'Document Type' },
