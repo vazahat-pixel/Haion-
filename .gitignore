@@ -13,8 +13,6 @@ frontend/public/build-id.txt
 # ===========================
 # Environment files
 # ===========================
-.env
-.env.local
 .env.development.local
 .env.test.local
 # SECURITY: Explicitly ignore backend .env — contains DB credentials and JWT secrets
@@ -101,3 +99,4 @@ frontend/playwright-report/
 
 # raw reference crawl (contains client names / locations from the reference dropdowns) and local crawl
 reference-audit/reference-structure/
+config.bat

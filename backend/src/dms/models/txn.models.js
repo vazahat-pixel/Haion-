@@ -186,6 +186,8 @@ const invoiceSchema = new Schema(
 );
 invoiceSchema.index({ 'from.location': 1, kind: 1 });
 invoiceSchema.index({ 'to.location': 1, kind: 1 });
+invoiceSchema.index({ invoiceDate: -1, kind: 1 }); // home dashboard / reports by period
+invoiceSchema.index({ createdAt: -1 });
 export const DmsInvoice = mongoose.models.DmsInvoice || mongoose.model('DmsInvoice', invoiceSchema);
 
 /* Stock per location × product, in three buckets */
