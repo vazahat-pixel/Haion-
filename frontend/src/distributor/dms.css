@@ -231,3 +231,20 @@
 }
 .rp-serials { font-size: 11px !important; padding: 8px 6px !important; line-height: 1.6; }
 .rp-serials span { display: inline-block; margin-right: 18px; }
+
+/* ── Admin/Users: two-column form and the "Update User Permission" tabs (reference layout) ── */
+.dms-form.two { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 1100px; column-gap: 24px; }
+@media (max-width: 900px) { .dms-form.two { grid-template-columns: minmax(0, 1fr); } }
+.dms-img-note { color: #d9534f; font-size: 12px; margin-top: 4px; }
+.dms-profile-img { width: 80px; height: 80px; object-fit: cover; border: 1px solid #ddd; margin-top: 6px; }
+.dms-perm-user { text-align: center; font-size: 16px; margin: -6px 0 12px; color: #333; }
+.dms-tabs { list-style: none; display: flex; flex-wrap: wrap; gap: 2px; margin: 0 auto; padding: 0; max-width: 1100px; border-bottom: 1px solid #ddd; }
+.dms-tabs button { background: none; border: 1px solid transparent; border-bottom: 0; border-radius: 4px 4px 0 0; padding: 10px 15px; color: #337ab7; font-size: 13px; cursor: pointer; margin-bottom: -1px; }
+.dms-tabs button.active { color: #555; background: #fff; border-color: #ddd; border-bottom-color: #fff; }
+.dms-tabs .fa { margin-right: 4px; }
+.dms-perm-pane { max-width: 1100px; margin: 0 auto; padding: 8px 12px; }
+.dms-perm-tools { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 4px; }
+.dms-perm-group h4 { font-size: 13px; font-weight: 700; margin: 10px 0 6px; padding-bottom: 6px; border-bottom: 1px solid #ddd; }
+.dms-perm-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dms-perm-grid label { display: flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 400; padding: 8px 0; border-bottom: 1px solid #eee; }
+@media (max-width: 900px) { .dms-perm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

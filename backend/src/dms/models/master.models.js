@@ -197,8 +197,14 @@ export const DmsScheme = mongoose.models.DmsScheme || mongoose.model('DmsScheme'
 /* DMS user profile — links a Haion login (User) to a DMS user type + location + page rights */
 export const DMS_USER_TYPES = [
   'Admin', 'Sales Head', 'Regional Sales Head', 'State Head', 'Area Sales Manager',
-  'Territory Sales Manager', 'Sales Executive', 'Location User',
+  'Territory Sales Manager', 'Sales Executive', 'Location User', 'ISP/ISD', 'Director', 'Employee',
 ];
+/** Short codes the reference shows next to each user type, e.g. "Admin ( ADMIN )". */
+export const DMS_USER_TYPE_CODES = {
+  Admin: 'ADMIN', 'Sales Head': 'SLH', 'Regional Sales Head': 'RSH', 'State Head': 'STH', 'Area Sales Manager': 'ASM',
+  'Territory Sales Manager': 'TSM', 'Sales Executive': 'SE', 'Location User': 'USER', 'ISP/ISD': 'ISP', Director: 'DIR', Employee: 'EMP',
+};
+export const DMS_REGIONS = ['EAST', 'WEST', 'NORTH', 'SOUTH'];
 const profileSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
@@ -208,6 +214,16 @@ const profileSchema = new Schema(
     location: { type: Schema.Types.ObjectId, ref: 'DmsLocation' },
     pages: [{ type: String }], // page keys, e.g. "po", "po_approval"; empty + Admin = all
     status: { type: String, enum: STATUS, default: 'Active' },
+    profileImg: String, // small data URL (reference: 220 x 220 image)
+    // "Update User Permission" tabs in the reference: Region, Location Type, Product Category and Brand.
+    // Empty list = no restriction.
+    scopes: {
+      regions: [{ type: String, enum: DMS_REGIONS }],
+      locationTypes: [String],
+      categories: [{ type: Schema.Types.ObjectId, ref: 'DmsMaster' }],
+      brands: [{ type: Schema.Types.ObjectId, ref: 'DmsMaster' }],
+    },
+    history: [{ _id: false, at: Date, by: String, change: String }],
   },
   { timestamps: true, collection: 'dms_profiles' },
 );

@@ -23,6 +23,8 @@ const MasterForm = lazy(() => M().then((m) => ({ default: m.MasterForm })));
 const U = () => import('./pages/UserPages');
 const UserList = lazy(() => U().then((m) => ({ default: m.UserList })));
 const UserForm = lazy(() => U().then((m) => ({ default: m.UserForm })));
+const UserPermission = lazy(() => U().then((m) => ({ default: m.UserPermission })));
+const UserHistory = lazy(() => U().then((m) => ({ default: m.UserHistory })));
 const P = () => import('./pages/PoPages');
 const PoList = lazy(() => P().then((m) => ({ default: m.PoList })));
 const PoForm = lazy(() => P().then((m) => ({ default: m.PoForm })));
@@ -132,6 +134,8 @@ function GuardedRoutes() {
 
           <Route path="masters/users" element={<UserList />} />
           <Route path="masters/users/:id" element={<UserForm />} />
+          <Route path="masters/users/:id/permission" element={<UserPermission />} />
+          <Route path="masters/users/:id/history" element={<UserHistory />} />
           <Route path="masters/:key" element={<MasterList />} />
           <Route path="masters/:key/:id" element={<MasterForm />} />
 

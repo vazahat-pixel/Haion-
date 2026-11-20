@@ -6,7 +6,7 @@ import { parsePagination } from '../../utils/pagination.util.js';
 import User from '../../models/User.model.js';
 import {
   DmsMaster, MASTER_TYPES, DmsHsn, DmsProduct, DmsLocation, DmsVendor, DmsCustomer, DmsPrice,
-  DmsScheme, DmsProfile, DMS_USER_TYPES, LOCATION_TYPES,
+  DmsScheme, DmsProfile, DMS_USER_TYPES, DMS_USER_TYPE_CODES, DMS_REGIONS, LOCATION_TYPES,
 } from '../models/master.models.js';
 import { requirePage, DMS_PAGES, scopeFilter, assertCanSee } from '../middleware/context.js';
 import { DmsError, nextLocationCode, nextSeq } from '../services/core.service.js';
@@ -228,6 +228,26 @@ crud('/schemes', {
 });
 
 /* ── DMS users (Admin/Users master) ── */
+const MAX_IMG = 300 * 1024; // data URL length; the reference asks for a 220 x 220 image
+function cleanImg(v) {
+  if (v === undefined) return undefined;
+  if (v === '' || v === null) return '';
+  if (!/^data:image\/(png|jpe?g|gif|webp);base64,/.test(String(v))) throw new DmsError('Profile Img must be a PNG, JPG, GIF or WEBP image', 422, { profileImg: ['Image only'] });
+  if (String(v).length > MAX_IMG) throw new DmsError('Profile Img is too large (use a 220 x 220 image)', 422, { profileImg: ['Too large'] });
+  return String(v);
+}
+function cleanScopes(v) {
+  if (!v || typeof v !== 'object') return undefined;
+  const ids = (a) => (Array.isArray(a) ? a.filter(isId) : []);
+  return {
+    regions: (Array.isArray(v.regions) ? v.regions : []).filter((r) => DMS_REGIONS.includes(r)),
+    locationTypes: (Array.isArray(v.locationTypes) ? v.locationTypes : []).filter((t) => Object.keys(LOCATION_TYPES).includes(t)),
+    categories: ids(v.categories),
+    brands: ids(v.brands),
+  };
+}
+const FIELD_LABEL = { displayName: 'User Name', userType: 'User Type', location: 'Location', status: 'Status', pages: 'Rights', profileImg: 'Profile Img', scopes: 'Region / Location / Category / Brand', phone: 'Mobile No.' };
+
 router.get('/users', requirePage('m_users'), asyncHandler(async (req, res) => {
   const { skip, perPage, page } = parsePagination(req.query);
   const q = {};
@@ -235,19 +255,27 @@ router.get('/users', requirePage('m_users'), asyncHandler(async (req, res) => {
   if (req.query.userType) q.userType = req.query.userType;
   if (req.query.search) q.$or = [{ loginId: new RegExp(esc(req.query.search), 'i') }, { displayName: new RegExp(esc(req.query.search), 'i') }];
   const [rows, total] = await Promise.all([
-    DmsProfile.find(q).populate('user', 'email phone isActive').populate('location', 'name code').sort({ createdAt: -1 }).skip(skip).limit(perPage).lean(),
+    DmsProfile.find(q).select('-profileImg -history').populate('user', 'email phone isActive').populate('location', 'name code').sort({ createdAt: -1 }).skip(skip).limit(perPage).lean(),
     DmsProfile.countDocuments(q),
   ]);
   sendPaginated(res, { data: rows, total, page, perPage });
 }));
+router.get('/users/:id/history', requirePage('m_users'), asyncHandler(async (req, res) => {
+  if (!isId(req.params.id)) throw new DmsError('Invalid id', 400);
+  const p = await DmsProfile.findById(req.params.id).select('displayName loginId history').lean();
+  if (!p) throw new DmsError('Not found', 404);
+  sendSuccess(res, { data: { displayName: p.displayName, loginId: p.loginId, history: [...(p.history || [])].reverse() } });
+}));
 router.get('/users/:id', requirePage('m_users'), asyncHandler(async (req, res) => {
   if (!isId(req.params.id)) throw new DmsError('Invalid id', 400);
-  const p = await DmsProfile.findById(req.params.id).populate('user', 'email phone isActive').populate('location', 'name code').lean();
+  const p = await DmsProfile.findById(req.params.id).select('-history').populate('user', 'email phone isActive').populate('location', 'name code').lean();
   if (!p) throw new DmsError('Not found', 404);
   sendSuccess(res, { data: p });
 }));
 router.post('/users', requirePage('m_users'), asyncHandler(async (req, res) => {
   const { displayName, password, userType, phone, email, status = 'Active', location, pages = [] } = req.body;
+  const profileImg = cleanImg(req.body.profileImg);
+  const scopes = cleanScopes(req.body.scopes);
   const missing = Object.fromEntries(['displayName', 'password', 'userType', 'email', 'phone'].filter((k) => !req.body[k]).map((k) => [k, ['Required']]));
   if (Object.keys(missing).length) throw new DmsError('Please fill all required fields', 422, missing);
   if (!/^\d{10}$/.test(String(phone).trim())) throw new DmsError('Mobile No. must be 10 digits', 422, { phone: ['10 digits'] });
@@ -266,6 +294,9 @@ router.post('/users', requirePage('m_users'), asyncHandler(async (req, res) => {
   const profile = await DmsProfile.create({
     user: user._id, loginId, displayName, userType, location: loc?._id, status,
     pages: pages.filter((p) => DMS_PAGES.includes(p)),
+    ...(profileImg ? { profileImg } : {}),
+    ...(scopes ? { scopes } : {}),
+    history: [{ at: new Date(), by: req.dms.loginId, change: 'Created' }],
   });
   sendCreated(res, { data: profile, message: `User created. Login ID: ${loginId}` });
 }));
@@ -274,7 +305,19 @@ router.put('/users/:id', requirePage('m_users'), asyncHandler(async (req, res) =
   if (!profile) throw new DmsError('Not found', 404);
   const b = pick(req.body, ['displayName', 'userType', 'location', 'status', 'pages']);
   if (b.pages) b.pages = b.pages.filter((p) => DMS_PAGES.includes(p));
+  const img = cleanImg(req.body.profileImg);
+  if (img !== undefined) b.profileImg = img;
+  const scopes = cleanScopes(req.body.scopes);
+  if (scopes) b.scopes = scopes;
+  const same = (k) => JSON.stringify(k === 'location' ? String(profile.location || '') : profile.toObject()[k] ?? '') === JSON.stringify(k === 'location' ? String(b.location || '') : b[k] ?? '');
+  const changed = Object.keys(b).filter((k) => !same(k)).map((k) => FIELD_LABEL[k] || k);
+  if (req.body.phone !== undefined) {
+    const cur = await User.findById(profile.user).select('phone').lean();
+    if (String(cur?.phone || '') !== String(req.body.phone)) changed.push(FIELD_LABEL.phone);
+  }
+  if (req.body.password) changed.push('Password');
   profile.set(b);
+  if (changed.length) profile.history.push({ at: new Date(), by: req.dms.loginId, change: `Updated: ${changed.join(', ')}` });
   await profile.save();
   const userUpd = { isActive: profile.status === 'Active' };
   if (req.body.phone !== undefined) userUpd.phone = req.body.phone;
@@ -286,13 +329,22 @@ router.put('/users/:id', requirePage('m_users'), asyncHandler(async (req, res) =
   sendSuccess(res, { data: profile, message: 'Updated successfully' });
 }));
 
+/** Product Category / Brand rights of a non-admin user limit the products offered in the forms. */
+function productScope(req) {
+  const s = req.dms?.isAdmin ? null : req.dms?.profile?.scopes;
+  const q = {};
+  if (s?.categories?.length) q.$or = [{ category: { $in: s.categories } }, { subCategory: { $in: s.categories } }];
+  if (s?.brands?.length) q.brand = { $in: s.brands };
+  return q;
+}
+
 /* ── lookups for dropdowns ── */
 router.get('/lookups', asyncHandler(async (req, res) => {
   const locQ = { status: 'Active', ...scopeFilter(req, ['_id']) };
   const [locations, allLocations, products, vendors, couriers, brands, categories, subcategories, colors, executives, hsn, schemes] = await Promise.all([
     DmsLocation.find(locQ).select('code name city state stateCode locationType parent mappedLocations creditLimit billingAddress dispatchAddress docPrefix').sort({ name: 1 }).lean(),
     DmsLocation.find({ status: 'Active' }).select('code name city state stateCode locationType parent billingAddress dispatchAddress pincode panNo gstNo cstNo stNo').sort({ name: 1 }).lean(),
-    DmsProduct.find({ status: 'Active' }).select('productCode name color hsnCode isSerialized brand category subCategory warrantyDays').sort({ name: 1 }).lean(),
+    DmsProduct.find({ status: 'Active', ...productScope(req) }).select('productCode name color hsnCode isSerialized brand category subCategory warrantyDays').sort({ name: 1 }).lean(),
     DmsVendor.find({ status: 'Active' }).select('code name city state stateCode country address gstNo panNo').sort({ name: 1 }).lean(),
     DmsMaster.find({ type: 'courier', status: 'Active' }).select('name attrs').lean(),
     DmsMaster.find({ type: 'brand', status: 'Active' }).select('name').sort({ name: 1 }).lean(),
@@ -306,7 +358,7 @@ router.get('/lookups', asyncHandler(async (req, res) => {
   sendSuccess(res, {
     data: {
       locations, allLocations, products, vendors, couriers, brands, categories, subcategories, colors, executives, hsn, schemes,
-      locationTypes: Object.keys(LOCATION_TYPES), userTypes: DMS_USER_TYPES, pages: DMS_PAGES,
+      locationTypes: Object.keys(LOCATION_TYPES), userTypes: DMS_USER_TYPES, userTypeCodes: DMS_USER_TYPE_CODES, regions: DMS_REGIONS, pages: DMS_PAGES,
     },
   });
 }));
