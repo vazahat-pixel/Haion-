@@ -37,6 +37,7 @@
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
     "firebase": "^12.18.0",
+    "font-awesome": "4.7.0",
     "framer-motion": "^11.15.0",
     "gsap": "^3.12.5",
     "immer": "^10.1.1",

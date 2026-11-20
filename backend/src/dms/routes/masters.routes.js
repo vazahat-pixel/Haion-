@@ -291,9 +291,9 @@ router.get('/lookups', asyncHandler(async (req, res) => {
   const locQ = { status: 'Active', ...scopeFilter(req, ['_id']) };
   const [locations, allLocations, products, vendors, couriers, brands, categories, subcategories, colors, executives, hsn, schemes] = await Promise.all([
     DmsLocation.find(locQ).select('code name city state stateCode locationType parent mappedLocations creditLimit billingAddress dispatchAddress docPrefix').sort({ name: 1 }).lean(),
-    DmsLocation.find({ status: 'Active' }).select('code name city state stateCode locationType parent billingAddress dispatchAddress').sort({ name: 1 }).lean(),
+    DmsLocation.find({ status: 'Active' }).select('code name city state stateCode locationType parent billingAddress dispatchAddress pincode panNo gstNo cstNo stNo').sort({ name: 1 }).lean(),
     DmsProduct.find({ status: 'Active' }).select('productCode name color hsnCode isSerialized brand category subCategory warrantyDays').sort({ name: 1 }).lean(),
-    DmsVendor.find({ status: 'Active' }).select('code name city state stateCode country').sort({ name: 1 }).lean(),
+    DmsVendor.find({ status: 'Active' }).select('code name city state stateCode country address gstNo panNo').sort({ name: 1 }).lean(),
     DmsMaster.find({ type: 'courier', status: 'Active' }).select('name attrs').lean(),
     DmsMaster.find({ type: 'brand', status: 'Active' }).select('name').sort({ name: 1 }).lean(),
     DmsMaster.find({ type: 'category', status: 'Active' }).select('name').sort({ name: 1 }).lean(),

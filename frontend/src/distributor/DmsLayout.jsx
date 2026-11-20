@@ -5,7 +5,16 @@ import { RouteErrorBoundary } from '@/components/error-boundaries/RouteErrorBoun
 import { useAuth } from '@/hooks/useAuth';
 import { useMe, BRAND } from './api';
 import { filterMenu } from './menu';
+import 'font-awesome/css/font-awesome.min.css'; // the reference uses Font Awesome 4 icons
 import './dms.css';
+
+/** Font Awesome 4 icon when the menu entry names one (reference look), otherwise the fallback SVG icon. */
+function SideIcon({ entry, sub }) {
+  if (entry.fa) return <i className={`fa ${entry.fa} dms-fa ${sub ? 'sub' : ''}`} aria-hidden="true" style={sub ? undefined : { color: entry.color }} />;
+  if (!entry.icon) return null;
+  const Icon = entry.icon;
+  return <Icon className="dms-ico" color={entry.color} />;
+}
 
 const longDate = () => {
   const d = new Date();
@@ -55,12 +64,11 @@ export default function DmsLayout() {
           </div>
           <ul className="dms-menu">
             {menu.map((g) => {
-              const Icon = g.icon;
               if (!g.items) {
                 return (
                   <li key={g.label}>
                     <NavLink to={g.to} className={({ isActive }) => `dms-mi ${isActive ? 'active' : ''}`}>
-                      <Icon className="dms-ico" color={g.color} />{g.label}
+                      <SideIcon entry={g} />{g.label}
                     </NavLink>
                   </li>
                 );
@@ -69,12 +77,12 @@ export default function DmsLayout() {
               return (
                 <li key={g.label} className={isOpen ? 'open' : ''}>
                   <button type="button" className="dms-mi" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : g.label)}>
-                    <Icon className="dms-ico" color={g.color} />{g.label}<ChevronDown size={15} className="chev" />
+                    <SideIcon entry={g} />{g.label}<ChevronDown size={15} className="chev" />
                   </button>
                   {isOpen && (
                     <ul className="dms-sub">
                       {g.items.map((i) => (
-                        <li key={i.to}><NavLink to={i.to} className={({ isActive }) => (isActive ? 'active' : '')}>{i.label}</NavLink></li>
+                        <li key={i.to}><NavLink to={i.to} className={({ isActive }) => (isActive ? 'active' : '')}><SideIcon entry={i} sub />{i.label}</NavLink></li>
                       ))}
                     </ul>
                   )}

@@ -33,7 +33,7 @@
 .dms-user .dms-date { font-weight: 600; display: flex; align-items: center; gap: 14px; }
 .dms-user button { background: none; border: 0; color: #fff; cursor: pointer; padding: 0; display: inline-flex; }
 .dms-menu { list-style: none; margin: 0; padding: 0; }
-.dms-menu > li > .dms-mi { display: flex; align-items: center; gap: 7px; width: 100%; min-height: 36px; padding: 6px 10px; color: #fff; font-size: 14px; font-weight: 400; font-family: inherit; border: 0; border-bottom: 1px solid var(--dms-side-border); background: transparent; cursor: pointer; text-align: left; border-left: 4px solid var(--dms-side); }
+.dms-menu > li > .dms-mi { display: flex; align-items: center; gap: 7px; width: 100%; min-height: 36px; padding: 6px 10px; color: #e1ffff; font-size: 12px; font-weight: 400; font-family: inherit; border: 0; border-bottom: 1px solid var(--dms-side-border); background: transparent; cursor: pointer; text-align: left; border-left: 4px solid var(--dms-side); }
 .dms-menu > li > .dms-mi:hover { background: var(--dms-side-active); text-decoration: none; }
 .dms-menu > li.open > .dms-mi, .dms-menu > li > .dms-mi.active { background: var(--dms-side-active); border-left-color: #01a238; }
 .dms-mi .chev { margin-left: auto; transition: transform .15s; }
@@ -171,3 +171,63 @@
 .dms-login .dms-alert { padding: 8px 12px; border: 1px solid #ebccd1; background: #f2dede; color: #a94442; border-radius: 3px; font-size: 13px; }
 .dms-login-btn { width: 100%; height: 38px; margin-top: 12px; font-size: 15px; }
 .dms-login-foot { margin-top: 18px; font-size: 12px; color: #777; }
+
+/* ── Font Awesome 4 sidebar icons (reference look): group icons sky-blue, sub-item icons green ── */
+.dms-fa { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+.dms-fa.sub { color: rgb(28,200,138); }
+
+/* ── Printed documents, laid out like the reference print_invoice.php (1089px) / print_po.php (800px) ── */
+.rp-wrap { background: #fff; color: #000; font-family: Arial, sans-serif; padding: 12px 0 12px 40px; }
+.rp-wrap .no-print { max-width: 1089px; }
+.rp-doc { border-collapse: collapse; border: 1px solid #b0b0b0; }
+.rp-inv .rp-doc { width: 1089px; }
+.rp-po .rp-doc { width: 800px; }
+.rp-doc > tbody > tr > td { padding: 0; }
+.rp-t { width: 100%; border-collapse: collapse; }
+.rp-t td { border: 1px solid #b0b0b0; vertical-align: top; font-size: 13px; line-height: 1.17; padding: 2px; }
+.rp-t td.r { text-align: right; }
+.rp-t td.c { text-align: center; }
+.rp-logo-cell { width: 373px; height: 50px; padding: 0 !important; border-width: 0 0 1px 0 !important; vertical-align: middle !important; }
+.rp-logo { padding: 2px 0 0 2px; }
+.rp-logo b { font: italic 900 50px/50px "Arial Black", Arial, sans-serif; letter-spacing: -1px; color: #0b3d91; }
+.rp-logo b span { color: #12a14b; }
+.rp-title { border-width: 0 0 1px 0 !important; font-weight: 700; font-size: 13px !important; text-align: center; padding-right: 400px !important; }
+.rp-pohead { border-width: 0 0 1px 0 !important; font-size: 13px; vertical-align: middle !important; }
+.rp-cap { font-weight: 700; font-size: 13px; height: 16px; }
+.rp-big b { font-size: 13px; }
+.rp-party { font-size: 13px; }
+.rp-small { font-size: 10.5px !important; }
+.rp-mid { font-size: 13px; }
+.rp-items .rp-ih td { font-weight: 700; font-size: 13px; text-align: center; vertical-align: top; padding: 3px; }
+.rp-items .rp-row td { font: 11px "Courier New", Courier, monospace; vertical-align: middle; padding: 3px; border-bottom-width: 1px; }
+.rp-items .rp-row td.rp-arial, .rp-arial { font-family: Arial, sans-serif !important; }
+.rp-items .rp-fill td { height: 336px; border-top: 0; border-bottom-width: 1px; }
+.rp-items .rp-tot td { font-size: 11px; vertical-align: middle; height: 22px; }
+.rp-sum td { font-size: 11px; height: 16px; vertical-align: middle; }
+.rp-foot td { font-size: 11px; vertical-align: top; }
+.rp-decl { border-right: 0 !important; padding-bottom: 6px !important; }
+.rp-light { font-weight: 400; }
+.rp-sign { width: 20%; border-left: 0 !important; padding-top: 114px !important; font-size: 12px !important; }
+.rp-egen { height: 48px; vertical-align: middle !important; padding-left: 24px !important; font-size: 11px !important; }
+.rp-poitems .rp-ih td { height: 21px; }
+.rp-poitems .rp-row td { height: 15px; }
+.rp-potot td { font-size: 11px; height: 18px; vertical-align: middle; }
+.rp-potot td.rp-nb { line-height: 1.8; }
+.rp-pofoot td { font-size: 11px; height: 21px; vertical-align: top; }
+.rp-mono { font-family: "Courier New", Courier, monospace; }
+.rp-pofoot td.rp-posign { height: 80px; padding: 0 6px 3px; }
+.rp-posign > div { min-height: 77px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; }
+.rp-posign span { font-size: 11px; }
+.rp-bar { max-width: 1089px; text-align: right; margin-bottom: 8px; }
+.rp-bar button { font: 13px Arial, sans-serif; padding: 6px 14px; margin-left: 6px; border-radius: 4px; border: 1px solid #2e6da4; background: #337ab7; color: #fff; cursor: pointer; }
+.rp-bar button.alt { background: #fff; color: #333; border-color: #ccc; }
+@media print {
+  @page { size: A4; margin: 0; } /* margin 0 also drops the browser's date / URL header and footer */
+  .rp-wrap { padding: 8mm 0 0 8mm; }
+  .rp-wrap .no-print { display: none !important; }
+  .rp-inv .rp-doc { zoom: 0.665; }
+  .rp-po .rp-doc { zoom: 0.9; }
+  .rp-t td, .rp-doc { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+.rp-serials { font-size: 11px !important; padding: 8px 6px !important; line-height: 1.6; }
+.rp-serials span { display: inline-block; margin-right: 18px; }

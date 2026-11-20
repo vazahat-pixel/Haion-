@@ -188,3 +188,35 @@ export function filterMenu(pages = [], isAdmin = false) {
   return MENU.map((g) => (g.items ? { ...g, items: g.items.filter((i) => can(i.page)) } : g))
     .filter((g) => (g.items ? g.items.length > 0 : can(g.page)));
 }
+
+/**
+ * Font Awesome 4 icons exactly as the reference sidebar uses them (read from the live reference on 20-Nov-2026).
+ * Group icons are rgb(54,185,204), Home is rgb(224,168,0), sub-item icons are rgb(28,200,138).
+ * Keyed by group label → { fa, items: { item label → fa } }.
+ */
+const REF_ICONS = {
+  Home: { fa: 'fa-home' },
+  Dashboard: { fa: 'fa-dashboard', items: { 'Dashboard 1': 'fa-line-chart', 'Dashboard 2': 'fa-bar-chart', Inventory: 'fa-area-chart', 'Lead Dashboard': 'fa-child', Purchase: 'fa-bar-chart', Sale: 'fa-line-chart' } },
+  'Master Management': { fa: 'fa-database', items: { Account: 'fa-sitemap', 'Admin/Users': 'fa-users', 'Brand Master': 'fa-tag', 'City Master': 'fa-map-marker', 'Color Master': 'fa-adjust', 'Coupon Master': 'fa-codiepie', 'Courier Master': 'fa-truck', 'Customer Master': 'fa-user-o', 'Location Master': 'fa-bank', 'Other Tax Master': 'fa-book', 'Parameter Master': 'fa-list-ul', 'Price Master': 'fa-inr', 'Product Category': 'fa-suitcase', 'Product Delivery': 'fa-car', 'Product Image': 'fa-file-image-o', 'Product Master': 'fa-tablet', 'Product Sub Category': 'fa-cog', 'Scheme Master': 'fa-tags', 'Serial No. Activation': 'fa-ticket', Specification: 'fa-film', 'State Master': 'fa-map-marker', 'Tax Master': 'fa-book', 'Vendor Master': 'fa-users' } },
+  'Report Master': { fa: 'fa-newspaper-o', items: { 'Beat Report': 'fa-bullseye', Collection: 'fa-book', Inventory: 'fa-cubes', 'Inventory Aging': 'fa-linode', ISD: 'fa-user-o', 'Party Ledger': 'fa-check-circle', 'Party Master Report': 'fa-map', Payment: 'fa-money', 'Price Drop': 'fa-industry', 'Purchase Order': 'fa-shopping-basket', Return: 'fa-reply', 'Sale Report': 'fa-desktop', 'Serial No. Activation Report': 'fa-ticket', 'Stock Ledger List': 'fa-cubes', 'Vendor Purchase': 'fa-shopping-cart' } },
+  Logistic: { fa: 'fa-truck', items: { 'Update Dispatch': 'fa-car' } },
+  Invoicing: { fa: 'fa-desktop', items: { Corporate: 'fa-user-circle-o', 'Multiple Serial No. Track': 'fa-reply', Retail: 'fa-user', 'Single Serial No. Track': 'fa-barcode', 'STN Distribution': 'fa-bars', 'Stock Transfer': 'fa-reply', 'Stock Transfer Approval': 'fa-reply', 'Stock Transfer for Job work': 'fa-reply' } },
+  Purchase: { fa: 'fa-shopping-cart', items: { 'Local Purchase': 'fa-ship', Opening: 'fa-cubes', PO: 'fa-shopping-basket', 'PO Approval': 'fa-address-card', Vendor: 'fa-ship' } },
+  Return: { fa: 'fa-reply', items: { 'Customer Return': 'fa-user', Purchase: 'fa-reply-all', 'Return Approval': 'fa-address-card', Vendor: 'fa-reply' } },
+  Payment: { fa: 'fa-briefcase', items: { 'Account Adjustment': 'fa-credit-card-alt', 'Payment Approval': 'fa-address-card', 'Payment Receive': 'fa-inr' } },
+  'Receive Stock': { fa: 'fa-suitcase', items: { 'From Location': 'fa-level-down', 'Received from Jobwork': 'fa-level-down' } },
+  'Sale Force': { fa: 'fa-handshake-o', items: { 'Beat Scheduler': 'fa-clock-o', 'Deviation Approval': 'fa-address-card', Lead: 'fa-child', 'My Beat Plan': 'fa-flask', 'PJP Master': 'fa-hourglass-half', Quote: 'fa-quora', Target: 'fa-bullseye' } },
+  'General Query': { fa: 'fa-reply', items: { 'Locationwise Expense': 'fa-inr', 'Query Status': 'fa-question-circle' } },
+  'App Transaction': { fa: 'fa-mobile', items: { 'App Feedback': 'fa-sticky-note', 'App Task': 'fa-hourglass-half', 'App Track Location': 'fa-child', 'Attendance Report': 'fa-user-o', 'TA DA Approval': 'fa-address-card' } },
+  'HRMS HR.': { fa: 'fa-user', items: { Activities: 'fa-cogs', 'Application Approve': 'fa-thumbs-up', Attendance: 'fa-book', 'Claim Approvals': 'fa-thumbs-up', Claims: 'fa-legal', 'Department Master': 'fa-building-o', 'Designation Master': 'fa-vcard-o', 'Employee Master': 'fa-users', 'Holidays Master': 'fa-plane', 'Leave Approve': 'fa-lightbulb-o', 'Leave Master': 'fa-coffee', 'My Teams': 'fa-users', Notice: 'fa-bell', Policies: 'fa-file-text-o', 'Projects / Clients': 'fa-gear', 'Resign Request': 'fa-envelope-o', 'Salary Generate': 'fa-cogs', 'Salary Sheet': 'fa-inr' } },
+  'HRMS Emp.': { fa: 'fa-group', items: { Activities: 'fa-cogs', Application: 'fa-align-justify', Attendance: 'fa-book', 'Employee Claims': 'fa-legal', 'Leave apply / View Status': 'fa-lightbulb-o', 'My Documents': 'fa-file-o', 'My Profile': 'fa-address-card-o', Policies: 'fa-file-text-o', 'Resign Request': 'fa-puzzle-piece', 'Salary Sheet': 'fa-inr' } },
+  'HRMS Report': { fa: 'fa-reply', items: { Attendance: 'fa-book', 'Employee Details': 'fa-users', 'Leave Approve/Reject': 'fa-lightbulb-o', 'Other Request Report': 'fa-cubes', 'Salary Report': 'fa-inr', 'Salary Slip': 'fa-inr' } },
+  'Change Password': { fa: 'fa-user-secret' },
+};
+for (const g of MENU) {
+  const ref = REF_ICONS[g.label];
+  if (!ref) continue;
+  g.fa = ref.fa;
+  g.color = g.label === 'Home' ? 'rgb(224,168,0)' : 'rgb(54,185,204)';
+  for (const i of g.items || []) if (ref.items?.[i.label]) i.fa = ref.items[i.label];
+}

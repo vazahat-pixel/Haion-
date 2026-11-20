@@ -89,6 +89,7 @@ const MyBeatPlan = lazy(() => XP().then((m) => ({ default: m.MyBeatPlan })));
 const PR = () => import('./pages/PrintPages');
 const PrintDoc = lazy(() => PR().then((m) => ({ default: m.PrintDoc })));
 const PrintPo = lazy(() => PR().then((m) => ({ default: m.PrintPo })));
+const PrintImei = lazy(() => PR().then((m) => ({ default: m.PrintImei })));
 const PrintPayment = lazy(() => PR().then((m) => ({ default: m.PrintPayment })));
 
 const DOC_LIST_PATHS = [
@@ -116,6 +117,7 @@ function GuardedRoutes() {
         <Route path="print" element={<PrintShell />}>
           <Route path="doc/:id" element={<PrintDoc />} />
           <Route path="po/:id" element={<PrintPo />} />
+          <Route path="imei/:id" element={<PrintImei />} />
           <Route path="payment/:id" element={<PrintPayment />} />
           <Route path="payslip/:id" element={<PrintPayslip />} />
         </Route>

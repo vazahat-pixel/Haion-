@@ -33,7 +33,8 @@ export function DocList({ listKey }) {
     entry: { key: 'entryBy', label: 'Entry By' },
     type: { key: 'kind', label: 'Invoice Type', render: (r) => KIND_LABEL[r.kind] },
     status: { key: 'status', label: 'Status', render: (r) => <Status value={r.status} /> },
-    serials: { key: 'serialsAttached', label: 'Serial No.', align: 'c', render: (r) => (r.serialsAttached ? `${r.serialsAttached} attached` : '—') },
+    // Reference "IMEI Attached" column: a print icon that opens the serial list (print_imei.php).
+    serials: { key: 'serialsAttached', label: 'IMEI Attached', align: 'c', sortable: false, text: (r) => r.serialsAttached || 0, render: (r) => (r.serialsAttached ? <PrintLink to={`/distributor/print/imei/${r._id}`} /> : null) },
   };
   const A = {
     print: { key: 'pr', label: 'Print', sortable: false, align: 'c', render: (r) => <PrintLink to={`/distributor/print/doc/${r._id}`} /> },
