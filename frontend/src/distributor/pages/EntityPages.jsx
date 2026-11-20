@@ -6,7 +6,9 @@ import {
   PageTitle, Toolbar, Btn, BackBtn, DataTable, useListState, Field, Input, Select, TextArea, Alert, Panel, KV, Status, ViewLink, EditLink, Modal,
 } from '../components/ui';
 import { LineItems, emptyLine, toPayloadLines } from '../components/LineItems';
+import { QuoteLines, GridInput, GridView, emptyQuoteLine } from '../components/GridInputs';
 import { useLookups } from '../api';
+import { env } from '@/config/env';
 
 export const useSchemas = () => useDmsQuery('schemas', '/entities/schemas', undefined, { staleTime: Infinity });
 const useRemoteOptions = (kind, enabled = true) => useDmsQuery(`opt-${kind}`, `/entities/options/${kind}`, undefined, { enabled: Boolean(kind) && enabled, staleTime: 30_000 });
@@ -14,17 +16,21 @@ const useRemoteOptions = (kind, enabled = true) => useDmsQuery(`opt-${kind}`, `/
 const ROUTE_BASE = { all: 'e', mine: 'me', approval: 'approve' };
 const BUILTIN = { docNo: 'Doc No.', status: 'Status', createdAt: 'Created Date', createdByName: 'Entry By' };
 
+/** Uploaded files are served by the API host under /uploads. */
+export const fileHref = (v) => (String(v).startsWith('/uploads/') ? `${env.apiBaseUrl.replace(/\/api\/?$/, '')}${v}` : v);
+
 function cellValue(cfg, row, col) {
   if (col === 'docNo') return row.docNo;
   if (col === 'status') return <Status value={row.status} />;
-  if (col === 'createdAt') return fmt.date(row.createdAt);
+  if (col === 'createdAt') return cfg.colFormat?.createdAt === 'dt' ? fmt.dt(row.createdAt) : fmt.date(row.createdAt);
   if (col === 'createdByName') return row.createdByName;
   const fd = cfg.fields.find((f) => f.n === col);
   const v = row.data?.[col];
   if (v === undefined || v === null || v === '') return row.data?.[`${col}_label`] || '';
   if (fd?.t === 'ref' || fd?.t === 'multiref') return row.data[`${col}_label`] || '';
-  if (fd?.t === 'url') return <a href={v} target="_blank" rel="noreferrer">Open</a>;
-  if (fd?.t === 'lines') return `${v.length} item(s)`;
+  if (fd?.t === 'url' || fd?.t === 'file') return <a href={fileHref(v)} target="_blank" rel="noreferrer">Download</a>;
+  if (fd?.t === 'multiselect' && Array.isArray(v)) return v.join(', ');
+  if (fd?.t === 'lines' || fd?.t === 'grid') return `${v.length} item(s)`;
   if (col === 'inAt' || col === 'outAt') return fmt.dt(v);
   return String(v);
 }
@@ -59,32 +65,49 @@ export function EntityList({ mode = 'all', type: typeProp, title: titleProp, ext
   const filterFields = cfg.filters.map((n) => cfg.fields.find((f) => f.n === n)).filter(Boolean);
   const editable = !cfg.noEdit && mode !== 'approval';
   const canAdd = !cfg.noCreate && mode !== 'approval';
+  const view = cfg.modeCols?.[mode] || {}; // per-mode list columns (e.g. approval queues)
+  const actionCol = view.actionCol || cfg.actionCol;
+  const viewTo = (r) => `/distributor/e/${type}/${r._id}${mode === 'mine' ? '?m=1' : ''}`;
+  const canEditRow = (r) => editable && (cfg.editStatuses.includes(r.status) || cfg.fields.some((f) => f.n === 'status'));
+  const editTo = (r) => `${base}/${r._id}/edit`;
+  const actionCols = {
+    none: [],
+    view: [{ key: 'v', label: 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={viewTo(r)} /> }],
+    edit: editable ? [{ key: 'e', label: 'Edit', sortable: false, align: 'c', render: (r) => (canEditRow(r) ? <EditLink to={editTo(r)} /> : null) }] : [],
+    'view-edit': [{ key: 've', label: 'View/Edit', sortable: false, align: 'c', render: (r) => (canEditRow(r) ? <EditLink to={editTo(r)} /> : <ViewLink to={viewTo(r)} />) }],
+    action: [{ key: 'ac', label: 'Action', sortable: false, align: 'c', render: (r) => <span className="dms-row-acts"><ViewLink to={viewTo(r)} />{canEditRow(r) && <EditLink to={editTo(r)} />}</span> }],
+    history: [{ key: 'h', label: 'History', sortable: false, align: 'c', render: (r) => <Link className="dms-icon-btn" to={viewTo(r)} title="History"><i className="fa fa-history fa-lg" aria-hidden="true" /></Link> }],
+    'view+reply': [{ key: 'v', label: 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={viewTo(r)} /> },
+      { key: 'rp', label: 'Reply', sortable: false, align: 'c', render: (r) => <Link className="dms-icon-btn" to={viewTo(r)} title="Reply"><i className="fa fa-reply fa-lg" aria-hidden="true" /></Link> }],
+  };
   const columns = [
-    { key: '#', label: 'S.No' },
-    ...cfg.cols.map((c) => ({
-      key: c, label: c === 'docNo' ? cfg.docLabel || BUILTIN.docNo : BUILTIN[c] || cfg.fields.find((f) => f.n === c)?.label || c,
+    ...(cfg.snoLabel === null ? [] : [{ key: '#', label: cfg.snoLabel || 'S.No' }]),
+    ...(view.cols || cfg.cols).map((c) => ({
+      key: c, label: view.colLabels?.[c] || cfg.colLabels?.[c] || (c === 'docNo' ? cfg.docLabel || BUILTIN.docNo : BUILTIN[c] || cfg.fields.find((f) => f.n === c)?.label || c),
       text: (r) => { const v = r.data?.[c]; return c === 'docNo' ? r.docNo : c === 'status' ? r.status : c === 'createdAt' ? fmt.date(r.createdAt) : c === 'createdByName' ? r.createdByName : r.data?.[`${c}_label`] || (v ?? ''); },
       render: (r) => cellValue(cfg, r, c),
     })),
-    { key: 'v', label: 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={`/distributor/e/${type}/${r._id}${mode === 'mine' ? '?m=1' : ''}`} /> },
-    ...(editable ? [{ key: 'e', label: 'Edit', sortable: false, align: 'c', render: (r) => (cfg.editStatuses.includes(r.status) || cfg.fields.some((f) => f.n === 'status') ? <EditLink to={`${base}/${r._id}/edit`} /> : null) }] : []),
+    ...(actionCols[actionCol] && actionCol !== 'view+edit' ? actionCols[actionCol] : [...actionCols.view, ...actionCols.edit]),
     ...(type === 'salary' ? [{ key: 'pr', label: 'Pay Slip', sortable: false, align: 'c', render: (r) => <a className="dms-icon-btn" href={`/distributor/print/payslip/${r._id}`} target="_blank" rel="noreferrer">Print</a> }] : []),
   ].filter(Boolean);
   const dateField = cfg.fields.find((f) => f.n === cfg.dateField);
   return (
     <>
-      <PageTitle icon={FileText}>{titleProp || cfg.title}</PageTitle>
+      <PageTitle icon={FileText}>{titleProp || cfg.titles?.[mode] || cfg.title}</PageTitle>
+      {cfg.formWithList && canAdd && <EntityForm mode={mode} inline typeProp={type} />}
       {error && <Alert>{apiError(error).message}</Alert>}
       {(filterFields.length > 0 || cfg.statusFilter || dateField) && (
         <form className="dms-filter" onSubmit={(e) => { e.preventDefault(); const f = {}; for (const [k, v] of Object.entries(draft)) if (v) f[k] = v; setFilters(f); list.setFilters({}); }}>
-          {filterFields.map((fd) => <div key={fd.n}><label className="dms-label">{fd.label}</label><FilterField fd={fd} value={draft[`f_${fd.n}`]} onChange={(v) => setDraft({ ...draft, [`f_${fd.n}`]: v })} /></div>)}
-          {cfg.statusFilter && <div><label className="dms-label">Status</label><Select placeholder="All" value={draft.status || ''} options={cfg.statusFilter} onChange={(e) => setDraft({ ...draft, status: e.target.value })} /></div>}
-          {dateField && <><div><label className="dms-label">From Date</label><Input type="date" value={draft.from || ''} onChange={(e) => setDraft({ ...draft, from: e.target.value })} /></div>
-            <div><label className="dms-label">To Date</label><Input type="date" value={draft.to || ''} onChange={(e) => setDraft({ ...draft, to: e.target.value })} /></div></>}
+          {filterFields.map((fd) => <div key={fd.n}><label className="dms-label">{cfg.filterLabels?.[fd.n] || fd.label}</label><FilterField fd={fd} value={draft[`f_${fd.n}`]} onChange={(v) => setDraft({ ...draft, [`f_${fd.n}`]: v })} /></div>)}
+          {cfg.statusFilter && <div><label className="dms-label">{cfg.filterLabels?.status || 'Status'}</label><Select placeholder="All" value={draft.status || ''} options={cfg.statusFilter} onChange={(e) => setDraft({ ...draft, status: e.target.value })} /></div>}
+          {dateField && <><div><label className="dms-label">{cfg.dateLabels?.[0] || 'From Date'}</label><Input type="date" value={draft.from || ''} onChange={(e) => setDraft({ ...draft, from: e.target.value })} /></div>
+            <div><label className="dms-label">{cfg.dateLabels?.[1] || 'To Date'}</label><Input type="date" value={draft.to || ''} onChange={(e) => setDraft({ ...draft, to: e.target.value })} /></div></>}
           <div style={{ minWidth: 0 }}><button type="submit" className="dms-btn">GO</button></div>
         </form>
       )}
-      <Toolbar>{extraToolbar}{canAdd && <Btn to={`${base}/new`}>Add New</Btn>}</Toolbar>
+      <Toolbar>{extraToolbar}{canAdd && !cfg.formWithList && (cfg.addButtons
+        ? cfg.addButtons.map((b) => <Btn key={b.label} to={`${base}/new?${new URLSearchParams(b.q)}`}>{b.label}</Btn>)
+        : <Btn to={`${base}/new`}>{cfg.addLabel || 'Add New'}</Btn>)}</Toolbar>
       <DataTable columns={columns} rows={data?.data} total={data?.pagination?.total ?? 0} loading={isFetching && !data} {...list.tableProps} />
     </>
   );
@@ -104,6 +127,29 @@ function MultiRef({ fd, value, onChange }) {
   );
 }
 
+/** File field: uploads to /entities/upload (PDF, JPG or PNG, up to 2 MB) and keeps the returned path. */
+function FileInput({ fd, value, onChange }) {
+  const [state, setState] = useState('');
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { setState('Upload upto 2 MB'); e.target.value = ''; return; }
+    setState('Uploading…');
+    try {
+      const body = new FormData(); body.append('file', file);
+      const r = await dms.post('/entities/upload', body, { headers: { 'Content-Type': 'multipart/form-data' } });
+      onChange(r.data.url); setState('');
+    } catch (err) { setState(apiError(err).message); e.target.value = ''; }
+  };
+  return (
+    <div>
+      <input type="file" accept=".pdf,.jpg,.jpeg,.png" required={Boolean(fd.req && !value)} onChange={onFile} aria-label={fd.label} />
+      {state && <div className="dms-img-note">{state}</div>}
+      {value && <div><a href={fileHref(value)} target="_blank" rel="noreferrer">Current file</a></div>}
+    </div>
+  );
+}
+
 function FieldInput({ fd, v, set, err }) {
   const common = { required: fd.req, error: err };
   switch (fd.t) {
@@ -116,12 +162,20 @@ function FieldInput({ fd, v, set, err }) {
     case 'email': return <Input {...common} type="email" value={v ?? ''} onChange={(e) => set(e.target.value)} />;
     case 'tel': return <Input {...common} type="tel" pattern="\d{10}" title="10 digits" value={v ?? ''} onChange={(e) => set(e.target.value)} />;
     case 'url': return <Input {...common} type="url" placeholder="https://" value={v ?? ''} onChange={(e) => set(e.target.value)} />;
+    case 'file': return <FileInput fd={fd} value={v} onChange={set} />;
+    case 'multiselect': return (
+      <select multiple style={{ height: 96 }} value={Array.isArray(v) ? v : []} onChange={(e) => set([...e.target.selectedOptions].map((o) => o.value))}>
+        {fd.opts.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    );
     default: return <Input {...common} value={v ?? ''} onChange={(e) => set(e.target.value)} />;
   }
 }
 
-export function EntityForm({ mode = 'all' }) {
-  const { type, id } = useParams();
+export function EntityForm({ mode = 'all', inline = false, typeProp }) {
+  const params = useParams();
+  const type = typeProp || params.type;
+  const id = inline ? undefined : params.id;
   const [sp] = useSearchParams();
   const isEdit = Boolean(id);
   const nav = useNavigate();
@@ -130,12 +184,16 @@ export function EntityForm({ mode = 'all' }) {
   const { data: lk } = useLookups();
   const [v, setV] = useState({});
   const [lines, setLines] = useState([emptyLine()]);
+  useEffect(() => { if (cfg?.fields.some((x) => x.t === 'lines' && x.tax) && !isEdit) setLines([emptyQuoteLine()]); }, [cfg, isEdit]);
   const [errors, setErrors] = useState({});
   const [msg, setMsg] = useState('');
   const { data: rec } = useDmsQuery(`ent-one-${type}`, `/entities/${type}/${id}`, undefined, { enabled: isEdit && Boolean(cfg) });
   const { data: leadRec } = useDmsQuery('ent-lead-prefill', `/entities/lead/${sp.get('lead')}`, undefined, { enabled: type === 'quote' && Boolean(sp.get('lead')) });
   useEffect(() => {
-    if (cfg && !isEdit) setV((s) => ({ ...Object.fromEntries(cfg.fields.filter((f) => f.def !== undefined).map((f) => [f.n, f.def])), ...s }));
+    if (cfg && !isEdit) {
+      const pre = Object.fromEntries(cfg.fields.filter((f) => sp.get(f.n) && f.form !== false).map((f) => [f.n, sp.get(f.n)]));
+      setV((s) => ({ ...Object.fromEntries(cfg.fields.filter((f) => f.def !== undefined).map((f) => [f.n, f.def])), ...pre, ...s }));
+    }
   }, [cfg, isEdit]);
   useEffect(() => {
     if (rec?.data) {
@@ -143,29 +201,44 @@ export function EntityForm({ mode = 'all' }) {
       const sf = cfg.fields.find((f) => f.n === 'status');
       if (sf) d.status = rec.data.status;
       setV(d);
-      if (Array.isArray(d.lines)) setLines(d.lines.map((l) => ({ product: l.product, qty: String(l.qty), price: String(l.price), discountPerUnit: String(l.discountPerUnit || '') })));
+      if (Array.isArray(d.lines)) setLines(d.lines.map((l) => ({ product: l.product, qty: String(l.qty), price: String(l.price), discountPerUnit: String(l.discountPerUnit || ''), taxType: l.taxType || '', taxPer: l.taxPer !== undefined ? String(l.taxPer) : '' })));
     }
   }, [rec]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (leadRec?.data) setV((s) => ({ ...s, lead: leadRec.data._id, partyName: leadRec.data.data.partyName })); }, [leadRec]);
   const back = `/distributor/${ROUTE_BASE[mode]}/${type}`;
-  const save = useDmsMutation((b) => (isEdit ? dms.put(`/entities/${type}/${id}`, b) : dms.post(`/entities/${type}`, b)), { onSuccess: () => nav(back) });
+  const save = useDmsMutation((b) => (isEdit ? dms.put(`/entities/${type}/${id}`, b) : dms.post(`/entities/${type}`, b)), { onSuccess: () => { if (inline) { setV({}); setMsg('Request submitted'); } else nav(back); } });
   if (!sc) return <div className="dms-loading">Loading…</div>;
   if (!cfg) return <Navigate to="/distributor/home" replace />;
-  const fields = cfg.fields.filter((f) => !(mode === 'mine' && type === 'beat' && f.n === 'assignedTo') && !['duration', 'amount'].includes(f.n) && !(type === 'deviation'));
+  const fields = cfg.fields.filter((f) => f.form !== false && !(mode === 'mine' && type === 'beat' && f.n === 'assignedTo') && !(cfg.computed && ['duration', 'amount'].includes(f.n)) && !(type === 'deviation'));
   const submit = (e) => {
     e.preventDefault(); setErrors({}); setMsg('');
     const body = { ...v };
-    for (const f of cfg.fields) if (f.t === 'lines') body[f.n] = toPayloadLines(lines).map(({ product, qty, price, discountPerUnit }) => ({ product, qty, price, discountPerUnit }));
+    for (const f of cfg.fields) {
+      if (f.t === 'lines' && f.tax) body[f.n] = lines.filter((l) => l.product).map((l) => ({ product: l.product, qty: Number(l.qty), price: Number(l.price), taxType: l.taxType, taxPer: Number(l.taxPer || 0) }));
+      else if (f.t === 'lines') body[f.n] = toPayloadLines(lines).map(({ product, qty, price, discountPerUnit }) => ({ product, qty, price, discountPerUnit }));
+      else if (f.t === 'grid') body[f.n] = (v[f.n] || []).filter((r) => Object.values(r).some((x) => x !== '' && x != null)).map((r) => Object.fromEntries(Object.entries(r).filter(([k]) => !k.endsWith('_label'))));
+    }
     for (const k of Object.keys(body)) if (k.endsWith('_label')) delete body[k];
     save.mutate(body, { onError: (err) => { const a = apiError(err); setErrors(a.fieldErrors); setMsg(a.message); } });
   };
   return (
     <>
-      <PageTitle icon={FileText}>{isEdit ? `Edit ${cfg.label}` : `Add ${cfg.label}`}</PageTitle>
+      {!inline && <PageTitle icon={FileText}>{isEdit ? (cfg.editTitle || `Edit ${cfg.label}`) : cfg.addButtons && sp.get('type') ? `${cfg.addTitle} ${sp.get('type')}` : (cfg.addTitle || `Add ${cfg.label}`)}</PageTitle>}
       <Alert>{msg}</Alert>
       <form onSubmit={submit}>
         <div className="dms-form">
-          {fields.map((fd) => (fd.t === 'lines' ? (
+          {fields.map((fd) => (fd.t === 'grid' ? (
+            <div key={fd.n} className="full">
+              <label className="dms-label">{fd.label}{fd.req && <span className="req"> *</span>}</label>
+              <GridInput fd={fd} value={v[fd.n]} onChange={(x) => setV((s) => ({ ...s, [fd.n]: x }))} products={lk?.data?.products || []} />
+              {errors[fd.n] && <div className="dms-field-err">{errors[fd.n][0]}</div>}
+            </div>
+          ) : fd.t === 'lines' && fd.tax ? (
+            <div key={fd.n} className="full">
+              <QuoteLines lines={lines} setLines={setLines} products={lk?.data?.products || []} />
+              {errors[fd.n] && <div className="dms-field-err">{errors[fd.n][0]}</div>}
+            </div>
+          ) : fd.t === 'lines' ? (
             <div key={fd.n} className="full">
               <label className="dms-label">{fd.label}{fd.req && <span className="req"> *</span>}</label>
               <LineItems lines={lines} setLines={setLines} products={lk?.data?.products || []} cols={['discount']} preview={{ rows: lines.map((l) => { const q = Number(l.qty) || 0; const p = Number(l.price) || 0; const d = Number(l.discountPerUnit) || 0; return { value: q * p, after: q * (p - d), total: q * (p - d) }; }), totals: null }} />
@@ -177,7 +250,7 @@ export function EntityForm({ mode = 'all' }) {
             </Field>
           )))}
         </div>
-        <div className="dms-actions"><button type="submit" className="dms-btn" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save'}</button><BackBtn to={back} /></div>
+        <div className="dms-actions"><button type="submit" className="dms-btn" disabled={save.isPending}>{save.isPending ? 'Saving…' : (isEdit ? 'Update' : cfg.submitLabel || 'Save')}</button>{!inline && <BackBtn to={back} />}</div>
       </form>
     </>
   );
@@ -207,10 +280,10 @@ export function EntityView({ typeProp, idProp }) {
   if (cfg.prefix || row.docNo) pairs.push([cfg.docLabel || 'Doc No.', row.docNo]);
   pairs.push(['Status', <Status key="s" value={row.status} />], ['Entry By', row.createdByName], ['Created', fmt.dt(row.createdAt)]);
   for (const f of cfg.fields) {
-    if (f.t === 'lines') continue;
+    if (f.t === 'lines' || f.t === 'grid') continue;
     const val = row.data[f.n];
     if (val === undefined || val === '' || f.n === 'status') continue;
-    pairs.push([f.label, f.t === 'ref' || f.t === 'multiref' ? row.data[`${f.n}_label`] : f.t === 'url' ? <a key={f.n} href={val} target="_blank" rel="noreferrer">{val}</a> : f.n.endsWith('At') ? fmt.dt(val) : String(val)]);
+    pairs.push([f.label, f.t === 'ref' || f.t === 'multiref' ? row.data[`${f.n}_label`] : f.t === 'url' || f.t === 'file' ? <a key={f.n} href={fileHref(val)} target="_blank" rel="noreferrer">Download</a> : Array.isArray(val) ? val.join(', ') : f.n.endsWith('At') ? fmt.dt(val) : String(val)]);
   }
   for (const k of ['duration', 'amount', 'note']) if (row.data[k] !== undefined && row.data[k] !== '' && !cfg.fields.some((f) => f.n === k)) pairs.push([k[0].toUpperCase() + k.slice(1), String(row.data[k])]);
   if (row.achieved !== undefined) pairs.push(['Achieved', `${fmt.money(row.achieved)} (${row.achievedPercent}%)`]);
@@ -223,12 +296,13 @@ export function EntityView({ typeProp, idProp }) {
       {lineField && row.data[lineField.n] && (
         <Panel title="Items Information">
           <div className="dms-table-wrap"><table className="dms-table">
-            <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Price</th><th>Discount/Unit</th><th>Total</th></tr></thead>
-            <tbody>{row.data[lineField.n].map((l, i) => <tr key={i}><td>{i + 1}</td><td>{l.productName}</td><td className="r">{l.qty}</td><td className="r">{fmt.money(l.price)}</td><td className="r">{fmt.money(l.discountPerUnit)}</td><td className="r">{fmt.money(l.total)}</td></tr>)}
-              <tr><td colSpan={5} className="r"><b>Grand Total</b></td><td className="r"><b>{fmt.money(row.data[lineField.n].reduce((n, l) => n + l.total, 0))}</b></td></tr></tbody>
+            <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Price</th>{lineField.tax ? <><th>Value</th><th>Tax Type</th><th>Tax %</th><th>Tax Amt</th></> : <th>Discount/Unit</th>}<th>Total</th></tr></thead>
+            <tbody>{row.data[lineField.n].map((l, i) => <tr key={i}><td>{i + 1}</td><td>{l.productName}</td><td className="r">{l.qty}</td><td className="r">{fmt.money(l.price)}</td>{lineField.tax ? <><td className="r">{fmt.money(l.value ?? l.total)}</td><td>{l.taxType}</td><td className="r">{fmt.money(l.taxPer)}</td><td className="r">{fmt.money(l.taxAmt)}</td></> : <td className="r">{fmt.money(l.discountPerUnit)}</td>}<td className="r">{fmt.money(l.total)}</td></tr>)}
+              <tr><td colSpan={lineField.tax ? 8 : 5} className="r"><b>Grand Total</b></td><td className="r"><b>{fmt.money(row.data[lineField.n].reduce((n, l) => n + l.total, 0))}</b></td></tr></tbody>
           </table></div>
         </Panel>
       )}
+      {cfg.fields.filter((x) => x.t === 'grid' && row.data[x.n]?.length).map((x) => <Panel key={x.n} title={x.label}><GridView fd={x} rows={row.data[x.n]} /></Panel>)}
       {(available.length > 0 || type === 'lead' || (type === 'beat' && row.status === 'Scheduled')) && (
         <Panel title="Action">
           <Alert>{msg}</Alert>

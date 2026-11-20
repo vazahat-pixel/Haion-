@@ -281,7 +281,8 @@ router.post('/users', requirePage('m_users'), asyncHandler(async (req, res) => {
   if (!/^\d{10}$/.test(String(phone).trim())) throw new DmsError('Mobile No. must be 10 digits', 422, { phone: ['10 digits'] });
   if (String(password).length < 8) throw new DmsError('Password must be at least 8 characters', 422, { password: ['Min 8 characters'] });
   if (!DMS_USER_TYPES.includes(userType)) throw new DmsError('Invalid user type');
-  if (userType !== 'Admin' && !isId(location)) throw new DmsError('Location is required for non-admin users', 422, { location: ['Required'] });
+  // Location users belong to one location; the sales hierarchy (Sales Head, ASM …) may instead get Region / Location Type rights.
+  if (userType === 'Location User' && !isId(location)) throw new DmsError('Location is required for a Location User', 422, { location: ['Required'] });
   const loc = isId(location) ? await DmsLocation.findById(location).lean() : null;
   const loginId = req.body.loginId
     ? String(req.body.loginId).toUpperCase()

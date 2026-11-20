@@ -98,3 +98,6 @@ reference-audit/final-screenshots/**/*.png
 reference-audit/final-screenshots/**/*.xlsx
 frontend/test-results/
 frontend/playwright-report/
+
+# raw reference crawl (contains client names / locations from the reference dropdowns) and local crawl
+reference-audit/reference-structure/

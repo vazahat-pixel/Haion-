@@ -1,0 +1,131 @@
+# Reference vs local — page structure diff
+
+Generated 2026-11-20 07:56 by tools/compare-structure.mjs.
+Reference pages read: **114** (sidebar of the logged-in reference account + each page's Add form). Local pages read: **117**.
+Pages with no structural difference: **42**. Pages with differences: **72**.
+
+Compared: page title, main table columns (set and order), form labels, buttons, tabs, and the same for the Add page. Ignored: DataTables paging/search chrome.
+
+| # | Group | Page | Reference | Local | Differences |
+|---|---|---|---|---|---|
+| 1 |  | Home | dashboard/home_dashboard.php | /distributor/home | title: 1151031.36, ; missingColumns: current month po status, po status, count; missingButtons: go, plain, inverted, polar |
+| 2 | Dashboard | Dashboard 1 | dashboard/yearly_dashboard.php | /distributor/dashboard/yearly | title: Yearly Dashboard, ; missingLabels: period type, month, location tpye; missingButtons: go |
+| 3 | Dashboard | Dashboard 2 | dashboard/saleQtyAmtMonthwise.php | /distributor/dashboard/monthly | missingLabels: period type |
+| 4 | Dashboard | Inventory | dashboard/inventoryDash.php | /distributor/dashboard/inventory | none |
+| 5 | Dashboard | Lead Dashboard | dashboard/leadDashboard.php | /distributor/dashboard/lead | missingColumns: lead conversion; extraColumns: s.no |
+| 6 | Dashboard | Purchase | dashboard/po_dashboard.php | /distributor/dashboard/purchase | title: Purchase Order (PO) Dashboard, Purchase Report; missingLabels: purchase order to, purchase order from |
+| 7 | Dashboard | Sale | dashboard/saleDash.php | /distributor/dashboard/sale | missingLabels: period type, month, product |
+| 8 | Master Management | Account | admin/account_master.php | /distributor/masters/account | columnOrder: #, account name, account no., account type, status, view/edit, mapping ⟶ #, account name, account no., account type, status, mapping, view/edit; **add page:** missingLabels: address, ref. remark |
+| 9 | Master Management | Admin/Users | admin/adminusermgt.php | /distributor/masters/users | **add page:** missingLabels: user id; missingButtons: update, update rights |
+| 10 | Master Management | Brand Master | admin/brand_master.php | /distributor/masters/brand | none |
+| 11 | Master Management | City Master | admin/city_master.php | /distributor/masters/city | missingLabels: state, city; **add page:** missingLabels: state name |
+| 12 | Master Management | Color Master | po/color_master.php | /distributor/masters/color | none |
+| 13 | Master Management | Coupon Master | admin/coupon_master.php | /distributor/masters/coupon | columnOrder: s.no, coupon code, valid from, valid to, amount, create date, status, view/edit, coupon mapping ⟶ s.no, coupon code, valid from, valid to, amount, create date, status, coupon mapping, view/edit; missingButtons: coupon mapping; **add page:** missingLabels: coupon name, remark; missingButtons: update |
+| 14 | Master Management | Courier Master | admin/courier_master.php | /distributor/masters/courier | missingColumns: edit; extraColumns: view/edit; missingLabels: state, city; **add page:** title: Add/Edit Courier, Add New Courier |
+| 15 | Master Management | Customer Master | admin/customer_details.php | /distributor/masters/customers | missingColumns: history; extraColumns: phone, location; missingLabels: customer city, customer type, customer status; missingButtons: send mail, send sms; **add page:** title: Enter New Customer Details, Add Customer; missingLabels: contact no; missingButtons: add |
+| 16 | Master Management | Location Master | admin/asp_details.php | /distributor/masters/locations | missingColumns: history; extraColumns: parent; missingLabels: location city, location status; **add page:** missingLabels: organization name, contact number, landline number, lst / cst number, gst number, delivery/shipping address, unique document code (please enter a 3 character code) |
+| 17 | Master Management | Other Tax Master | admin/other_tax.php | /distributor/masters/othertax | **add page:** missingLabels: tax % |
+| 18 | Master Management | Parameter Master | admin/parameter_master.php | /distributor/masters/parameter | missingLabels: product sub category |
+| 19 | Master Management | Price Master | admin/price_master.php | /distributor/masters/prices | **add page:** missingColumns: state; missingButtons: check all, uncheck all |
+| 20 | Master Management | Product Category | admin/productcat_master.php | /distributor/masters/category | missingColumns: s.no, product name; extraColumns: #, product category; missingButtons: add new category; **add page:** title: Product Category, Add New Product Category; missingLabels: category name, short code; missingButtons: update |
+| 21 | Master Management | Product Delivery | admin/product_delivery.php | /distributor/masters/productdelivery | extraColumns: status; missingLabels: from location, to location, product category |
+| 22 | Master Management | Product Image | admin/product_image_list.php | /distributor/masters/productimage | missingLabels: product category, product sub category, brand, product; **add page:** title: Product Image Add, Add Image; missingLabels: product category, product sub category, brand |
+| 23 | Master Management | Product Master | admin/model_master.php | /distributor/masters/products | extraColumns: serialized; missingLabels: product; **add page:** missingLabels: product subcategory, reward points |
+| 24 | Master Management | Product Sub Category | admin/prod_subcat_master.php | /distributor/masters/subcategory | missingLabels: product category; **add page:** title: Product Sub Category, Add New Product Sub Category; missingLabels: product sub category name; missingButtons: update |
+| 25 | Master Management | Scheme Master | admin/scheme_master.php | /distributor/masters/schemes | missingColumns: view; extraColumns: scheme code, discount, view/edit; missingLabels: scheme from, scheme to, product category, product sub category, brand, product, scheme status; **add page:** missingLabels: valid from, valid to, product category, product sub category, brand, product, applicable on, scheme given, remark, scheme attach(allowed upto 2 mb) |
+| 26 | Master Management | Serial No. Activation | admin/imei_activation_upld.php | /distributor/masters-upload/serial-activation | missingLabels: sub-category, attach file |
+| 27 | Master Management | Specification | admin/specification_master.php | /distributor/masters/specification | extraColumns: status; missingLabels: product category, product sub category, brand, product; **add page:** missingLabels: product category, product sub category, brand |
+| 28 | Master Management | State Master | admin/state_master.php | /distributor/masters/state | missingColumns: view/change; extraColumns: status, view/edit; **add page:** missingLabels: circle / zone, statecode |
+| 29 | Master Management | Tax Master | admin/tax_master.php | /distributor/masters/hsn | **add page:** missingLabels: chapter number |
+| 30 | Master Management | Vendor Master | admin/vendor_master.php | /distributor/masters/vendors | missingColumns: edit; extraColumns: code, view/edit; missingButtons: add foreign vendor; **add page:** title: Enter The New Vendor Details, Add New Vendor; missingLabels: contact no, billing address, shipping address, vendor origin, mode of shipment, tax registration, fax, vendor address; missingButtons: add |
+| 31 | Report Master | Beat Report | reports/beat_report.php | /distributor/e/beat | title: Beat Report, My Beat Plan; extraColumns: s.no, date, assigned to, task name, area to visit, status, view, edit; missingLabels: select user |
+| 32 | Report Master | Collection | reports/collection_sheet.php | /distributor/reports/collection | missingButtons: view previous collection |
+| 33 | Report Master | Inventory | reports/inventory_stock.php | /distributor/reports/inventory | extraColumns: s.no., location, product code, product, color, inventory type, ok qty, damage qty, missing qty; missingLabels: inventory type, product sub category |
+| 34 | Report Master | Inventory Aging | reports/inventory_aging.php | /distributor/reports/aging | missingColumns: 0 - 15 days, 16 - 30 days, above 30 days, ok, dm, ms; extraColumns: 0 - 15 days ok, 0 - 15 days dm, 0 - 15 days ms, 16 - 30 days ok, 16 - 30 days dm, 16 - 30 days ms, above 30 days ok, above 30 days dm, above 30 days ms; missingLabels: product category, product sub category, brand, product |
+| 35 | Report Master | ISD | reports/isd_report.php | /distributor/reports/isd | missingColumns: s.no., isp name, serial no., customer name, location, contact no., state, city, entry date |
+| 36 | Report Master | Party Ledger | reports/partyledger.php | /distributor/reports/party-ledger | missingColumns: sno., location name, party name, document no., document type, transaction date, entry date, payment remark, approval remark, amount cr, amount dr; missingLabels: party name, vendor name |
+| 37 | Report Master | Party Master Report | reports/mapping_report.php | /distributor/reports/party-master | missingLabels: location name |
+| 38 | Report Master | Payment | reports/payment_status.php | /distributor/reports/payment | none |
+| 39 | Report Master | Price Drop | reports/pricedrop.php | /distributor/reports/price-drop | none |
+| 40 | Report Master | Purchase Order | reports/purchase_report.php | /distributor/reports/purchase | missingLabels: purchase order to, purchase order from, product |
+| 41 | Report Master | Return | reports/return_report.php | /distributor/reports/return | missingLabels: from vendor, to vendor |
+| 42 | Report Master | Sale Report | reports/invoice_report.php | /distributor/reports/sale | missingLabels: to location, product category, product sub category, brand, product, scheme name |
+| 43 | Report Master | Serial No. Activation Report | reports/imei_activation_rpt.php | /distributor/reports/serial-activation | none |
+| 44 | Report Master | Stock Ledger List | reports/stock_ledger_list.php | /distributor/reports/stock-ledger | missingColumns: s.no, date & time, item, opening stock, in, out, closing stock, system ref. no., transfer type, stock transfer; missingLabels: product category, product sub category, brand |
+| 45 | Report Master | Vendor Purchase | reports/vendor_report.php | /distributor/reports/vendor | missingLabels: select vendor, select location, product category, product sub category, brand, product |
+| 46 | Logistic | Update Dispatch | logistic/updateInvLogistic.php | /distributor/logistic/dispatch | none |
+| 47 | Invoicing | Corporate | invoice/corporateInvoice.php | /distributor/invoicing/corporate | none |
+| 48 | Invoicing | Multiple Serial No. Track | invoice/imei_track.php | /distributor/invoicing/multi-serial-track | missingButtons: show |
+| 49 | Invoicing | Retail | invoice/retailbillinglist.php | /distributor/invoicing/retail | missingColumns: billing from, billing to; extraColumns: invoice from, invoice to; **add page:** missingColumns: bill qty, value after discount; extraColumns: qty, value, after discount value, avl stock, serial / imei no.; missingLabels: discount type, total qty, sub total, discount, tax amount, grand total |
+| 50 | Invoicing | Single Serial No. Track | invoice/check_imei.php | /distributor/invoicing/serial-track | none |
+| 51 | Invoicing | STN Distribution | invoice/stndistribution_list.php | /distributor/invoicing/stn-distribution | extraColumns: distribution; **add page:** missingLabels: distribution to, product |
+| 52 | Invoicing | Stock Transfer | invoice/stock_transfer.php | /distributor/invoicing/stock-transfer | title: Add Stock Transfer, Stock Transfer List; missingColumns: product, qty, price, value, discount, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock; extraColumns: s.no, stock transfer to, stock transfer from, document no., document date, entry by, status, view, cancel; missingLabels: stock transfer from, stock transfer to, document type, sub total, total qty, total discount, grand total, delivery address, remark; missingButtons: save, back |
+| 53 | Invoicing | Stock Transfer Approval | invoice/stockTRansferApproval.php | /distributor/invoicing/stock-transfer-approval | none |
+| 54 | Purchase | Local Purchase | po/localPurchaseList.php | /distributor/purchase/local | missingColumns: po no., scan serial no.; extraColumns: doc no., vendor inv. no.; **add page:** missingColumns: price (); extraColumns: price, serial / imei no.; missingLabels: total qty, sub total, total sgst amt, round off, total cgst amt, grand total, total igst amt, invoice no. |
+| 55 | Purchase | Opening | opening/openingStockList.php | /distributor/purchase/opening | missingColumns: scan serial no.; extraColumns: imei attached; **add page:** extraColumns: total, serial / imei no.; missingLabels: total qty, total |
+| 56 | Purchase | PO | po/purchaseOrderList.php | /distributor/purchase/po | **add page:** missingColumns: discount; extraColumns: discount/unit, after discount value; missingLabels: purhase order from, purhase order to, sub total, total qty, total discount, grand total |
+| 57 | Purchase | PO Approval | po/purchaseOrderApproval.php | /distributor/purchase/po-approval | none |
+| 58 | Purchase | Vendor | po/vendorPurchaseList.php | /distributor/purchase/vendor | **add page:** missingColumns: price (), available stock, delivery schedule; extraColumns: price, total, avl stock, delivery date; missingLabels: available credit balance, total qty, sub total, tax type, tax %, tax total, grand total, invoice no., invoice date |
+| 59 | Return | Customer Return | return/retailcust_return.php | /distributor/return/customer | missingColumns: date, cancel; extraColumns: invoice date; **add page:** extraColumns: product, qty, price, value, discount/unit, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, serial / imei no.; missingLabels: retail return from, total qty, sub total, discount applied as, total discount, grand total |
+| 60 | Return | Purchase | return/purchase_return.php | /distributor/return/purchase | missingColumns: date, upload serial no., view/edit; extraColumns: invoice date, status, imei attached, view, cancel; **add page:** extraColumns: product, qty, price, value, discount/unit, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock, serial / imei no.; missingLabels: purhase return from, purhase return to, total qty, sub total, discount applied as, total discount, grand total |
+| 61 | Return | Return Approval | return/return_approval_list.php | /distributor/return/approval | missingColumns: date, view/edit; extraColumns: invoice date, view |
+| 62 | Return | Vendor | return/vendor_return.php | /distributor/return/vendor | title: Purchase Return List, Vendor Return List; missingColumns: date, upload serial no.; extraColumns: invoice date, status; **add page:** title: Add New Purchase Return, Add New Vendor Return; extraColumns: product, qty, price, value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock, serial / imei no.; missingLabels: purhase return from, purhase return to, total qty, sub total, tax, tax amount, grand total; missingButtons: process |
+| 63 | Payment | Account Adjustment | payment/acc_adjustList.php | /distributor/payment/adjustment | extraColumns: cr/dr; **add page:** missingLabels: to location, from location, bank receipt no/ref no., receiving amount |
+| 64 | Payment | Payment Approval | payment/payment_approval_list.php | /distributor/payment/approval | none |
+| 65 | Payment | Payment Receive | payment/paymentlist.php | /distributor/payment/receive | missingColumns: view/edit/delete; extraColumns: view, cancel; **add page:** missingLabels: from location, to location, bank receipt no/ref no., receiving amount |
+| 66 | Receive Stock | From Location | invoice/receiveInvoice.php | /distributor/receive/location | missingColumns: receive stock by scanning |
+| 67 | Sale Force | Beat Scheduler | salesforce/beatUploader.php | /distributor/sf/beat-scheduler | extraColumns: s.no, date, assigned to, task name, area to visit, status, view, edit; missingLabels: attach file, browse…; missingButtons: check beat scheduled |
+| 68 | Sale Force | Lead | salesforce/lead_list.php | /distributor/e/lead | **add page:** missingButtons: upload lead |
+| 69 | Sale Force | My Beat Plan | salesforce/calender_event.php | /distributor/me/beat | extraColumns: s.no, date, assigned to, task name, area to visit, status, view, edit; missingLabels: area to visit; missingButtons: add |
+| 70 | Sale Force | PJP Master | salesforce/pjp_master.php | /distributor/e/pjp | none |
+| 71 | Sale Force | Quote | salesforce/quote_list.php | /distributor/e/quote | **add page:** missingLabels: sub total, total qty, total tax, grand total |
+| 72 | Sale Force | Target | salesforce/target_list.php | /distributor/e/target | **add page:** missingButtons: add |
+| 73 | General Query | Locationwise Expense | admin/locationwise_expense.php | /distributor/e/expense | none |
+| 74 | General Query | Query Status | admin/query_master.php | /distributor/e/query | none |
+| 75 | App Transaction | App Feedback | admin/appFeedback.php | /distributor/e/appfeedback | missingLabels: feedback by |
+| 76 | App Transaction | App Task | admin/apptask.php | /distributor/e/apptask | none |
+| 77 | App Transaction | App Track Location | admin/tracklocapp.php | /distributor/sf/track | none |
+| 78 | App Transaction | Attendance Report | reports/attendance_report.php | /distributor/e/attendance | none |
+| 79 | App Transaction | TA DA Approval | admin/ta_da_approval.php | /distributor/e/tada | none |
+| 80 | HRMS HR. | Activities | hrms/activities_emp_list.php | /distributor/e/activity | none |
+| 81 | HRMS HR. | Application Approve | hrms/application_approve_list.php | /distributor/approve/application | none |
+| 82 | HRMS HR. | Attendance | hrms/attendance_emp_list.php | /distributor/hr/attendance | none |
+| 83 | HRMS HR. | Claim Approvals | hrms/approvals_list.php | /distributor/approve/claim | none |
+| 84 | HRMS HR. | Claims | hrms/employee_claims_list.php | /distributor/e/claim | none |
+| 85 | HRMS HR. | Department Master | hrms/department_list.php | /distributor/e/department | none |
+| 86 | HRMS HR. | Designation Master | hrms/designation_list.php | /distributor/e/designation | none |
+| 87 | HRMS HR. | Employee Master | hrms/employee_master_list.php | /distributor/e/employee | none |
+| 88 | HRMS HR. | Holidays Master | hrms/holidays_list.php | /distributor/e/holiday | none |
+| 89 | HRMS HR. | Leave Approve | hrms/leave_approve_list.php | /distributor/approve/leave | none |
+| 90 | HRMS HR. | Leave Master | hrms/leave_list.php | /distributor/e/leavetype | **add page:** missingLabels: effetcive date |
+| 91 | HRMS HR. | My Teams | hrms/my_teams_list.php | /distributor/hr/my-teams | none |
+| 92 | HRMS HR. | Notice | hrms/notice_list.php | /distributor/e/notice | none |
+| 93 | HRMS HR. | Policies | hrms/policies_admin_list.php | /distributor/e/policy | **add page:** missingButtons: request |
+| 94 | HRMS HR. | Projects / Clients | hrms/project_clients_list.php | /distributor/e/project | none |
+| 95 | HRMS HR. | Resign Request | hrms/resign_request.php | /distributor/e/resign | none |
+| 96 | HRMS HR. | Salary Generate | hrms/salary_generate.php | /distributor/hr/salary-generate | none |
+| 97 | HRMS HR. | Salary Sheet | hrms/admin_salary_sheet_view.php | /distributor/e/salary | extraColumns: s.no, employee, month, year, gross, net pay, status, view, pay slip; missingLabels: employee name; missingButtons: pay slip details upload, show |
+| 98 | HRMS Emp. | Activities | hrms/activities_emp_list.php | /distributor/me/activity | none |
+| 99 | HRMS Emp. | Application | hrms/application_emp_list.php | /distributor/me/application | **add page:** missingButtons: apply |
+| 100 | HRMS Emp. | Attendance | hrms/attendance_emp_list.php | /distributor/me/attendance-punch | none |
+| 101 | HRMS Emp. | Employee Claims | hrms/employee_claims_list.php | /distributor/me/claim | none |
+| 102 | HRMS Emp. | Leave apply / View Status | hrms/leave_apply_list.php | /distributor/me/leave | missingAddPage: Leave Apply |
+| 103 | HRMS Emp. | My Documents | hrms/my_document_list.php | /distributor/me/mydoc | none |
+| 104 | HRMS Emp. | My Profile | hrms/my_profile_view.php | /distributor/me/profile | missingLabels: employee name, email, company name, reporting manager, date of birth, anniversary date, contact no., address, date of joining, emp code, alternate email, alternate number, password |
+| 105 | HRMS Emp. | Policies | hrms/policies_emp_list.php | /distributor/me/policy | none |
+| 106 | HRMS Emp. | Resign Request | hrms/resign_request.php | /distributor/me/resign | none |
+| 107 | HRMS Emp. | Salary Sheet | hrms/emp_salary_sheet_view.php | /distributor/me/salary | extraColumns: s.no, employee, month, year, gross, net pay, status, view, pay slip; missingButtons: show |
+| 108 | HRMS Report | Attendance | reports/attendancemp_report.php | /distributor/rp/attendance | none |
+| 109 | HRMS Report | Employee Details | reports/employee_report.php | /distributor/rp/employee | extraColumns: #, employee id, emp. name, city, state, location type, status, view/edit; missingLabels: employee name |
+| 110 | HRMS Report | Leave Approve/Reject | reports/leavestatus_report.php | /distributor/rp/leave | extraColumns: s.no, emp. name, type of leave, from date, to date, duration, purpose, status, view; missingLabels: leave status |
+| 111 | HRMS Report | Other Request Report | reports/otherequest_Report.php | /distributor/rp/other | none |
+| 112 | HRMS Report | Salary Report | reports/salary_report.php | /distributor/rp/salary | extraColumns: s.no, employee, month, year, gross, net pay, status, view, pay slip; missingLabels: from date, to date |
+| 113 | HRMS Report | Salary Slip | reports/salarySlip_report.php | /distributor/rp/slip | extraColumns: s.no, employee, month, year, gross, net pay, status, view, pay slip; missingLabels: from date, to date |
+| 114 | HRMS Report | Change Password | admin/changepassword.php | — | missingPage: true |
+
+## Local pages not in this reference account's sidebar
+
+- Invoicing > Stock Transfer for Job work
+- Receive Stock > Received from Jobwork
+- Sale Force > Deviation Approval
+-  > Change Password

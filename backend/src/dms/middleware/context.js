@@ -46,7 +46,19 @@ export async function dmsContext(req, res, next) {
     if (!isAdmin && (!profile || profile.status !== 'Active')) {
       throw new DmsError('You do not have access to the Distributor panel', 403);
     }
-    const allowed = isAdmin ? null : profile.location ? await descendantsOf(profile.location._id) : [];
+    let allowed = isAdmin ? null : profile.location ? await descendantsOf(profile.location._id) : [];
+    // "Update User Permission" → Region and Location Type rights narrow the locations a non-admin user can see.
+    // A user with a location keeps it and sees the matching locations below it; a user without a location
+    // (e.g. a Sales Head) sees every location matching the ticked regions / location types.
+    const sc = profile?.scopes;
+    if (!isAdmin && (sc?.regions?.length || sc?.locationTypes?.length)) {
+      const q = {};
+      if (sc.regions?.length) q.region = { $in: sc.regions };
+      if (sc.locationTypes?.length) q.locationType = { $in: sc.locationTypes };
+      const match = new Set((await DmsLocation.find(q).select('_id').lean()).map((l) => String(l._id)));
+      const own = profile.location ? String(profile.location._id) : null;
+      allowed = profile.location ? allowed.filter((id) => id === own || match.has(id)) : [...match];
+    }
     req.dms = {
       isAdmin,
       profile,

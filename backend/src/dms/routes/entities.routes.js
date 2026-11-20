@@ -8,11 +8,11 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { sendSuccess, sendCreated, sendPaginated } from '../../utils/apiResponse.js';
 import { parsePagination } from '../../utils/pagination.util.js';
 import { DmsEntity } from '../models/entity.model.js';
-import { DmsLocation, DmsProduct, DmsProfile } from '../models/master.models.js';
+import { DmsLocation, DmsProduct, DmsProfile, DmsMaster } from '../models/master.models.js';
 import { DmsInvoice, DmsPayment } from '../models/txn.models.js';
 import { ENTITY_TYPES, LEAD_STATUSES, MONTHS } from '../entities.config.js';
 import { DmsError, nextSeq, round2, localDay } from '../services/core.service.js';
-import { uploadImage } from '../../middleware/upload.middleware.js';
+import { uploadImage, uploadDocument } from '../../middleware/upload.middleware.js';
 
 const router = Router();
 const isId = (v) => mongoose.isValidObjectId(v);
@@ -36,6 +36,7 @@ async function refLabel(kind, id) {
     case 'location': { const l = await DmsLocation.findById(id).select('name city').lean(); return l && `${l.name}, ${l.city}`; }
     case 'product': { const p = await DmsProduct.findById(id).select('name productCode').lean(); return p && `${p.name} | ${p.productCode}`; }
     case 'profile': { const p = await DmsProfile.findById(id).select('displayName loginId').lean(); return p && `${p.displayName} (${p.loginId})`; }
+    case 'state': case 'city': { const m = await DmsMaster.findOne({ _id: id, type: kind }).select('name').lean(); return m?.name || null; }
     default: {
       const e = await DmsEntity.findOne({ _id: id, type: kind }).select('docNo data').lean();
       if (!e) return null;
@@ -90,8 +91,19 @@ async function buildData(cfg, body, { partial } = {}) {
         if (!/^https?:\/\/\S+$/i.test(v)) errors[fd.n] = ['Must be a http(s) URL'];
         else data[fd.n] = v;
         break;
+      case 'file': // path returned by POST /entities/upload
+        // an uploaded file, or (older records / seed) a link to a document
+        if (!/^\/uploads\/[A-Za-z0-9._-]+$/.test(v) && !/^https?:\/\/\S+$/i.test(v)) errors[fd.n] = ['Upload the file again'];
+        else data[fd.n] = v;
+        break;
+      case 'multiselect': {
+        const vals = (Array.isArray(v) ? v : [v]).map(String);
+        if (vals.some((x) => !fd.opts.includes(x))) errors[fd.n] = ['Invalid choice'];
+        else data[fd.n] = vals;
+        break;
+      }
       case 'select':
-        if (!fd.opts.includes(v)) errors[fd.n] = ['Invalid choice'];
+        if (!fd.opts.includes(v) && !(fd.legacy || []).includes(v)) errors[fd.n] = ['Invalid choice'];
         else if (fd.n === 'status') status = v;
         else data[fd.n] = v;
         break;
@@ -114,10 +126,42 @@ async function buildData(cfg, body, { partial } = {}) {
         for (const [i, l] of v.entries()) {
           const p = isId(l.product) ? await DmsProduct.findById(l.product).select('name productCode').lean() : null;
           const qty = Number(l.qty); const price = Number(l.price); const disc = Number(l.discountPerUnit || 0);
-          if (!p || !(qty > 0) || !(price >= 0) || disc < 0 || disc > price) { errors[fd.n] = [`Item ${i + 1} is invalid`]; break; }
-          out.push({ product: String(p._id), productName: `${p.name} | ${p.productCode}`, qty, price, discountPerUnit: disc, total: round2(qty * (price - disc)) });
+          const taxPer = Number(l.taxPer || 0); // quote lines: Tax Type / Tax % as in the reference
+          if (!p || !(qty > 0) || !(price >= 0) || disc < 0 || disc > price || !(taxPer >= 0 && taxPer <= 100)) { errors[fd.n] = [`Item ${i + 1} is invalid`]; break; }
+          const value = round2(qty * (price - disc));
+          const taxAmt = round2((value * taxPer) / 100);
+          out.push({
+            product: String(p._id), productName: `${p.name} | ${p.productCode}`, qty, price, discountPerUnit: disc, value,
+            ...(l.taxType || taxPer ? { taxType: String(l.taxType || '').slice(0, 60), taxPer, taxAmt } : {}), total: round2(value + taxAmt),
+          });
         }
         data[fd.n] = out;
+        break;
+      }
+      case 'grid': { // a table of simple rows (claim travel lines, target products); fd.cols describes the columns
+        if (!Array.isArray(v)) { errors[fd.n] = ['Invalid rows']; break; }
+        const out = [];
+        for (const [i, row] of v.entries()) {
+          const r = {};
+          for (const c of fd.cols) {
+            let x = row?.[c.n];
+            if (typeof x === 'string') x = x.trim();
+            if (x === undefined || x === null || x === '') { if (c.req) { errors[fd.n] = [`Row ${i + 1}: ${c.l} is required`]; } continue; }
+            if (c.t === 'number') { x = Number(x); if (!Number.isFinite(x) || x < 0) { errors[fd.n] = [`Row ${i + 1}: ${c.l} must be a number`]; continue; } }
+            else if (c.t === 'date') { if (!/^\d{4}-\d{2}-\d{2}$/.test(x)) { errors[fd.n] = [`Row ${i + 1}: ${c.l} is not a date`]; continue; } }
+            else if (c.t === 'select') { if (!c.opts.includes(x)) { errors[fd.n] = [`Row ${i + 1}: ${c.l} is not valid`]; continue; } }
+            else if (c.t === 'product') {
+              const p = isId(x) ? await DmsProduct.findById(x).select('name productCode').lean() : null;
+              if (!p) { errors[fd.n] = [`Row ${i + 1}: ${c.l} not found`]; continue; }
+              r[`${c.n}_label`] = `${p.name} | ${p.productCode}`; x = String(p._id);
+            } else x = String(x).slice(0, 300);
+            r[c.n] = x;
+          }
+          if (Object.keys(r).length) out.push(r);
+        }
+        if (fd.req && !out.length) errors[fd.n] = ['Add at least one row'];
+        data[fd.n] = out;
+        if (fd.sumTo) data[fd.sumTo] = round2((data[fd.sumTo] || 0) + out.reduce((n, r) => n + (Number(r[fd.sumCol]) || 0), 0));
         break;
       }
       default:
@@ -146,9 +190,16 @@ async function assertUnique(cfg, type, data, excludeId) {
 const dayDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000) + 1;
 
 async function applyComputed(cfg, req, data, ownerLoginId, excludeId) {
+  // Application / claim lists show the employee's designation and manager (reference columns), taken from the Employee Master
+  if ((cfg === ENTITY_TYPES.application || cfg === ENTITY_TYPES.claim) && ownerLoginId) {
+    const want = String(ownerLoginId).toLowerCase();
+    const emp = (await DmsEntity.find({ type: 'employee', 'data.loginId': { $exists: true, $ne: '' } }).select('data').lean()).find((e) => String(e.data.loginId).toLowerCase() === want);
+    if (emp) { data.empDesignation = emp.data.designation_label || ''; data.empManager = emp.data.manager_label || ''; }
+  }
+  if (cfg === ENTITY_TYPES.employee && data.location) data.locationType = (await DmsLocation.findById(data.location).select('locationType').lean())?.locationType || '';
   if (cfg.computed === 'tada') data.amount = round2((data.travelAmount || 0) + (data.daAmount || 0));
   if (cfg.computed === 'leave') {
-    data.duration = dayDiff(data.fromDate, data.toDate);
+    data.duration = data.durationOfLeave === 'Half Day' && data.fromDate === data.toDate ? 0.5 : dayDiff(data.fromDate, data.toDate);
     const mine = await DmsEntity.find({ type: 'leave', ownerLoginId, status: { $in: ['Pending', 'Approved'] }, ...(excludeId ? { _id: { $ne: excludeId } } : {}) }).lean();
     if (mine.some((l) => l.data.fromDate <= data.toDate && l.data.toDate >= data.fromDate)) throw new DmsError('You already have leave in this period', 422, { fromDate: ['Overlaps an existing leave'] });
     const lt = await DmsEntity.findOne({ _id: data.leaveType, type: 'leavetype' }).lean();
@@ -193,6 +244,10 @@ router.get('/schemas', (req, res) => {
       key: k, label: c.label, title: c.title || c.label, page: c.page, selfPage: c.selfPage, approvePage: c.approvePage, docLabel: c.docLabel, noCreate: c.noCreate, noEdit: c.noEdit,
       dateField: c.dateField, global: c.global, fields: c.fields.map((x) => ({ ...x, label: x.l })), cols: c.cols, filters: c.filters || [], statusFilter: c.statusFilter,
       actions: (c.actions || []).map(({ key, label, from, to, page, remark, statuses, owner }) => ({ key, label, from, to, page, remark, statuses, owner })), editStatuses: EDITABLE(c),
+      // presentation (reference list / form wording): column labels, action column style, add button / form title, filter labels
+      colLabels: c.colLabels || {}, actionCol: c.actionCol || 'view+edit', addLabel: c.addLabel, addTitle: c.addTitle, editTitle: c.editTitle,
+      dateLabels: c.dateLabels, filterLabels: c.filterLabels || {}, noList: c.noList, snoLabel: c.snoLabel, colFormat: c.colFormat, titles: c.titles, modeCols: c.modeCols,
+      addButtons: c.addButtons, submitLabel: c.submitLabel, formWithList: c.formWithList,
     };
   }
   sendSuccess(res, { data: { types, months: MONTHS, leadStatuses: LEAD_STATUSES } });
@@ -203,6 +258,7 @@ router.get('/options/:kind', asyncHandler(async (req, res) => {
   let rows = [];
   if (kind === 'profile') rows = (await DmsProfile.find({ status: 'Active' }).select('displayName loginId').limit(500).lean()).map((p) => ({ value: String(p._id), label: `${p.displayName} (${p.loginId})` }));
   else if (kind === 'location') rows = (await DmsLocation.find({ status: 'Active', ...(req.dms.isAdmin ? {} : { _id: { $in: req.dms.allowedLocationIds } }) }).select('name city code').limit(500).lean()).map((l) => ({ value: String(l._id), label: `${l.name}, ${l.city} | ${l.code}` }));
+  else if (kind === 'state' || kind === 'city') rows = (await DmsMaster.find({ type: kind, status: 'Active' }).select('name').sort({ name: 1 }).limit(2000).lean()).map((m) => ({ value: String(m._id), label: m.name }));
   else if (kind === 'product') rows = (await DmsProduct.find({ status: 'Active' }).select('name productCode').limit(500).lean()).map((p) => ({ value: String(p._id), label: `${p.name} | ${p.productCode}` }));
   else if (ENTITY_TYPES[kind]) {
     const q = { type: kind };
@@ -261,6 +317,14 @@ router.post('/attendance-photo', (req, res, next) => {
   if (!req.file) throw new DmsError('Attach a photo (JPEG, PNG or WebP, max 2 MB)', 422, { photo: ['Required'] });
   sendCreated(res, { data: { url: `/uploads/${req.file.filename}` }, message: 'Photo saved' });
 }));
+
+/** Attachment for a "file" field of any record type (PDF, JPG or PNG, up to 2 MB as in the reference). */
+router.post('/upload', (req, res, next) => uploadDocument.single('file')(req, res, (err) => (err ? next(new DmsError(err.message, 422, { file: [err.message] })) : next())),
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw new DmsError('Choose a file to upload', 422, { file: ['Required'] });
+    if (req.file.size > 2 * 1024 * 1024) throw new DmsError('Upload upto 2 MB', 422, { file: ['Upload upto 2 MB'] });
+    sendCreated(res, { data: { url: `/uploads/${req.file.filename}`, name: req.file.originalname }, message: 'File uploaded' });
+  }));
 
 /* ───────── salary ───────── */
 const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
@@ -407,7 +471,7 @@ async function decorate(cfg, doc) {
       const [r] = await DmsInvoice.aggregate([
         { $match: { kind: { $in: ['CORPORATE', 'UPLOAD_BILLING', 'RETAIL_LOCATION', 'RETAIL_CUSTOMER'] }, status: { $nin: ['Cancelled', 'Rejected'] }, entryByUser: prof.user, invoiceDate: { $gte: from, $lt: to } } },
         { $group: { _id: null, amt: { $sum: '$grandTotal' }, qty: { $sum: '$totalQty' } } }]);
-      achieved = t.type === 'Sale Qty' ? r?.qty || 0 : r?.amt || 0;
+      achieved = ['Sale Qty', 'Qty'].includes(t.type) ? r?.qty || 0 : r?.amt || 0;
     }
   }
   return { ...doc, achieved: round2(achieved), achievedPercent: t.targetValue ? round2((achieved / t.targetValue) * 100) : 0 };

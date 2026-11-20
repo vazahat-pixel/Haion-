@@ -164,7 +164,7 @@ test('lead: dealer creates, branch approves, status and log update', async ({ pa
   await login(page, ROLES.dealer);
   await page.goto('/distributor/e/lead/new');
   await field(page, 'Party Name').locator('input').fill('E2E Mobile World');
-  await field(page, 'Area / City').locator('input').fill('Agra');
+  await field(page, 'City').locator('input').fill('Agra');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page).toHaveURL(/\/distributor\/e\/lead$/);
   const row = page.locator('.dms-table tbody tr', { hasText: 'E2E Mobile World' }).first();

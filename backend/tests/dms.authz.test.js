@@ -133,3 +133,31 @@ test('forged tokens, inactive users and non-DMS users are refused', async () => 
   await User.updateOne({ _id: (await User.findOne({ email: 'b1@test.local' }))._id }, { isActive: false });
   assert.equal((await api(ctx.u1.tok).get('/me')).status, 401, 'deactivated user is locked out immediately');
 });
+
+test('Update User Permission rights: Region / Location Type narrow the locations, Brand narrows the products', async () => {
+  const a = api(adminTok);
+  ok(await a.put(`/locations/${ctx.b1._id}`, { region: 'EAST' }));
+  ok(await a.put(`/locations/${ctx.b2._id}`, { region: 'WEST' }));
+  // a Sales Head without a location sees every location of the ticked region
+  const sh = ok(await a.post('/users', { displayName: 'Sales Head', email: 'sh@test.local', phone: '9200000005', password: 'Password123!', userType: 'Sales Head', pages: ['home', 'r_inventory'], scopes: { regions: ['EAST'] } }), 201);
+  const shTok = jwt.sign({ userId: (await User.findOne({ email: 'sh@test.local' }))._id }, env.jwtAccessSecret, { expiresIn: '1h' });
+  let locs = ok(await api(shTok).get('/lookups')).locations.map((l) => l._id);
+  assert.deepEqual(locs, [ctx.b1._id]);
+  // changing the rights to WEST switches the visible locations
+  ok(await a.put(`/users/${sh._id}`, { scopes: { regions: ['WEST'] } }));
+  locs = ok(await api(shTok).get('/lookups')).locations.map((l) => l._id);
+  assert.deepEqual(locs, [ctx.b2._id]);
+  // Location Type: HO user limited to Branch sees HO itself plus the branches below it
+  const ho = ok(await a.post('/users', { displayName: 'HO User', email: 'hou@test.local', phone: '9200000006', password: 'Password123!', userType: 'Location User', location: ctx.ho._id, pages: ['home'], scopes: { locationTypes: ['Branch'], regions: ['EAST'] } }), 201);
+  const hoTok = jwt.sign({ userId: (await User.findOne({ email: 'hou@test.local' }))._id }, env.jwtAccessSecret, { expiresIn: '1h' });
+  locs = ok(await api(hoTok).get('/lookups')).locations.map((l) => l._id).sort();
+  assert.deepEqual(locs, [ctx.ho._id, ctx.b1._id].sort());
+  // Brand right: a brand with no products → no products offered
+  const other = ok(await a.post('/masters/brand', { name: 'Other Brand' }), 201);
+  ok(await a.put(`/users/${ho._id}`, { scopes: { brands: [other._id] } }));
+  assert.equal(ok(await api(hoTok).get('/lookups')).products.length, 0);
+  // history records the changes
+  const h = ok(await a.get(`/users/${ho._id}/history`)).history.map((x) => x.change);
+  assert.equal(h.at(-1), 'Created');
+  assert.match(h[0], /Region \/ Location \/ Category \/ Brand/);
+});

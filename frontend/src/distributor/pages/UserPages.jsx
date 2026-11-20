@@ -107,10 +107,10 @@ export function UserForm() {
               {v.profileImg && <img src={v.profileImg} alt="Profile" className="dms-profile-img" />}
             </div>
           </Field>
-          {/* Our data model keeps each user on one location (the reference maps users to locations from Account → Mapping). */}
+          {/* A Location User belongs to one location; other user types may instead be limited by Region / Location Type rights. */}
           {needsLocation && (
-            <Field label="Location" required error={errors.location}>
-              <Select required value={v.location || ''} options={(lk?.data?.allLocations || []).map(locOpt)} onChange={set('location')} />
+            <Field label="Location" required={v.userType === 'Location User'} error={errors.location}>
+              <Select required={v.userType === 'Location User'} value={v.location || ''} options={(lk?.data?.allLocations || []).map(locOpt)} onChange={set('location')} />
             </Field>
           )}
         </div>
