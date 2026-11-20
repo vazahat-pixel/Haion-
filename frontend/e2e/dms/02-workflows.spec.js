@@ -34,7 +34,7 @@ test.describe.serial('PO → approval → invoice → dispatch → receive → s
     ctx.dealerLoc = me.location._id;
     ctx.before = await okQty(page, ctx.dealerLoc, 'CH-20W');
     await page.goto('/distributor/purchase/po/new');
-    await selectByText(field(page, 'Purchase Order From').locator('select'), 'Krishna Mobiles');
+    await selectByText(field(page, 'Purhase Order From').locator('select'), 'Krishna Mobiles');
     await page.getByRole('button', { name: 'Use parent location' }).click();
     await selectByText(page.getByLabel('Product row 1'), 'CH-20W');
     await page.getByLabel('Qty row 1').fill('5');

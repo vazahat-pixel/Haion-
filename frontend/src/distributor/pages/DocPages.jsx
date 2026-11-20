@@ -34,7 +34,7 @@ export function DocList({ listKey }) {
     type: { key: 'kind', label: 'Invoice Type', render: (r) => KIND_LABEL[r.kind] },
     status: { key: 'status', label: 'Status', render: (r) => <Status value={r.status} /> },
     // Reference "IMEI Attached" column: a print icon that opens the serial list (print_imei.php).
-    serials: { key: 'serialsAttached', label: 'IMEI Attached', align: 'c', sortable: false, text: (r) => r.serialsAttached || 0, render: (r) => (r.serialsAttached ? <PrintLink to={`/distributor/print/imei/${r._id}`} /> : null) },
+    serials: { key: 'serialsAttached', label: L.serials || 'IMEI Attached', align: 'c', sortable: false, text: (r) => r.serialsAttached || 0, render: (r) => (r.serialsAttached ? <PrintLink to={`/distributor/print/imei/${r._id}`} /> : null) },
   };
   const A = {
     print: { key: 'pr', label: 'Print', sortable: false, align: 'c', render: (r) => <PrintLink to={`/distributor/print/doc/${r._id}`} /> },
@@ -42,9 +42,12 @@ export function DocList({ listKey }) {
     cancel: { key: 'cn', label: 'Cancel', sortable: false, align: 'c', render: (r) => (['PFA', 'Pending'].includes(r.status) && !(r.paidAmount > 0) ? <CancelBtn onClick={() => setConf({ id: r._id, no: r.invoiceNo, remark: '' })} /> : null) },
     dispatch: { key: 'up', label: 'Update', sortable: false, align: 'c', render: (r) => (['Pending', 'Dispatched'].includes(r.status) ? <Btn size="sm" to={`/distributor/doc/${r._id}/dispatch`}>Update</Btn> : null) },
     receive: { key: 'rc', label: 'Receive', sortable: false, align: 'c', render: (r) => (['Pending', 'Dispatched'].includes(r.status) ? <Btn size="sm" to={`/distributor/doc/${r._id}/receive`}>Receive</Btn> : null) },
-    approve: { key: 'ap', label: 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={`/distributor/doc/${r._id}/approve`} /> },
+    approve: { key: 'ap', label: L.approve || 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={`/distributor/doc/${r._id}/approve`} /> },
+    viewedit: { key: 've', label: 'View/Edit', sortable: false, align: 'c', render: (r) => <ViewLink to={`/distributor/doc/${r._id}`} /> },
+    scan: { key: 'sc', label: 'Receive Stock By Scanning', sortable: false, align: 'c', render: (r) => (['Pending', 'Dispatched'].includes(r.status) ? <Btn size="sm" to={`/distributor/doc/${r._id}/receive?scan=1`}>Scan</Btn> : null) },
   };
-  const columns = [{ key: '#', label: 'S.No' }, ...cfg.cols.map((c) => C[c]), ...cfg.actions.map((a) => A[a])];
+  const unordered = [{ key: '#', label: 'S.No' }, ...cfg.cols.map((c) => C[c]), ...cfg.actions.map((a) => A[a])];
+  const columns = cfg.order ? cfg.order.map((k) => unordered.find((c) => c.key === k || (k === 'serials' && c.key === 'serialsAttached'))).filter(Boolean) : unordered;
   const Icon = cfg.icon;
   return (
     <>
@@ -160,7 +163,7 @@ export function DocForm() {
           {cfg.ref && kind !== 'OPENING' && <Field label="Invoice Date"><Input type="date" value={v.refDate} onChange={set('refDate')} /></Field>}
           {cfg.date && <Field label="Opening Date"><Input type="date" value={v.invoiceDate} onChange={set('invoiceDate')} /></Field>}
         </div>
-        <LineItems lines={lines} setLines={setLines} products={lk?.products || []} cols={cfg.cols} preview={preview} schemes={lk?.schemes || []} stockOf={ctx.stockOf} errors={errors} />
+        <LineItems lines={lines} setLines={setLines} products={lk?.products || []} cols={cfg.cols} colLabels={cfg.colLabels} preview={preview} schemes={lk?.schemes || []} stockOf={ctx.stockOf} errors={errors} />
         <TotalsBox totals={preview.totals} showTax={applyTax} roundOff={cfg.roundOff} />
         <div className="dms-form" style={{ marginTop: 12 }}>
           {cfg.to !== 'none' && <Field label="Delivery Address" required={cfg.to !== 'vendor'}><TextArea required={cfg.to !== 'vendor'} value={v.deliveryAddress} onChange={set('deliveryAddress')} /></Field>}
@@ -423,7 +426,25 @@ export function ReceivePage() {
   const [rows, setRows] = useState([]);
   const [remark, setRemark] = useState('');
   const [msg, setMsg] = useState('');
-  useEffect(() => { if (doc) setRows(doc.lines.map((l) => ({ lineId: l._id, qty: l.qty, okQty: String(l.qty), damageQty: '0', missingQty: '0' }))); }, [doc]);
+  // "Receive Stock By Scanning": each scanned serial must be on this invoice; serialized lines count OK = scanned
+  const scanMode = new URLSearchParams(window.location.search).has('scan');
+  const [scanned, setScanned] = useState({});
+  const [code, setCode] = useState('');
+  useEffect(() => { if (doc) setRows(doc.lines.map((l) => ({ lineId: l._id, qty: l.qty, okQty: scanMode && l.serials?.length ? '0' : String(l.qty), damageQty: '0', missingQty: scanMode && l.serials?.length ? String(l.qty) : '0' }))); }, [doc]); // eslint-disable-line react-hooks/exhaustive-deps
+  const onScan = (e) => {
+    e.preventDefault();
+    const c = code.trim().toUpperCase();
+    setCode('');
+    if (!c) return;
+    const i = doc.lines.findIndex((l) => (l.serials || []).map((x) => String(x).toUpperCase()).includes(c));
+    if (i < 0) { setMsg(`Serial ${c} is not on this invoice`); return; }
+    if (scanned[c] !== undefined) { setMsg(`Serial ${c} is already scanned`); return; }
+    setMsg('');
+    const next = { ...scanned, [c]: i };
+    setScanned(next);
+    const n = Object.values(next).filter((x) => x === i).length;
+    setRows((rs) => rs.map((r, j) => (j === i ? { ...r, okQty: String(n), missingQty: String(Math.max(0, r.qty - n - Number(r.damageQty || 0))) } : r)));
+  };
   const save = useDmsMutation((b) => dms.post(`/invoices/${id}/receive`, b), { onSuccess: () => nav(doc?.kind === 'JOBWORK' ? '/distributor/receive/jobwork' : doc?.kind === 'LOCAL_PURCHASE' ? '/distributor/purchase/local' : '/distributor/receive/location') });
   if (isLoading || !doc) return <div className="dms-loading">Loading…</div>;
   const set = (i, k, val) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [k]: val } : r)));
@@ -435,6 +456,15 @@ export function ReceivePage() {
       <Panel title="Party Information">
         <KV pairs={[['Billing To', fmt.party(doc.to)], ['Billing From', fmt.party(doc.from)], ['Invoice No.', doc.invoiceNo], ['Billing Date', fmt.date(doc.invoiceDate)], ['Entry By', doc.entryBy], ['Status', <Status key="s" value={doc.status} />]]} />
       </Panel>
+      {scanMode && (
+        <Panel title="Receive Stock By Scanning">
+          <form className="dms-filter" onSubmit={onScan}>
+            <div><label className="dms-label" htmlFor="scan-code">Scan Serial No.</label><Input id="scan-code" autoFocus value={code} onChange={(e) => setCode(e.target.value)} placeholder="Scan or type, then Enter" /></div>
+            <div style={{ minWidth: 0 }}><button type="submit" className="dms-btn">Add</button></div>
+          </form>
+          <p className="dms-muted">Scanned: {Object.keys(scanned).length} of {doc.lines.reduce((n, l) => n + (l.serials?.length || 0), 0)} serial(s). Serials not scanned are received as Missing.</p>
+        </Panel>
+      )}
       <form onSubmit={(e) => { e.preventDefault(); setMsg(''); save.mutate({ remark, lines: rows.map((r) => ({ lineId: r.lineId, okQty: Number(r.okQty), damageQty: Number(r.damageQty), missingQty: Number(r.missingQty) })) }, { onError: (err) => setMsg(apiError(err).message) }); }}>
         <Panel title="Items Information">
           <div className="dms-table-wrap"><table className="dms-table">

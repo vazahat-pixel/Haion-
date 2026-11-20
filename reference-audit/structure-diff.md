@@ -1,15 +1,15 @@
 # Reference vs local — page structure diff
 
-Generated 2026-11-20 08:19 by tools/compare-structure.mjs.
+Generated 2026-11-20 08:29 by tools/compare-structure.mjs.
 Reference pages read: **114** (sidebar of the logged-in reference account + each page's Add form). Local pages read: **117**.
-Pages with no structural difference: **59**. Pages with differences: **55**.
+Pages with no structural difference: **62**. Pages with differences: **52**.
 
 Compared: page title, main table columns (set and order), form labels, buttons, tabs, and the same for the Add page. Ignored: DataTables paging/search chrome.
 
 | # | Group | Page | Reference | Local | Differences |
 |---|---|---|---|---|---|
 | 1 |  | Home | dashboard/home_dashboard.php | /distributor/home | title: 1151031.36, ; missingColumns: current month po status, po status, count; missingButtons: go, plain, inverted, polar |
-| 2 | Dashboard | Dashboard 1 | dashboard/yearly_dashboard.php | /distributor/dashboard/yearly | missingLabels: period type, month, location tpye |
+| 2 | Dashboard | Dashboard 1 | dashboard/yearly_dashboard.php | /distributor/dashboard/yearly | title: Yearly Dashboard, ; missingLabels: period type, month, location tpye; missingButtons: go |
 | 3 | Dashboard | Dashboard 2 | dashboard/saleQtyAmtMonthwise.php | /distributor/dashboard/monthly | missingLabels: period type |
 | 4 | Dashboard | Inventory | dashboard/inventoryDash.php | /distributor/dashboard/inventory | none |
 | 5 | Dashboard | Lead Dashboard | dashboard/leadDashboard.php | /distributor/dashboard/lead | missingColumns: lead conversion; extraColumns: s.no |
@@ -56,24 +56,24 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 46 | Logistic | Update Dispatch | logistic/updateInvLogistic.php | /distributor/logistic/dispatch | none |
 | 47 | Invoicing | Corporate | invoice/corporateInvoice.php | /distributor/invoicing/corporate | none |
 | 48 | Invoicing | Multiple Serial No. Track | invoice/imei_track.php | /distributor/invoicing/multi-serial-track | missingButtons: show |
-| 49 | Invoicing | Retail | invoice/retailbillinglist.php | /distributor/invoicing/retail | missingColumns: billing from, billing to; extraColumns: invoice from, invoice to; **add page:** missingColumns: bill qty, value after discount; extraColumns: qty, value, after discount value, avl stock, serial / imei no.; missingLabels: discount type, total qty, sub total, discount, tax amount, grand total |
+| 49 | Invoicing | Retail | invoice/retailbillinglist.php | /distributor/invoicing/retail | missingColumns: invoice no., invoice date; **add page:** extraColumns: value, avl stock, serial / imei no.; missingLabels: discount type, total qty, sub total, discount, tax amount, grand total |
 | 50 | Invoicing | Single Serial No. Track | invoice/check_imei.php | /distributor/invoicing/serial-track | none |
-| 51 | Invoicing | STN Distribution | invoice/stndistribution_list.php | /distributor/invoicing/stn-distribution | extraColumns: distribution; **add page:** missingLabels: distribution to, product |
+| 51 | Invoicing | STN Distribution | invoice/stndistribution_list.php | /distributor/invoicing/stn-distribution | **add page:** missingLabels: distribution to, product |
 | 52 | Invoicing | Stock Transfer | invoice/stock_transfer.php | /distributor/invoicing/stock-transfer | title: Add Stock Transfer, Stock Transfer List; missingColumns: product, qty, price, value, discount, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock; extraColumns: s.no, stock transfer to, stock transfer from, document no., document date, entry by, status, view, cancel; missingLabels: stock transfer from, stock transfer to, document type, sub total, total qty, total discount, grand total, delivery address, remark; missingButtons: save, back |
 | 53 | Invoicing | Stock Transfer Approval | invoice/stockTRansferApproval.php | /distributor/invoicing/stock-transfer-approval | none |
-| 54 | Purchase | Local Purchase | po/localPurchaseList.php | /distributor/purchase/local | missingColumns: po no., scan serial no.; extraColumns: doc no., vendor inv. no.; **add page:** missingColumns: price (); extraColumns: price, serial / imei no.; missingLabels: total qty, sub total, total sgst amt, round off, total cgst amt, grand total, total igst amt, invoice no. |
-| 55 | Purchase | Opening | opening/openingStockList.php | /distributor/purchase/opening | missingColumns: scan serial no.; extraColumns: imei attached; **add page:** extraColumns: total, serial / imei no.; missingLabels: total qty, total |
-| 56 | Purchase | PO | po/purchaseOrderList.php | /distributor/purchase/po | **add page:** missingColumns: discount; extraColumns: discount/unit, after discount value; missingLabels: purhase order from, purhase order to, sub total, total qty, total discount, grand total |
+| 54 | Purchase | Local Purchase | po/localPurchaseList.php | /distributor/purchase/local | **add page:** extraColumns: serial / imei no.; missingLabels: total qty, sub total, total sgst amt, round off, total cgst amt, grand total, total igst amt, invoice no. |
+| 55 | Purchase | Opening | opening/openingStockList.php | /distributor/purchase/opening | **add page:** extraColumns: total, serial / imei no.; missingLabels: total qty, total |
+| 56 | Purchase | PO | po/purchaseOrderList.php | /distributor/purchase/po | **add page:** extraColumns: after discount value; missingLabels: sub total, total qty, total discount, grand total |
 | 57 | Purchase | PO Approval | po/purchaseOrderApproval.php | /distributor/purchase/po-approval | none |
-| 58 | Purchase | Vendor | po/vendorPurchaseList.php | /distributor/purchase/vendor | **add page:** missingColumns: price (), available stock, delivery schedule; extraColumns: price, total, avl stock, delivery date; missingLabels: available credit balance, total qty, sub total, tax type, tax %, tax total, grand total, invoice no., invoice date |
-| 59 | Return | Customer Return | return/retailcust_return.php | /distributor/return/customer | missingColumns: date, cancel; extraColumns: invoice date; **add page:** extraColumns: product, qty, price, value, discount/unit, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, serial / imei no.; missingLabels: retail return from, total qty, sub total, discount applied as, total discount, grand total |
-| 60 | Return | Purchase | return/purchase_return.php | /distributor/return/purchase | missingColumns: date, upload serial no., view/edit; extraColumns: invoice date, status, imei attached, view, cancel; **add page:** extraColumns: product, qty, price, value, discount/unit, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock, serial / imei no.; missingLabels: purhase return from, purhase return to, total qty, sub total, discount applied as, total discount, grand total |
-| 61 | Return | Return Approval | return/return_approval_list.php | /distributor/return/approval | missingColumns: date, view/edit; extraColumns: invoice date, view |
-| 62 | Return | Vendor | return/vendor_return.php | /distributor/return/vendor | title: Purchase Return List, Vendor Return List; missingColumns: date, upload serial no.; extraColumns: invoice date, status; **add page:** title: Add New Purchase Return, Add New Vendor Return; extraColumns: product, qty, price, value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock, serial / imei no.; missingLabels: purhase return from, purhase return to, total qty, sub total, tax, tax amount, grand total; missingButtons: process |
-| 63 | Payment | Account Adjustment | payment/acc_adjustList.php | /distributor/payment/adjustment | extraColumns: cr/dr; **add page:** missingLabels: to location, from location, bank receipt no/ref no., receiving amount |
+| 58 | Purchase | Vendor | po/vendorPurchaseList.php | /distributor/purchase/vendor | **add page:** extraColumns: total; missingLabels: available credit balance, total qty, sub total, tax type, tax %, tax total, grand total, invoice no., invoice date |
+| 59 | Return | Customer Return | return/retailcust_return.php | /distributor/return/customer | **add page:** extraColumns: product, qty, price, value, discount/unit, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, serial / imei no.; missingLabels: total qty, sub total, discount applied as, total discount, grand total |
+| 60 | Return | Purchase | return/purchase_return.php | /distributor/return/purchase | **add page:** extraColumns: product, qty, price, value, discount/unit, after discount value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock, serial / imei no.; missingLabels: total qty, sub total, discount applied as, total discount, grand total |
+| 61 | Return | Return Approval | return/return_approval_list.php | /distributor/return/approval | none |
+| 62 | Return | Vendor | return/vendor_return.php | /distributor/return/vendor | **add page:** extraColumns: product, qty, price, value, sgst(%), sgst amt, cgst(%), cgst amt, igst(%), igst amt, total, avl stock, serial / imei no.; missingLabels: total qty, sub total, tax, tax amount, grand total; missingButtons: process |
+| 63 | Payment | Account Adjustment | payment/acc_adjustList.php | /distributor/payment/adjustment | none |
 | 64 | Payment | Payment Approval | payment/payment_approval_list.php | /distributor/payment/approval | none |
-| 65 | Payment | Payment Receive | payment/paymentlist.php | /distributor/payment/receive | missingColumns: view/edit/delete; extraColumns: view, cancel; **add page:** missingLabels: from location, to location, bank receipt no/ref no., receiving amount |
-| 66 | Receive Stock | From Location | invoice/receiveInvoice.php | /distributor/receive/location | missingColumns: receive stock by scanning |
+| 65 | Payment | Payment Receive | payment/paymentlist.php | /distributor/payment/receive | none |
+| 66 | Receive Stock | From Location | invoice/receiveInvoice.php | /distributor/receive/location | none |
 | 67 | Sale Force | Beat Scheduler | salesforce/beatUploader.php | /distributor/sf/beat-scheduler | extraColumns: s.no, date, assigned to, task name, area to visit, status, view, edit; missingLabels: attach file, browse…; missingButtons: check beat scheduled |
 | 68 | Sale Force | Lead | salesforce/lead_list.php | /distributor/e/lead | **add page:** missingButtons: upload lead |
 | 69 | Sale Force | My Beat Plan | salesforce/calender_event.php | /distributor/me/beat | extraColumns: s.no, date, assigned to, task name, area to visit, status, view, edit; missingLabels: area to visit; missingButtons: add |
@@ -110,7 +110,7 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 100 | HRMS Emp. | Attendance | hrms/attendance_emp_list.php | /distributor/me/attendance-punch | none |
 | 101 | HRMS Emp. | Employee Claims | hrms/employee_claims_list.php | /distributor/me/claim | none |
 | 102 | HRMS Emp. | Leave apply / View Status | hrms/leave_apply_list.php | /distributor/me/leave | missingAddPage: Leave Apply |
-| 103 | HRMS Emp. | My Documents | hrms/my_document_list.php | /distributor/me/mydoc | none |
+| 103 | HRMS Emp. | My Documents | hrms/my_document_list.php | /distributor/me/mydoc | title: My Documents, ; missingColumns: s.no, file name, enter by, enter date, download; missingButtons: add document; missingAddPage: Add Document |
 | 104 | HRMS Emp. | My Profile | hrms/my_profile_view.php | /distributor/me/profile | missingLabels: employee name, email, company name, reporting manager, date of birth, anniversary date, contact no., address, date of joining, emp code, alternate email, alternate number, password |
 | 105 | HRMS Emp. | Policies | hrms/policies_emp_list.php | /distributor/me/policy | none |
 | 106 | HRMS Emp. | Resign Request | hrms/resign_request.php | /distributor/me/resign | none |

@@ -97,7 +97,7 @@ export function PoForm({ vendor }) {
       <Alert>{msg}</Alert>
       <form onSubmit={submit}>
         <div className="dms-form">
-          <Field label="Purchase Order From" required>
+          <Field label={vendor ? 'Purchase Order From' : 'Purhase Order From'} required>
             <Select required disabled={isEdit} value={v.fromLocation} options={(lk?.locations || []).filter((l) => !vendor || l.locationType === 'Head Office' || true).map(locOpt)}
               onChange={(e) => { const l = ctx.locById.get(e.target.value); setV({ ...v, fromLocation: e.target.value, deliveryAddress: l?.dispatchAddress || l?.billingAddress || '' }); }} />
           </Field>
@@ -106,7 +106,7 @@ export function PoForm({ vendor }) {
               <Select required value={v.toVendor} options={(lk?.vendors || []).map((x) => ({ value: x._id, label: `${x.name} | ${x.city} | ${x.country} | ${x.code}` }))} onChange={set('toVendor')} />
             </Field>
           ) : (
-            <Field label="Purchase Order To" required>
+            <Field label="Purhase Order To" required>
               <Select required value={v.toLocation} options={toOptions.map(locOpt)} onChange={set('toLocation')} />
               {from?.parent && !v.toLocation && <button type="button" className="dms-btn sm default" style={{ marginTop: 4 }} onClick={() => setV({ ...v, toLocation: from.parent })}>Use parent location</button>}
             </Field>
@@ -120,7 +120,7 @@ export function PoForm({ vendor }) {
             ? <Field label="Currency Type"><Select placeholder={false} value={v.currency} options={['INR', 'USD']} onChange={set('currency')} /></Field>
             : <Field label="Available Credit Balance"><Input readOnly value={credit?.data ? fmt.money(credit.data.available) : ''} /></Field>}
         </div>
-        <LineItems lines={lines} setLines={setLines} products={lk?.products || []} cols={vendor ? ['delivery', 'stock'] : ['discount', 'warranty', 'delivery']} preview={preview} stockOf={ctx.stockOf} errors={errors} />
+        <LineItems lines={lines} setLines={setLines} products={lk?.products || []} cols={vendor ? ['delivery', 'stock'] : ['discount', 'warranty', 'delivery']} colLabels={vendor ? { price: 'Price ()', stock: 'Available Stock', delivery: 'Delivery Schedule' } : { discount: 'Discount' }} preview={preview} stockOf={ctx.stockOf} errors={errors} />
         <TotalsBox totals={preview.totals} />
         <div className="dms-form" style={{ marginTop: 12 }}>
           <Field label="Delivery Address" required><TextArea required value={v.deliveryAddress} onChange={set('deliveryAddress')} /></Field>

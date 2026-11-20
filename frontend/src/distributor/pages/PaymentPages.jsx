@@ -25,15 +25,15 @@ export function PaymentList({ kind = 'RECEIPT', approval }) {
           { key: 'f', label: 'From Location', render: (r) => `${r.fromLocation?.name},${r.fromLocation?.city}` },
           { key: 't', label: 'To Location', render: (r) => `${r.toLocation?.name},${r.toLocation?.city}` },
           { key: 'docNo', label: 'Document No' },
-          ...(kind === 'ADJUSTMENT' ? [{ key: 'adjustType', label: 'CR/DR' }] : []),
           { key: 'amount', label: 'Amount', align: 'r', render: (r) => fmt.money(r.amount) },
           { key: 'paymentDate', label: 'Payment Date', render: (r) => fmt.date(r.paymentDate) },
           { key: 'status', label: 'Status', render: (r) => <Status value={r.status} /> },
           approval
             ? { key: 'ap', label: 'Approve', sortable: false, align: 'c', render: (r) => <Btn size="sm" to={`/distributor/payment/${r._id}/approve`}>Approve</Btn> }
-            : { key: 'v', label: 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={`/distributor/payment/${r._id}`} /> },
-          ...(!approval ? [{ key: 'p', label: 'Print', sortable: false, align: 'c', render: (r) => <PrintLink to={`/distributor/print/payment/${r._id}`} /> }] : []),
-          ...(!approval && kind === 'RECEIPT' ? [{ key: 'c', label: 'Cancel', sortable: false, align: 'c', render: (r) => (r.status === 'PFA' ? <CancelBtn onClick={() => setConf(r)} /> : null) }] : []),
+            : kind === 'RECEIPT'
+              ? { key: 'v', label: 'View/Edit/Delete', sortable: false, align: 'c', render: (r) => <span className="dms-row-acts"><ViewLink to={`/distributor/payment/${r._id}`} />{r.status === 'PFA' && <CancelBtn onClick={() => setConf(r)} />}</span> }
+              : { key: 'v', label: 'View', sortable: false, align: 'c', render: (r) => <ViewLink to={`/distributor/payment/${r._id}`} /> },
+          ...(!approval && kind !== 'RECEIPT' ? [{ key: 'p', label: 'Print', sortable: false, align: 'c', render: (r) => <PrintLink to={`/distributor/print/payment/${r._id}`} /> }] : []),
         ]} />
       <Modal open={Boolean(conf)} title="Cancel Payment" onClose={() => setConf(null)}
         footer={<><Btn variant="danger" onClick={() => cancel.mutate(conf._id, { onSuccess: () => setConf(null) })}>Yes, Cancel</Btn><Btn variant="default" onClick={() => setConf(null)}>Close</Btn></>}>
@@ -62,10 +62,10 @@ export function PaymentForm({ kind = 'RECEIPT' }) {
       <Alert>{msg}</Alert>
       <form onSubmit={(e) => { e.preventDefault(); setErrors({}); setMsg(''); save.mutate({ ...v, kind, amount: Number(v.amount) }, { onError: (err) => { const a = apiError(err); setErrors(a.fieldErrors); setMsg(a.message); } }); }}>
         <div className="dms-form">
-          <Field label={kind === 'ADJUSTMENT' ? 'Account of (Location)' : 'From Location (payer)'} required error={errors.fromLocation}>
+          <Field label="From Location" required error={errors.fromLocation}>
             <Select required value={v.fromLocation} options={(lk?.locations || []).map(locOpt)} onChange={(e) => { const l = (lk?.allLocations || []).find((x) => x._id === e.target.value); setV({ ...v, fromLocation: e.target.value, toLocation: l?.parent || '' }); }} />
           </Field>
-          <Field label={kind === 'ADJUSTMENT' ? 'Against Location' : 'To Location (receiver)'} required error={errors.toLocation}>
+          <Field label="To Location" required error={errors.toLocation}>
             <Select required value={v.toLocation} options={toOptions.map(locOpt)} onChange={set('toLocation')} />
             {from && !from.parent && <span className="dms-muted">Selected location has no parent; choose the receiver.</span>}
           </Field>
@@ -75,9 +75,9 @@ export function PaymentForm({ kind = 'RECEIPT' }) {
           <Field label="Bank Branch/IFSC Code"><Input value={v.bankBranch} onChange={set('bankBranch')} /></Field>
           <Field label="DD/Cheque No" required={v.payMode === 'CHEQUE'} error={errors.ddChequeNo}><Input required={v.payMode === 'CHEQUE'} value={v.ddChequeNo} onChange={set('ddChequeNo')} /></Field>
           <Field label="DD/Cheque Date"><Input type="date" value={v.ddChequeDate} onChange={set('ddChequeDate')} /></Field>
-          <Field label="Receipt/Ref No."><Input value={v.receiptNo} onChange={set('receiptNo')} /></Field>
+          <Field label="Bank Receipt No/Ref No."><Input value={v.receiptNo} onChange={set('receiptNo')} /></Field>
           <Field label="Transaction Id" required={['BANK', 'PAYTM'].includes(v.payMode)} error={errors.transactionId}><Input required={['BANK', 'PAYTM'].includes(v.payMode)} value={v.transactionId} onChange={set('transactionId')} /></Field>
-          <Field label="Amount" required error={errors.amount}><Input type="number" step="any" min="0.01" required value={v.amount} onChange={set('amount')} /></Field>
+          <Field label="Receiving Amount" required error={errors.amount}><Input type="number" step="any" min="0.01" required value={v.amount} onChange={set('amount')} /></Field>
           <Field label="Payment Date" required><Input type="date" required value={v.paymentDate} onChange={set('paymentDate')} /></Field>
           <Field label="Remark" full><TextArea value={v.remark} onChange={set('remark')} /></Field>
         </div>

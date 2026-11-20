@@ -30,7 +30,8 @@ export const splitSerials = (txt) => String(txt || '').split(/[\s,;]+/).map((s) 
  * Editable line grid.
  * cols: subset of ['discount','tax','serials','okdm','warranty','delivery','scheme','stock']
  */
-export function LineItems({ lines, setLines, products = [], cols = [], preview, schemes = [], stockOf, errors = {} }) {
+export function LineItems({ lines, setLines, products = [], cols = [], colLabels = {}, preview, schemes = [], stockOf, errors = {} }) {
+  const lb = (k, d) => colLabels[k] || d; // reference wording per form, e.g. "Bill Qty"
   const has = (c) => cols.includes(c);
   const set = (i, k, v) => setLines((ls) => ls.map((l, j) => (j === i ? { ...l, [k]: v } : l)));
   const pmap = new Map(products.map((p) => [p._id, p]));
@@ -39,15 +40,15 @@ export function LineItems({ lines, setLines, products = [], cols = [], preview, 
       <table className="dms-table">
         <thead><tr>
           <th style={{ minWidth: 220 }}>Product</th>
-          {has('okdm') ? <><th>Ok Qty</th><th>Damage Qty</th><th>Missing Qty</th></> : <th>Qty</th>}
-          <th>Price</th><th>Value</th>
-          {has('discount') && <><th>Discount/Unit</th><th>After Discount Value</th></>}
+          {has('okdm') ? <><th>Ok Qty</th><th>Damage Qty</th><th>Missing Qty</th></> : <th>{lb('qty', 'Qty')}</th>}
+          <th>{lb('price', 'Price')}</th><th>{lb('value', 'Value')}</th>
+          {has('discount') && <><th>{lb('discount', 'Discount/Unit')}</th><th>{lb('after', 'After Discount Value')}</th></>}
           {has('tax') && <><th>SGST(%)</th><th>SGST Amt</th><th>CGST(%)</th><th>CGST Amt</th><th>IGST(%)</th><th>IGST Amt</th></>}
           <th>Total</th>
-          {has('stock') && <th>Avl Stock</th>}
+          {has('stock') && <th>{lb('stock', 'Avl Stock')}</th>}
           {has('scheme') && <th>Scheme</th>}
           {has('warranty') && <th>Warranty Days</th>}
-          {has('delivery') && <th>Delivery Date</th>}
+          {has('delivery') && <th>{lb('delivery', 'Delivery Date')}</th>}
           {has('serials') && <th style={{ minWidth: 200 }}>Serial / IMEI No.</th>}
           <th />
         </tr></thead>
