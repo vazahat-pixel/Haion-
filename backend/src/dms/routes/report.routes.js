@@ -65,11 +65,18 @@ router.get('/dashboard', requirePage('home'), asyncHandler(async (req, res) => {
     sumDocs({ kind: { $in: [...kinds, 'LOCAL_PURCHASE'] }, status: 'Received', ...inIds(ids, 'to.location') }),
     DmsPurchaseOrder.aggregate([{ $match: { status: { $nin: ['Cancelled', 'Rejected'] }, ...inIds(ids, 'from.location') } }, { $group: { _id: null, amt: { $sum: '$grandTotal' }, qty: { $sum: '$totalQty' } } }]),
     DmsPayment.aggregate([{ $match: { kind: 'RECEIPT', status: 'Approve', ...inIds(ids, 'toLocation') } }, { $group: { _id: null, amt: { $sum: '$receivedAmount' } } }]),
-    DmsStock.aggregate([
-      { $match: inIds(ids, 'location') },
-      { $lookup: { from: 'dms_invoices', let: { p: '$product' }, pipeline: [{ $unwind: '$lines' }, { $match: { $expr: { $eq: ['$lines.product', '$$p'] } } }, { $sort: { createdAt: -1 } }, { $limit: 1 }, { $project: { price: '$lines.price' } }], as: 'lp' } },
-      { $group: { _id: null, qty: { $sum: '$okQty' }, value: { $sum: { $multiply: ['$okQty', { $ifNull: [{ $first: '$lp.price' }, 0] }] } } } },
-    ]),
+    // inventory value = OK qty × last invoiced price of each product. Two cheap aggregations instead of a per-stock-row
+    // lookup into every invoice line (that lookup made the home page take minutes on a remote database).
+    Promise.all([
+      DmsStock.aggregate([{ $match: inIds(ids, 'location') }, { $group: { _id: '$product', qty: { $sum: '$okQty' } } }]),
+      DmsInvoice.aggregate([
+        { $sort: { createdAt: -1 } }, { $project: { lines: { product: 1, price: 1 } } }, { $unwind: '$lines' },
+        { $group: { _id: '$lines.product', price: { $first: '$lines.price' } } },
+      ]),
+    ]).then(([byProduct, prices]) => {
+      const last = new Map(prices.map((p) => [String(p._id), p.price || 0]));
+      return [{ qty: byProduct.reduce((n, r) => n + (r.qty || 0), 0), value: byProduct.reduce((n, r) => n + (r.qty || 0) * (last.get(String(r._id)) || 0), 0) }];
+    }),
     DmsLedger.aggregate([{ $match: inIds(ids, 'party') }, { $group: { _id: null, dr: { $sum: '$dr' }, cr: { $sum: '$cr' } } }]),
     DmsInvoice.aggregate([
       { $match: { kind: { $in: kinds }, ...live, invoiceDate: { $gte: monthStart }, ...inIds(ids, 'from.location') } },
