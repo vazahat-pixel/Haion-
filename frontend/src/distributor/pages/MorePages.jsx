@@ -162,7 +162,7 @@ export function DashYearly() {
   return (
     <>
       <PageTitle icon={Gauge}>Yearly Dashboard</PageTitle>
-      <FilterBar opts={opts} onGo={setP} defs={[{ name: 'year', label: 'Period (Year)', required: true, options: years() }, { name: 'by', label: 'Location Type', options: ['Location', 'Customer'], placeholder: false }, { name: 'location', label: 'Location', optionsFrom: 'locations' }]} initial={{ by: 'Location' }} />
+      <FilterBar opts={opts} onGo={setP} defs={[{ name: 'periodType', label: 'Period Type', options: ['Year'], placeholder: false }, { name: 'year', label: 'Year', required: true, options: years() }, { name: 'by', label: 'Location Tpye', options: ['Customer', 'Location'], placeholder: false }, { name: 'location', label: 'Location', optionsFrom: 'locations' }]} initial={{ by: 'Location', periodType: 'Year' }} />
       {error && <Alert>{apiError(error).message}</Alert>}
       {d && (d.series.length === 0 ? <p className="dms-loading">No sales in this year</p> : (
         <div className="dms-chart"><h4>Month-wise sale (₹)</h4>
@@ -183,7 +183,7 @@ export function DashMonthly() {
     <>
       <PageTitle icon={Gauge}>Sale QTY/AMT Dashboard</PageTitle>
       <FilterBar opts={opts} onGo={(f) => setP({ ...f, month: MONTHS.indexOf(f.monthName) + 1 })}
-        defs={[{ name: 'year', label: 'Year', required: true, options: years() }, { name: 'monthName', label: 'Month', required: true, options: MONTHS }, { name: 'location', label: 'Location', optionsFrom: 'locations' }, { name: 'product', label: 'Product', optionsFrom: 'products' }]} />
+        defs={[{ name: 'periodType', label: 'Period Type', options: ['Month'], placeholder: false }, { name: 'year', label: 'Year', required: true, options: years() }, { name: 'monthName', label: 'Month', required: true, options: MONTHS }, { name: 'location', label: 'Location', optionsFrom: 'locations' }, { name: 'product', label: 'Product', optionsFrom: 'products' }]} />
       {error && <Alert>{apiError(error).message}</Alert>}
       {p && (
         <div className="dms-chart"><h4>Day-wise sale</h4>

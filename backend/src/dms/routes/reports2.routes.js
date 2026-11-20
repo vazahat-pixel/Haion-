@@ -26,7 +26,7 @@ const inIds = (ids, path) => (ids === null ? {} : { [path]: { $in: ids } });
 const live = { status: { $nin: ['Cancelled', 'Rejected', 'PFA'] } };
 
 /* ── Dashboard 1: yearly, by customer or location ── */
-router.get('/dash-yearly', requirePage('dash_yearly'), asyncHandler(async (req, res) => {
+router.get('/dash-yearly', requirePage('dash_yearly', 'dash_sale'), asyncHandler(async (req, res) => {
   const year = Number(req.query.year);
   if (!(year >= 2000 && year <= 2100)) throw new DmsError('Select a year', 422, { year: ['Required'] });
   const byCustomer = req.query.by === 'Customer';
@@ -46,7 +46,7 @@ router.get('/dash-yearly', requirePage('dash_yearly'), asyncHandler(async (req, 
 }));
 
 /* ── Dashboard 2: month, day-wise qty/amount with location + product filter ── */
-router.get('/dash-monthly', requirePage('dash_monthly'), asyncHandler(async (req, res) => {
+router.get('/dash-monthly', requirePage('dash_monthly', 'dash_sale'), asyncHandler(async (req, res) => {
   const year = Number(req.query.year); const month = Number(req.query.month);
   if (!(year >= 2000) || !(month >= 1 && month <= 12)) throw new DmsError('Select year and month', 422);
   const ids = locScope(req, req.query.location);

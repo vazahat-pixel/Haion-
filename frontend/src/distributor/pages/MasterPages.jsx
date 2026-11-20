@@ -39,6 +39,8 @@ export function useOptions(lk) {
       case 'allLocations': return (L.allLocations || []).map(locOpt);
       case 'products': return (L.products || []).map(prodOpt);
       case 'locationTypes': return L.locationTypes || [];
+      case 'vendors': return (L.vendors || []).map((x) => ({ value: x._id, label: `${x.name} | ${x.city || ''} | ${x.code || ''}` }));
+      case 'schemes': return [...new Set((L.schemes || []).map((x) => x.name))];
       case 'cities': return (L.cities || []).filter((c) => !def.dependsOn || !values[def.dependsOn] || c.state === values[def.dependsOn]).map((c) => c.name);
       default: return [];
     }

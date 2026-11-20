@@ -50,6 +50,11 @@ router.get('/', requirePage(...PO_READ), asyncHandler(async (req, res) => {
     q.status = { $in: ['Approved', 'Processed'] };
     if (req.dms.allowedLocationIds !== null) { delete q.$or; q['to.location'] = { $in: req.dms.allowedLocationIds }; }
   }
+  // Purchase Order To / From and Product filters (reference PO dashboard / Purchase Report)
+  const isOid = (v) => v && /^[a-f0-9]{24}$/i.test(String(v));
+  if (isOid(req.query.poFrom)) q['from.location'] = req.query.poFrom;
+  if (isOid(req.query.poTo)) q['to.location'] = req.query.poTo;
+  if (isOid(req.query.product)) q['lines.product'] = req.query.product;
   if (req.query.from) q.poDate = { ...(q.poDate || {}), $gte: new Date(req.query.from) };
   if (req.query.to) q.poDate = { ...(q.poDate || {}), $lte: new Date(`${req.query.to}T23:59:59`) };
   if (req.query.search) {

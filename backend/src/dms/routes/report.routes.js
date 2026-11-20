@@ -4,11 +4,27 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { sendSuccess, sendPaginated } from '../../utils/apiResponse.js';
 import { parsePagination } from '../../utils/pagination.util.js';
 import { DmsInvoice, DmsPurchaseOrder, DmsPayment, DmsStock, DmsStockLedger, DmsLedger } from '../models/txn.models.js';
-import { DmsLocation } from '../models/master.models.js';
+import { DmsLocation, DmsProduct } from '../models/master.models.js';
 import { requirePage } from '../middleware/context.js';
 import { DmsError, round2 } from '../services/core.service.js';
 
 const router = Router();
+
+/**
+ * Products selected by the reference report filters (Product Category, Product Sub Category, Brand, Product).
+ * null = no product filter; [] = filters match no product.
+ */
+async function productSet(req) {
+  const ok = (v) => v && mongoose.isValidObjectId(v);
+  const { category, subCategory, brand, product } = req.query;
+  if (![category, subCategory, brand, product].some(ok)) return null;
+  const q = {};
+  if (ok(category)) q.category = category;
+  if (ok(subCategory)) q.subCategory = subCategory;
+  if (ok(brand)) q.brand = brand;
+  if (ok(product)) q._id = product;
+  return (await DmsProduct.find(q).select('_id').lean()).map((p) => p._id);
+}
 const oid = (v) => new mongoose.Types.ObjectId(String(v));
 /** Ledger "Document Type" captions. RETAIL INVOICE and Payment Received are verified on the reference; the rest follow the same style. */
 const DOC_TYPE_LABEL = {
@@ -96,13 +112,14 @@ router.get('/dashboard', requirePage('home'), asyncHandler(async (req, res) => {
 router.get('/inventory', requirePage('r_inventory', 'dash_inventory', 'home'), asyncHandler(async (req, res) => {
   const ids = locIds(req);
   const match = { ...inIds(ids, 'location') };
-  if (req.query.product && mongoose.isValidObjectId(req.query.product)) match.product = oid(req.query.product);
+  const prods = await productSet(req);
+  if (prods) match.product = { $in: prods };
+  const invType = req.query.inventoryType === 'IMEI INVENTORY' ? true : req.query.inventoryType === 'QTY INVENTORY' ? false : null;
   const rows = await DmsStock.aggregate([
     { $match: match },
     { $lookup: { from: 'dms_products', localField: 'product', foreignField: '_id', as: 'p' } }, { $unwind: '$p' },
     { $lookup: { from: 'dms_locations', localField: 'location', foreignField: '_id', as: 'l' } }, { $unwind: '$l' },
-    ...(req.query.category && mongoose.isValidObjectId(req.query.category) ? [{ $match: { 'p.category': oid(req.query.category) } }] : []),
-    ...(req.query.brand && mongoose.isValidObjectId(req.query.brand) ? [{ $match: { 'p.brand': oid(req.query.brand) } }] : []),
+    ...(invType === null ? [] : [{ $match: { 'p.isSerialized': invType } }]),
     { $project: { productId: '$p._id', locationId: '$l._id', location: '$l.name', locationCode: '$l.code', locationType: '$l.locationType', productCode: '$p.productCode', productName: '$p.name', color: '$p.color', isSerialized: '$p.isSerialized', okQty: 1, damageQty: 1, missingQty: 1, lastInAt: 1 } },
     { $sort: { location: 1, productCode: 1 } },
   ]);
@@ -112,7 +129,8 @@ router.get('/inventory', requirePage('r_inventory', 'dash_inventory', 'home'), a
 /* ── inventory aging (FIFO on stock-ledger inward rows) ── */
 router.get('/aging', requirePage('r_aging'), asyncHandler(async (req, res) => {
   const ids = locIds(req);
-  const stock = await DmsStock.find(inIds(ids, 'location')).populate('product', 'productCode name isSerialized').populate('location', 'name locationType').lean();
+  const prods = await productSet(req);
+  const stock = await DmsStock.find({ ...inIds(ids, 'location'), ...(prods ? { product: { $in: prods } } : {}) }).populate('product', 'productCode name isSerialized').populate('location', 'name locationType').lean();
   // one query for every inward movement (newest first); stock is aged FIFO-from-the-top: the units still on hand are the most recent receipts
   const inward = await DmsStockLedger.find({ ...inIds(ids, 'location'), inQty: { $gt: 0 } }).sort({ createdAt: -1 }).select('location product bucket inQty createdAt').lean();
   const byKey = new Map();
@@ -143,7 +161,8 @@ router.get('/stock-ledger', requirePage('r_stock_ledger'), asyncHandler(async (r
   const { skip, perPage, page } = parsePagination(req.query);
   if (!req.query.location) throw new DmsError('Select a location', 422, { location: ['Required'] });
   const q = { location: locIds(req)[0], ...dateRange(req, 'createdAt') };
-  if (req.query.product && mongoose.isValidObjectId(req.query.product)) q.product = req.query.product;
+  const prods = await productSet(req);
+  if (prods) q.product = { $in: prods };
   const [data, total] = await Promise.all([
     DmsStockLedger.find(q).populate('product', 'productCode name').sort({ createdAt: -1 }).skip(skip).limit(perPage).lean(),
     DmsStockLedger.countDocuments(q),
@@ -177,8 +196,14 @@ router.get('/documents', requirePage('r_sale', 'r_po', 'r_return', 'r_vendor', '
   if (req.query.toLocation && mongoose.isValidObjectId(req.query.toLocation)) q['to.location'] = oid(req.query.toLocation);
   if (req.query.status) q.status = { $in: String(req.query.status).split(',') };
   if (req.query.docType) q.docType = req.query.docType;
+  if (req.query.vendor && mongoose.isValidObjectId(req.query.vendor)) q.$and = [...(q.$and || []), { $or: [{ 'from.vendor': oid(req.query.vendor) }, { 'to.vendor': oid(req.query.vendor) }] }];
+  const prods = await productSet(req);
+  if (prods) q['lines.product'] = { $in: prods };
+  const scheme = req.query.scheme ? String(req.query.scheme) : '';
+  if (scheme) q['lines.schemeName'] = scheme;
+  const keep = new Set((prods || []).map(String));
   const docs = await DmsInvoice.find(q).sort({ invoiceDate: -1 }).limit(5000).lean();
-  const rows = docs.flatMap((d) => d.lines.map((l) => ({
+  const rows = docs.flatMap((d) => d.lines.filter((l) => (!prods || keep.has(String(l.product))) && (!scheme || l.schemeName === scheme)).map((l) => ({
     invoiceNo: d.invoiceNo, invoiceDate: d.invoiceDate, kind: d.kind, docType: d.docType, status: d.status,
     from: d.from.name, to: d.to.name, poNo: d.poNo, productCode: l.productCode, productName: l.productName, hsnCode: l.hsnCode,
     qty: l.qty, price: l.price, discount: round2(l.discountPerUnit * l.qty), taxable: l.afterDiscount,

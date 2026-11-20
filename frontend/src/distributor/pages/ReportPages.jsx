@@ -2,23 +2,16 @@ import { useState } from 'react';
 import { FileBarChart, Search, Gauge } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { dms, useDmsQuery, useLookups, apiError, fmt } from '../api';
-import { PageTitle, DataTable, Field, TextArea, Alert, Btn, Input, Status, locOpt, prodOpt, exportCsv } from '../components/ui';
-import { FilterBar } from './MasterPages';
+import { PageTitle, DataTable, Field, TextArea, Alert, Btn, Input, Status, exportCsv } from '../components/ui';
+import { FilterBar, useOptions } from './MasterPages';
 import { readList } from '../excel';
 
 export { exportCsv };
 
+/** Filter options for reports: the same resolver as the master pages (locations, products, categories → sub categories, brands, vendors, schemes …). */
 export function useLocProdOpts() {
   const { data } = useLookups();
-  const lk = data?.data;
-  return (d) => {
-    if (d.options) return d.options;
-    if (d.optionsFrom === 'locations') return (lk?.locations || []).map(locOpt);
-    if (d.optionsFrom === 'products') return (lk?.products || []).map(prodOpt);
-    if (d.optionsFrom === 'categories') return (lk?.categories || []).map((c) => ({ value: c._id, label: c.name }));
-    if (d.optionsFrom === 'brands') return (lk?.brands || []).map((c) => ({ value: c._id, label: c.name }));
-    return [];
-  };
+  return useOptions(data?.data);
 }
 
 /** Generic report: filter bar → GO → table (+ Excel/CSV export). */
@@ -45,17 +38,22 @@ export function Report({ title, icon = FileBarChart, url, filters, columns, pick
 
 const loc = (required) => ({ name: 'location', label: 'Location', optionsFrom: 'locations', required });
 const dates = [{ name: 'from', label: 'From Date', type: 'date', defaultToday: true }, { name: 'to', label: 'To Date', type: 'date', defaultToday: true }];
+// reference report filters: Product Category → Product Sub Category, Brand, Product
+const productFilters = [
+  { name: 'category', label: 'Product Category', optionsFrom: 'categories' }, { name: 'subCategory', label: 'Product Sub Category', optionsFrom: 'subcategories', dependsOn: 'category' },
+  { name: 'brand', label: 'Brand', optionsFrom: 'brands' }, { name: 'product', label: 'Product', optionsFrom: 'products' },
+];
 
 export const InventoryReport = ({ title = 'Inventory', icon }) => (
   <Report title={title} icon={icon} url="/reports/inventory" requireGo={false}
-    filters={[loc(false), { name: 'category', label: 'Product Category', optionsFrom: 'categories' }, { name: 'brand', label: 'Brand', optionsFrom: 'brands' }, { name: 'product', label: 'Product', optionsFrom: 'products' }]}
+    filters={[loc(false), { name: 'inventoryType', label: 'Inventory Type', options: ['IMEI INVENTORY', 'QTY INVENTORY'] }, ...productFilters]}
     columns={[{ key: '#', label: 'S.No.' }, { key: 'location', label: 'Location' }, { key: 'productCode', label: 'Product Code' }, { key: 'productName', label: 'Product' }, { key: 'color', label: 'Color' },
       { key: 'type', label: 'Inventory Type', text: (r) => (r.isSerialized ? 'IMEI INVENTORY' : 'QTY INVENTORY'), render: (r) => (r.isSerialized ? 'IMEI INVENTORY' : 'QTY INVENTORY') },
       { key: 'okQty', label: 'Ok Qty', align: 'r' }, { key: 'damageQty', label: 'Damage Qty', align: 'r' }, { key: 'missingQty', label: 'Missing Qty', align: 'r' }]} />
 );
 
 export const AgingReport = () => (
-  <Report title="Inventory Aging" url="/reports/aging" filters={[loc(false)]} requireGo={false}
+  <Report title="Inventory Aging" url="/reports/aging" filters={[...productFilters, loc(false)]} requireGo={false}
     columns={[
       { key: '#', label: 'S.No' }, { key: 'location', label: 'Location Name' }, { key: 'locationType', label: 'Location Type' }, { key: 'productCode', label: 'Product Code' },
       { key: 'productName', label: 'Product Name' }, { key: 'nature', label: 'Product Nature' },
@@ -64,7 +62,7 @@ export const AgingReport = () => (
 );
 
 export const StockLedgerReport = () => (
-  <Report title="Stock Ledger" url="/reports/stock-ledger" filters={[...dates, loc(true), { name: 'product', label: 'Product', optionsFrom: 'products' }]}
+  <Report title="Stock Ledger" url="/reports/stock-ledger" filters={[...dates, loc(true), ...productFilters]}
     columns={[
       { key: '#', label: 'S.No' }, { key: 'createdAt', label: 'Date & Time', render: (r) => fmt.dt(r.createdAt), text: (r) => fmt.dt(r.createdAt) },
       { key: 'item', label: 'Item', text: (r) => `${r.product?.name} | ${r.product?.productCode}${r.bucket !== 'OK' ? ` (${r.bucket})` : ''}`, render: (r) => `${r.product?.name} | ${r.product?.productCode}${r.bucket !== 'OK' ? ` (${r.bucket})` : ''}` },
@@ -94,19 +92,19 @@ const docCols = [
 ];
 export const SaleReport = () => (
   <Report title="Invoice Report" url="/reports/documents" name="sale_report"
-    filters={[...dates, { ...loc(false), label: 'From Location' }, { name: 'docType', label: 'Document Type', options: ['INVOICE', 'DELIVERY CHALLAN'] }, { name: 'kind', label: 'Sale Type', options: [{ value: 'CORPORATE,UPLOAD_BILLING,RETAIL_LOCATION,RETAIL_CUSTOMER', label: 'All' }, { value: 'CORPORATE,UPLOAD_BILLING', label: 'Corporate' }, { value: 'RETAIL_LOCATION,RETAIL_CUSTOMER', label: 'Retail' }, { value: 'STN,JOBWORK', label: 'Stock Transfer' }] }]}
+    filters={[...dates, { ...loc(false), label: 'From Location' }, { name: 'toLocation', label: 'To Location', optionsFrom: 'allLocations' }, ...productFilters, { name: 'docType', label: 'Document Type', options: ['INVOICE', 'DELIVERY CHALLAN'] }, { name: 'scheme', label: 'Scheme Name', optionsFrom: 'schemes' }, { name: 'kind', label: 'Sale Type', options: [{ value: 'CORPORATE,UPLOAD_BILLING,RETAIL_LOCATION,RETAIL_CUSTOMER', label: 'All' }, { value: 'CORPORATE,UPLOAD_BILLING', label: 'Corporate' }, { value: 'RETAIL_LOCATION,RETAIL_CUSTOMER', label: 'Retail' }, { value: 'STN,JOBWORK', label: 'Stock Transfer' }] }]}
     columns={docCols} />
 );
 export const ReturnReport = () => (
   <Report title="Return Report" url="/reports/documents" name="return_report"
-    filters={[...dates, loc(false), { name: 'kind', label: 'Return Type', required: true, options: [{ value: 'PRN', label: 'Purchase Return' }, { value: 'VENDOR_RETURN', label: 'Vendor Return' }, { value: 'CUSTOMER_RETURN', label: 'Customer Return' }] }]}
+    filters={[...dates, { name: 'kind', label: 'Return Type', required: true, options: [{ value: 'PRN', label: 'Purchase Return' }, { value: 'VENDOR_RETURN', label: 'Vendor Return' }, { value: 'CUSTOMER_RETURN', label: 'Customer Return' }] }, { name: 'vendor', label: 'From Vendor', optionsFrom: 'vendors' }, { ...loc(false), label: 'To Vendor' }]}
     columns={docCols} />
 );
 export const VendorPurchaseReport = () => (
-  <Report title="Vendor Purchase" url="/reports/documents" name="vendor_purchase" filters={[...dates, loc(false), { name: 'kind', label: 'Type', options: [{ value: 'LOCAL_PURCHASE', label: 'Local / Vendor Purchase' }], placeholder: false }]}
+  <Report title="Vendor Purchase" url="/reports/documents" name="vendor_purchase" filters={[...dates, { name: 'vendor', label: 'Select Vendor', optionsFrom: 'vendors' }, { ...loc(false), label: 'Select Location' }, ...productFilters, { name: 'kind', label: 'Type', options: [{ value: 'LOCAL_PURCHASE', label: 'Local / Vendor Purchase' }], placeholder: false }]}
     columns={docCols} />
 );
-export function PoReport() {
+export function PoReport({ dashboard = false }) {
   const opts = useLocProdOpts();
   const [p, setP] = useState(null);
   const { data, isFetching } = useDmsQuery('rep-po', '/po', { ...(p || {}), perPage: 200 }, { enabled: p !== null });
@@ -117,8 +115,10 @@ export function PoReport() {
   ];
   return (
     <>
-      <PageTitle icon={FileBarChart}>Purchase Report</PageTitle>
-      <FilterBar defs={[...dates, { name: 'status', label: 'Status', options: ['PFA', 'Approved', 'Rejected', 'Processed', 'Cancelled'] }]} opts={opts} onGo={setP} />
+      <PageTitle icon={FileBarChart}>{dashboard ? 'Purchase Order (PO) Dashboard' : 'Purchase Report'}</PageTitle>
+      <FilterBar defs={dashboard
+        ? [{ name: 'poTo', label: 'Purchase Order To', optionsFrom: 'allLocations', required: true }, { name: 'poFrom', label: 'Purchase Order From', optionsFrom: 'allLocations' }, ...dates, { name: 'status', label: 'Status', options: ['PFA', 'Approved', 'Rejected', 'Processed', 'Cancelled'] }]
+        : [...dates, { name: 'poTo', label: 'Purchase Order To', optionsFrom: 'allLocations' }, { name: 'poFrom', label: 'Purchase Order From', optionsFrom: 'allLocations' }, { name: 'product', label: 'Product', optionsFrom: 'products' }, { name: 'status', label: 'Status', options: ['PFA', 'Approved', 'Rejected', 'Processed', 'Cancelled'] }]} opts={opts} onGo={setP} />
       {p !== null && <><div style={{ textAlign: 'right', marginBottom: 6 }}><Btn size="sm" variant="default" onClick={() => exportCsv('purchase_report', columns.slice(1), data?.data || [])}>Export to Excel</Btn></div><DataTable columns={columns} rows={data?.data} loading={isFetching} /></>}
     </>
   );
@@ -163,19 +163,31 @@ export function SerialTrack({ multi }) {
 }
 
 /* ── dashboards ── */
+/**
+ * Sale Dashboard as on the reference: Period Type (Year / Month), Year, Month, Location, Product.
+ * Year → month-wise sale of that year (per location); Month → day-wise sale of that month.
+ */
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const YEARS = () => { const y = new Date().getFullYear(); return Array.from({ length: 6 }, (_, i) => String(y - i)); };
 export function SaleDashboard() {
   const opts = useLocProdOpts();
-  const [p, setP] = useState({});
-  const { data } = useDmsQuery('dash', '/reports/dashboard', p);
+  const [p, setP] = useState({ type: 'Year', year: String(new Date().getFullYear()) });
+  const byYear = p.type !== 'Month';
+  const { data, isFetching } = useDmsQuery(byYear ? 'sale-dash-y' : 'sale-dash-m', byYear ? '/x/dash-yearly' : '/x/dash-monthly',
+    byYear ? { year: p.year, location: p.location, by: 'Location' } : { year: p.year, month: MONTH_NAMES.indexOf(p.month) + 1, location: p.location, product: p.product });
   const d = data?.data;
+  const rows = byYear ? (d?.months || []).map((m, i) => ({ label: m, amount: (d?.series || []).reduce((n, x) => n + (x.amount[i] || 0), 0) })) : (d || []).map((x) => ({ label: String(x.day), amount: x.amount, qty: x.qty }));
   return (
     <>
       <PageTitle icon={Gauge}>Sale Dashboard</PageTitle>
-      <FilterBar defs={[loc(false), { name: 'txn', label: 'Type', options: [{ value: 'both', label: 'Invoice + STN' }, { value: 'invoice', label: 'Invoice' }, { value: 'stn', label: 'STN' }], placeholder: false }]} opts={opts} onGo={setP} />
-      <div className="dms-chart"><h4>Month-wise Sale (last 12 months)</h4>
+      <FilterBar opts={opts} initial={{ type: 'Year', year: String(new Date().getFullYear()) }}
+        onGo={(f) => setP({ type: f.type || 'Year', year: f.year || String(new Date().getFullYear()), month: f.month || MONTH_NAMES[new Date().getMonth()], location: f.location, product: f.product })}
+        defs={[{ name: 'type', label: 'Period Type', options: ['Year', 'Month'], placeholder: false }, { name: 'year', label: 'Year', options: YEARS(), placeholder: false },
+          { name: 'month', label: 'Month', options: MONTH_NAMES }, loc(false), { name: 'product', label: 'Product', optionsFrom: 'products' }]} />
+      <div className="dms-chart"><h4>{byYear ? `Month-wise Sale ${p.year}` : `Day-wise Sale ${p.month || ''} ${p.year}`}{isFetching ? ' …' : ''}</h4>
         <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={d?.monthly || []}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis yAxisId="a" width={62} tickFormatter={fmt.short} /><YAxis yAxisId="q" orientation="right" /><Tooltip /><Legend />
-            <Bar yAxisId="a" dataKey="amount" name="Amount (₹)" fill="#337ab7" /><Bar yAxisId="q" dataKey="qty" name="Qty (Pcs)" fill="#5cb85c" /></BarChart>
+          <BarChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Legend />
+            <Bar dataKey="amount" name="Amount (₹)" fill="#337ab7" />{!byYear && <Bar dataKey="qty" name="Qty (Pcs)" fill="#5cb85c" />}</BarChart>
         </ResponsiveContainer>
       </div>
     </>

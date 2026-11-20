@@ -1,20 +1,20 @@
 # Reference vs local — page structure diff
 
-Generated 2026-11-20 08:29 by tools/compare-structure.mjs.
+Generated 2026-11-20 08:38 by tools/compare-structure.mjs.
 Reference pages read: **114** (sidebar of the logged-in reference account + each page's Add form). Local pages read: **117**.
-Pages with no structural difference: **62**. Pages with differences: **52**.
+Pages with no structural difference: **71**. Pages with differences: **43**.
 
 Compared: page title, main table columns (set and order), form labels, buttons, tabs, and the same for the Add page. Ignored: DataTables paging/search chrome.
 
 | # | Group | Page | Reference | Local | Differences |
 |---|---|---|---|---|---|
 | 1 |  | Home | dashboard/home_dashboard.php | /distributor/home | title: 1151031.36, ; missingColumns: current month po status, po status, count; missingButtons: go, plain, inverted, polar |
-| 2 | Dashboard | Dashboard 1 | dashboard/yearly_dashboard.php | /distributor/dashboard/yearly | title: Yearly Dashboard, ; missingLabels: period type, month, location tpye; missingButtons: go |
-| 3 | Dashboard | Dashboard 2 | dashboard/saleQtyAmtMonthwise.php | /distributor/dashboard/monthly | missingLabels: period type |
+| 2 | Dashboard | Dashboard 1 | dashboard/yearly_dashboard.php | /distributor/dashboard/yearly | missingLabels: month |
+| 3 | Dashboard | Dashboard 2 | dashboard/saleQtyAmtMonthwise.php | /distributor/dashboard/monthly | none |
 | 4 | Dashboard | Inventory | dashboard/inventoryDash.php | /distributor/dashboard/inventory | none |
 | 5 | Dashboard | Lead Dashboard | dashboard/leadDashboard.php | /distributor/dashboard/lead | missingColumns: lead conversion; extraColumns: s.no |
-| 6 | Dashboard | Purchase | dashboard/po_dashboard.php | /distributor/dashboard/purchase | title: Purchase Order (PO) Dashboard, Purchase Report; missingLabels: purchase order to, purchase order from |
-| 7 | Dashboard | Sale | dashboard/saleDash.php | /distributor/dashboard/sale | missingLabels: period type, month, product |
+| 6 | Dashboard | Purchase | dashboard/po_dashboard.php | /distributor/dashboard/purchase | none |
+| 7 | Dashboard | Sale | dashboard/saleDash.php | /distributor/dashboard/sale | none |
 | 8 | Master Management | Account | admin/account_master.php | /distributor/masters/account | none |
 | 9 | Master Management | Admin/Users | admin/adminusermgt.php | /distributor/masters/users | **add page:** missingLabels: user id; missingButtons: update, update rights |
 | 10 | Master Management | Brand Master | admin/brand_master.php | /distributor/masters/brand | none |
@@ -40,19 +40,19 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 30 | Master Management | Vendor Master | admin/vendor_master.php | /distributor/masters/vendors | none |
 | 31 | Report Master | Beat Report | reports/beat_report.php | /distributor/e/beat | title: Beat Report, My Beat Plan; extraColumns: s.no, date, assigned to, task name, area to visit, status, view, edit; missingLabels: select user |
 | 32 | Report Master | Collection | reports/collection_sheet.php | /distributor/reports/collection | missingButtons: view previous collection |
-| 33 | Report Master | Inventory | reports/inventory_stock.php | /distributor/reports/inventory | extraColumns: s.no., location, product code, product, color, inventory type, ok qty, damage qty, missing qty; missingLabels: inventory type, product sub category |
-| 34 | Report Master | Inventory Aging | reports/inventory_aging.php | /distributor/reports/aging | missingColumns: 0 - 15 days, 16 - 30 days, above 30 days, ok, dm, ms; extraColumns: 0 - 15 days ok, 0 - 15 days dm, 0 - 15 days ms, 16 - 30 days ok, 16 - 30 days dm, 16 - 30 days ms, above 30 days ok, above 30 days dm, above 30 days ms; missingLabels: product category, product sub category, brand, product |
+| 33 | Report Master | Inventory | reports/inventory_stock.php | /distributor/reports/inventory | none |
+| 34 | Report Master | Inventory Aging | reports/inventory_aging.php | /distributor/reports/aging | missingColumns: 0 - 15 days, 16 - 30 days, above 30 days, ok, dm, ms; extraColumns: 0 - 15 days ok, 0 - 15 days dm, 0 - 15 days ms, 16 - 30 days ok, 16 - 30 days dm, 16 - 30 days ms, above 30 days ok, above 30 days dm, above 30 days ms |
 | 35 | Report Master | ISD | reports/isd_report.php | /distributor/reports/isd | missingColumns: s.no., isp name, serial no., customer name, location, contact no., state, city, entry date |
 | 36 | Report Master | Party Ledger | reports/partyledger.php | /distributor/reports/party-ledger | missingColumns: sno., location name, party name, document no., document type, transaction date, entry date, payment remark, approval remark, amount cr, amount dr; missingLabels: party name, vendor name |
 | 37 | Report Master | Party Master Report | reports/mapping_report.php | /distributor/reports/party-master | missingLabels: location name |
 | 38 | Report Master | Payment | reports/payment_status.php | /distributor/reports/payment | none |
 | 39 | Report Master | Price Drop | reports/pricedrop.php | /distributor/reports/price-drop | none |
-| 40 | Report Master | Purchase Order | reports/purchase_report.php | /distributor/reports/purchase | missingLabels: purchase order to, purchase order from, product |
-| 41 | Report Master | Return | reports/return_report.php | /distributor/reports/return | missingLabels: from vendor, to vendor |
-| 42 | Report Master | Sale Report | reports/invoice_report.php | /distributor/reports/sale | missingLabels: to location, product category, product sub category, brand, product, scheme name |
+| 40 | Report Master | Purchase Order | reports/purchase_report.php | /distributor/reports/purchase | none |
+| 41 | Report Master | Return | reports/return_report.php | /distributor/reports/return | none |
+| 42 | Report Master | Sale Report | reports/invoice_report.php | /distributor/reports/sale | none |
 | 43 | Report Master | Serial No. Activation Report | reports/imei_activation_rpt.php | /distributor/reports/serial-activation | none |
-| 44 | Report Master | Stock Ledger List | reports/stock_ledger_list.php | /distributor/reports/stock-ledger | missingColumns: s.no, date & time, item, opening stock, in, out, closing stock, system ref. no., transfer type, stock transfer; missingLabels: product category, product sub category, brand |
-| 45 | Report Master | Vendor Purchase | reports/vendor_report.php | /distributor/reports/vendor | missingLabels: select vendor, select location, product category, product sub category, brand, product |
+| 44 | Report Master | Stock Ledger List | reports/stock_ledger_list.php | /distributor/reports/stock-ledger | missingColumns: s.no, date & time, item, opening stock, in, out, closing stock, system ref. no., transfer type, stock transfer |
+| 45 | Report Master | Vendor Purchase | reports/vendor_report.php | /distributor/reports/vendor | none |
 | 46 | Logistic | Update Dispatch | logistic/updateInvLogistic.php | /distributor/logistic/dispatch | none |
 | 47 | Invoicing | Corporate | invoice/corporateInvoice.php | /distributor/invoicing/corporate | none |
 | 48 | Invoicing | Multiple Serial No. Track | invoice/imei_track.php | /distributor/invoicing/multi-serial-track | missingButtons: show |
@@ -110,7 +110,7 @@ Compared: page title, main table columns (set and order), form labels, buttons, 
 | 100 | HRMS Emp. | Attendance | hrms/attendance_emp_list.php | /distributor/me/attendance-punch | none |
 | 101 | HRMS Emp. | Employee Claims | hrms/employee_claims_list.php | /distributor/me/claim | none |
 | 102 | HRMS Emp. | Leave apply / View Status | hrms/leave_apply_list.php | /distributor/me/leave | missingAddPage: Leave Apply |
-| 103 | HRMS Emp. | My Documents | hrms/my_document_list.php | /distributor/me/mydoc | title: My Documents, ; missingColumns: s.no, file name, enter by, enter date, download; missingButtons: add document; missingAddPage: Add Document |
+| 103 | HRMS Emp. | My Documents | hrms/my_document_list.php | /distributor/me/mydoc | none |
 | 104 | HRMS Emp. | My Profile | hrms/my_profile_view.php | /distributor/me/profile | missingLabels: employee name, email, company name, reporting manager, date of birth, anniversary date, contact no., address, date of joining, emp code, alternate email, alternate number, password |
 | 105 | HRMS Emp. | Policies | hrms/policies_emp_list.php | /distributor/me/policy | none |
 | 106 | HRMS Emp. | Resign Request | hrms/resign_request.php | /distributor/me/resign | none |

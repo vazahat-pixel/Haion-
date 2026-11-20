@@ -161,3 +161,17 @@ test('Update User Permission rights: Region / Location Type narrow the locations
   assert.equal(h.at(-1), 'Created');
   assert.match(h[0], /Region \/ Location \/ Category \/ Brand/);
 });
+
+test('report filters: Product Category / Brand / Product and Inventory Type narrow the rows', async () => {
+  const a = api(adminTok);
+  const all = ok(await a.get('/reports/inventory'));
+  assert.ok(all.some((r) => String(r.productId) === ctx.prod._id), 'opening stock is listed');
+  const other = ok(await a.post('/masters/brand', { name: 'Filter Brand' }), 201);
+  assert.equal(ok(await a.get(`/reports/inventory?brand=${other._id}`)).length, 0, 'a brand with no products has no stock rows');
+  assert.ok(ok(await a.get(`/reports/inventory?product=${ctx.prod._id}`)).every((r) => String(r.productId) === ctx.prod._id));
+  assert.equal(ok(await a.get('/reports/inventory?inventoryType=IMEI%20INVENTORY')).length, 0, 'the test product is not serialized');
+  assert.ok(ok(await a.get('/reports/inventory?inventoryType=QTY%20INVENTORY')).length > 0);
+  const docs = ok(await a.get(`/reports/documents?kind=OPENING&brand=${other._id}`));
+  assert.equal(docs.length, 0);
+  assert.ok(ok(await a.get(`/reports/documents?kind=OPENING&product=${ctx.prod._id}`)).length > 0);
+});
