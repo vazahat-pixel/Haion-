@@ -25,7 +25,7 @@ export function Btn({ to, variant, size, children, ...rest }) {
 
 export function BackBtn({ to }) {
   const nav = useNavigate();
-  return <Btn onClick={() => (to ? nav(to) : nav(-1))}>Back</Btn>;
+  return <Btn variant="default" onClick={() => (to ? nav(to) : nav(-1))}>Back</Btn>;
 }
 
 export function Panel({ title, children, right }) {
@@ -179,10 +179,10 @@ export function DataTable({ columns, rows = [], loading, total, page = 1, perPag
             ))}
           </tr></thead>
           <tbody>
-            {loading && <tr className="empty"><td colSpan={columns.length}>Loading…</td></tr>}
+            {loading && Array.from({ length: 6 }, (_, i) => <tr key={`sk${i}`} className="dms-sk" aria-hidden="true">{columns.map((c, j) => <td key={c.key}><i style={{ width: `${[60, 85, 70, 95][(i + j) % 4]}%` }} /></td>)}</tr>)}
             {!loading && pageRows.length === 0 && <tr className="empty"><td colSpan={columns.length}>{emptyText}</td></tr>}
             {!loading && pageRows.map((row, i) => (
-              <tr key={row[rowKey] ?? i}>
+              <tr key={row[rowKey] ?? i} style={i < 12 ? { '--i': i } : undefined}>
                 {columns.map((c) => (
                   <td key={c.key} className={c.align || ''}>
                     {c.key === '#' ? start + i : c.render ? c.render(row, i) : row[c.key]}

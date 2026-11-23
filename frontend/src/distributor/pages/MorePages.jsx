@@ -188,7 +188,7 @@ export function DashMonthly() {
       {p && (
         <div className="dms-chart"><h4>Day-wise sale</h4>
           <ResponsiveContainer width="100%" height={340}><BarChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="day" /><YAxis yAxisId="a" width={62} tickFormatter={fmt.short} /><YAxis yAxisId="q" orientation="right" /><Tooltip /><Legend />
-            <Bar yAxisId="a" dataKey="amount" name="Amount (₹)" fill="#337ab7" /><Bar yAxisId="q" dataKey="qty" name="Qty" fill="#5cb85c" /></BarChart></ResponsiveContainer>
+            <Bar yAxisId="a" dataKey="amount" name="Amount (₹)" fill="#1d4ed8" radius={[5, 5, 0, 0]} /><Bar yAxisId="q" dataKey="qty" name="Qty" fill="#22a84a" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer>
         </div>
       )}
     </>

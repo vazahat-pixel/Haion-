@@ -1,16 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Tag, ShoppingCart, ShoppingBag, Briefcase, Boxes, Scale } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { useDmsQuery, useLookups, fmt } from '../api';
 import { locOpt } from '../components/ui';
 
-const COLORS = ['#337ab7', '#5cb85c', '#f0ad4e', '#d9534f', '#5bc0de', '#777'];
+const COLORS = ['#1d4ed8', '#22a84a', '#e8960c', '#cf3341', '#0e9bb5', '#64718c'];
 
-function Tile({ bg, icon: Icon, label, amount, qty, dark }) {
+/** Counts up to the value once when it arrives. */
+function useCountUp(value) {
+  const [n, setN] = useState(value);
+  useEffect(() => {
+    if (!value || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setN(value); return undefined; }
+    let raf; const t0 = performance.now();
+    const tick = (t) => { const p = Math.min(1, (t - t0) / 700); setN(p === 1 ? value : value * (1 - (1 - p) ** 3)); if (p < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return n;
+}
+
+function Tile({ bg, icon: Icon, label, amount, qty }) {
+  const a = useCountUp(amount); const q = useCountUp(qty);
   return (
-    <div className="dms-tile" style={{ background: bg, color: dark ? '#fff' : '#fff' }}>
-      {amount !== undefined && <div className="v">₹ {fmt.money(amount)}</div>}
-      {qty !== undefined && <div className="v">{qty} Pcs</div>}
+    <div className="dms-tile" style={{ '--c': bg }}>
+      {amount !== undefined && <div className="v">₹ {fmt.money(a)}</div>}
+      {qty !== undefined && <div className="v">{q === qty ? qty : Math.round(q)} Pcs</div>}
       <Icon />
       <div className="lbl">{label}</div>
     </div>
@@ -54,10 +68,10 @@ export default function HomePage() {
           </div>
           <div className="dms-grid2">
             <ChartBox title="Top 5 Model Sale Of The Month">
-              <BarChart data={d.topModels}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="qty" name="Qty" fill="#337ab7" /></BarChart>
+              <BarChart data={d.topModels}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="qty" name="Qty" fill="#1d4ed8" radius={[5, 5, 0, 0]} /></BarChart>
             </ChartBox>
             <ChartBox title="Top 5 Seller Of The Month">
-              <BarChart data={d.topSellers}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount" fill="#5cb85c" /></BarChart>
+              <BarChart data={d.topSellers}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount" fill="#22a84a" radius={[5, 5, 0, 0]} /></BarChart>
             </ChartBox>
             <ChartBox title="Current Month PO Status">
               <PieChart><Pie data={d.poStatus} dataKey="count" nameKey="status" outerRadius={90} label>{d.poStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip /><Legend /></PieChart>
@@ -76,9 +90,9 @@ export default function HomePage() {
               {chart === 'Polar' ? (
                 <RadarChart data={d.monthly}><PolarGrid /><PolarAngleAxis dataKey="month" /><PolarRadiusAxis tickFormatter={fmt.short} /><Tooltip /><Radar dataKey="amount" name="Amount (₹)" stroke="#17a2b8" fill="#17a2b8" fillOpacity={0.5} /></RadarChart>
               ) : chart === 'Inverted' ? (
-                <BarChart data={d.monthly} layout="vertical"><CartesianGrid strokeDasharray="3 3" /><XAxis type="number" tickFormatter={fmt.short} /><YAxis type="category" dataKey="month" width={70} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
+                <BarChart data={d.monthly} layout="vertical"><CartesianGrid strokeDasharray="3 3" /><XAxis type="number" tickFormatter={fmt.short} /><YAxis type="category" dataKey="month" width={70} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#1d4ed8" radius={4} /></BarChart>
               ) : (
-                <BarChart data={d.monthly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#17a2b8" /></BarChart>
+                <BarChart data={d.monthly}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Bar dataKey="amount" name="Amount (₹)" fill="#1d4ed8" radius={4} /></BarChart>
               )}
             </ResponsiveContainer>
           </div>

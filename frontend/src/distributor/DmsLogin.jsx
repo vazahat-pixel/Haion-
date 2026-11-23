@@ -3,6 +3,27 @@ import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-route
 import { useAuth } from '@/hooks/useAuth';
 import { dms, BRAND } from './api';
 import './dms.css';
+import './dms-modern.css';
+
+/** Goods moving from head office through the branches to the dealers. */
+function NetworkArt() {
+  const branches = [[110, 'Branch'], [280, 'Branch'], [450, 'Branch']];
+  const still = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const links = [];
+  branches.forEach(([x], i) => {
+    links.push([`M280 52 C280 110 ${x} 90 ${x} 148`, i * 0.5]);
+    [-45, 45].forEach((o, j) => links.push([`M${x} 160 C${x} 215 ${x + o} 200 ${x + o} 258`, 1.1 + i * 0.5 + j * 0.35]));
+  });
+  return (
+    <svg viewBox="0 0 560 310" role="img" aria-label="Head office supplying branches and dealers">
+      {links.map(([d]) => <path key={d} d={d} className="ln" />)}
+      {!still && links.map(([d, t]) => <circle key={d} r="4.5" fill="#86efac"><animateMotion dur="2.6s" begin={`${t - 3}s`} repeatCount="indefinite" path={d} /></circle>)}
+      <circle cx="280" cy="40" r="22" className="nd hq" /><text x="280" y="12">Head Office</text>
+      {branches.map(([x, n]) => <g key={x}><circle cx={x} cy="160" r="15" className="nd" /><text x={x + 44} y="164">{n}</text>
+        {[-45, 45].map((o) => <g key={o}><circle cx={x + o} cy="266" r="9" className="nd" /><text x={x + o} y="297">Dealer</text></g>)}</g>)}
+    </svg>
+  );
+}
 
 /**
  * Stand-alone sign-in page for the Distributor panel (/distributor/login).
@@ -54,6 +75,8 @@ export default function DmsLogin() {
 
   return (
     <div className="dms-login">
+      <div className="dms-login-art"><p>Stock, orders and payments in one place.</p><NetworkArt /></div>
+      <div className="dms-login-side">
       <form className="dms-login-box" onSubmit={submit} noValidate>
         <div className="dms-login-logo"><b>{BRAND.name}<span>{BRAND.accent}</span></b></div>
         <h1>Sign in to continue to DMS</h1>
@@ -66,6 +89,7 @@ export default function DmsLogin() {
         <button type="submit" className="dms-btn dms-login-btn" disabled={busy}>{busy ? 'Signing in…' : 'Sign In'}</button>
       </form>
       <footer className="dms-login-foot">{BRAND.footer}</footer>
+      </div>
     </div>
   );
 }

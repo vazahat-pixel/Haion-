@@ -190,7 +190,7 @@ export function SaleDashboard() {
       <div className="dms-chart"><h4>{byYear ? `Month-wise Sale ${p.year}` : `Day-wise Sale ${p.month || ''} ${p.year}`}{isFetching ? ' …' : ''}</h4>
         <ResponsiveContainer width="100%" height={320}>
           <BarChart data={rows}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="label" /><YAxis width={62} tickFormatter={fmt.short} /><Tooltip /><Legend />
-            <Bar dataKey="amount" name="Amount (₹)" fill="#337ab7" />{!byYear && <Bar dataKey="qty" name="Qty (Pcs)" fill="#5cb85c" />}</BarChart>
+            <Bar dataKey="amount" name="Amount (₹)" fill="#1d4ed8" radius={[5, 5, 0, 0]} />{!byYear && <Bar dataKey="qty" name="Qty (Pcs)" fill="#22a84a" radius={[5, 5, 0, 0]} />}</BarChart>
         </ResponsiveContainer>
       </div>
     </>

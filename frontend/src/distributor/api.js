@@ -5,7 +5,8 @@ import { toast } from '@/utils/toast';
 /** Thin wrapper over the shared axios client for /api/dms. */
 export const dms = {
   get: async (url, params) => (await client.get(`/dms${url}`, { params })).normalized,
-  post: async (url, body) => (await client.post(`/dms${url}`, body)).normalized,
+  // config carries e.g. the multipart header: without it axios would turn a FormData upload into JSON
+  post: async (url, body, config) => (await client.post(`/dms${url}`, body, config)).normalized,
   put: async (url, body) => (await client.put(`/dms${url}`, body)).normalized,
 };
 
