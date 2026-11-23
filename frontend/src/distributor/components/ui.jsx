@@ -1,6 +1,6 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, isValidElement, Children } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, Printer, Pencil, Trash2, X } from 'lucide-react';
+import { Eye, Printer, Pencil, Trash2, X, Plus, ArrowLeft, Upload, Download, User, Phone, Mail, Lock, MapPin, Calendar, Package, Tag, Hash, IndianRupee, Percent, FileText, Building2, Truck, CreditCard, Activity, Globe, Clock, PencilLine } from 'lucide-react';
 import { exportXlsx } from '../excel';
 
 export function PageTitle({ icon: Icon, children }) {
@@ -19,8 +19,12 @@ export function Toolbar({ children }) {
 
 export function Btn({ to, variant, size, children, ...rest }) {
   const cls = ['dms-btn', variant, size].filter(Boolean).join(' ');
-  if (to) return <Link className={cls} to={to}>{children}</Link>;
-  return <button type="button" className={cls} {...rest}>{children}</button>;
+  // the label decides the icon, so every list and form gets it without touching each page
+  const text = typeof children === 'string' ? children : '';
+  const Ico = /^(add|new|create)\b/i.test(text) ? Plus : /^upload/i.test(text) ? Upload : /export|download/i.test(text) ? Download : /^back/i.test(text) ? ArrowLeft : null;
+  const body = <>{Ico && <Ico className="dms-bi" size={16} strokeWidth={2.2} aria-hidden="true" />}{children}</>;
+  if (to) return <Link className={cls} to={to}>{body}</Link>;
+  return <button type="button" className={cls} {...rest}>{body}</button>;
 }
 
 export function BackBtn({ to }) {
@@ -58,12 +62,29 @@ export function Status({ value }) {
   return <span className={`st-${value}`}>{label}</span>;
 }
 
+/** Icon shown inside a field, chosen from its label. */
+const FIELD_ICONS = [
+  [/password/i, Lock], [/e-?mail/i, Mail], [/phone|mobile|contact n|landline|fax/i, Phone], [/date|^from$|valid|dob|month|year/i, Calendar], [/time|days/i, Clock],
+  [/%|percent|tds|\btax\b|gst %/i, Percent], [/amount|price|mrp|salary|balance|credit|rupee|value|discount|total|bonus/i, IndianRupee],
+  [/bank|account|ifsc|cheque|payment|card/i, CreditCard], [/country|state|circle|region|zone/i, Globe], [/address|city|location|area|landmark|pincode|order (from|to)|billing (from|to)|transfer (from|to)/i, MapPin],
+  [/vendor|organi|company|party|client|branch/i, Building2], [/courier|carrier|docket|dispatch|transport|shipment|vehicle/i, Truck], [/product|item|stock|warranty/i, Package],
+  [/brand|categ|type|scheme|color|priority|source|mode/i, Tag], [/status/i, Activity], [/name|user|employee|executive|person|customer|manager|assign|gender/i, User],
+  [/code|no\.?$|number|hsn|gst|pan|\bid\b|qty|serial/i, Hash], [/remark|descr|detail|narration|message|note|terms|feedback/i, FileText],
+];
+function fieldIcon(label, children) {
+  const kid = Children.toArray(children).find((c) => isValidElement(c) && [Input, Select, TextArea].includes(c.type));
+  if (!kid || typeof label !== 'string' || kid.props.multiple || ['file', 'checkbox'].includes(kid.props.type)) return null;
+  return (FIELD_ICONS.find(([rx]) => rx.test(label)) || [null, PencilLine])[1];
+}
+
 export function Field({ label, required, error, children, full }) {
+  const Ico = fieldIcon(label, children);
   return (
-    <div className={full ? 'full' : undefined}>
+    <div className={[full && 'full', Ico && 'has-ico'].filter(Boolean).join(' ') || undefined}>
       {label && <label className="dms-label">{label}{required && <span className="req"> *</span>}</label>}
       {children}
       {error && <div className="dms-field-err">{Array.isArray(error) ? error[0] : error}</div>}
+      {Ico && <Ico className="dms-fi" size={17} strokeWidth={1.8} aria-hidden="true" />}
     </div>
   );
 }

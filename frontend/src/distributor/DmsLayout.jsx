@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Power, Menu as MenuIcon } from 'lucide-react';
 import { RouteErrorBoundary } from '@/components/error-boundaries/RouteErrorBoundary';
@@ -13,6 +13,33 @@ import './dms-modern.css';
 /* Page code is fetched while the browser is idle, so opening a menu item never waits for a download. */
 const PAGE_CHUNKS = import.meta.glob('./pages/*Pages.jsx');
 function preloadPages() { Object.values(PAGE_CHUNKS).forEach((load) => load().catch(() => {})); }
+
+/** Shows "3 of 5 required" and a progress line on the action bar of the form being filled. */
+function useFormProgress(ref) {
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return undefined;
+    let raf = 0;
+    const run = () => {
+      raf = 0;
+      root.querySelectorAll('form').forEach((form) => {
+        const bar = form.querySelector(':scope > .dms-actions');
+        if (!bar) return;
+        const req = [...form.querySelectorAll(':required')];
+        const done = req.filter((e) => (e.type === 'file' ? e.files.length : e.value)).length;
+        const text = !req.length ? '' : done === req.length ? 'All required fields filled' : `${done} of ${req.length} required filled`;
+        if (bar.dataset.done !== text) bar.dataset.done = text;
+        bar.style.setProperty('--p', req.length ? done / req.length : 0);
+      });
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(run); };
+    const mo = new MutationObserver(queue);
+    mo.observe(root, { childList: true, subtree: true });
+    root.addEventListener('input', queue); root.addEventListener('change', queue);
+    queue();
+    return () => { mo.disconnect(); cancelAnimationFrame(raf); root.removeEventListener('input', queue); root.removeEventListener('change', queue); };
+  });
+}
 
 /** Thin line at the top while data is loading or saving. */
 function Progress() {
@@ -40,6 +67,8 @@ export default function DmsLayout() {
   const me = meRes?.data;
   const { logout } = useAuth();
   const nav = useNavigate();
+  const mainRef = useRef(null);
+  useFormProgress(mainRef);
   const loc = useLocation();
   const [open, setOpen] = useState(null);
   const [drawer, setDrawer] = useState(false);
@@ -113,7 +142,7 @@ export default function DmsLayout() {
             </li>
           </ul>
         </aside>
-        <main className="dms-main">
+        <main className="dms-main" ref={mainRef}>
           <RouteErrorBoundary>
             <Suspense fallback={<Skeleton />}>
               <div className="dms-page" key={loc.pathname}><Outlet context={{ me }} /></div>

@@ -234,3 +234,48 @@
 .dms .dms-kv.dms-totals, .dms .dms-panel .dms-kv { background: #fff; }
 @media (min-width: 1200px) { .dms .dms-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .dms:not(.nav-open) .dms-side { box-shadow: none; visibility: hidden; transition: transform .3s var(--ease), visibility .3s; } }
+
+/* ── buttons: gradient, sheen on hover, icons ── */
+.dms .dms-btn, .dms-login .dms-btn { position: relative; overflow: hidden; height: 42px; border-radius: 11px; }
+.dms .dms-btn:not(.default):not(.danger):not(.success), .dms-login .dms-btn { background: linear-gradient(180deg, #3b6cf6, #1d4ed8); box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 2px 4px rgba(12,31,74,.18), 0 6px 16px -6px rgba(29,78,216,.55); }
+.dms .dms-btn:not(.default)::after, .dms-login .dms-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%); transform: translateX(-110%); pointer-events: none; }
+.dms .dms-btn:not(.default):hover::after, .dms-login .dms-btn:hover::after { transform: translateX(110%); transition: transform .6s var(--ease); }
+.dms .dms-btn.default { box-shadow: 0 1px 2px rgba(12,31,74,.07); }
+.dms .dms-btn.sm { height: 33px; border-radius: 9px; }
+.dms .dms-bi { flex-shrink: 0; transition: transform .3s var(--ease); }
+.dms .dms-btn:hover .dms-bi.lucide-plus { transform: rotate(90deg); }
+.dms .dms-btn:hover .dms-bi.lucide-arrow-left { transform: translateX(-3px); }
+.dms .dms-btn:hover .dms-bi.lucide-upload { transform: translateY(-2px); }
+.dms .dms-btn:hover .dms-bi.lucide-download { transform: translateY(2px); }
+.dms .dms-toolbar .dms-btn:not(.default) { padding: 0 20px 0 15px; }
+.dms .dms-filter button[type=submit]::before, .dms .dms-actions > button[type=submit]::before { content: ""; width: 16px; height: 16px; background: currentColor; flex-shrink: 0; transition: transform .3s var(--ease); -webkit-mask: var(--m) center/contain no-repeat; mask: var(--m) center/contain no-repeat; }
+.dms .dms-filter button[type=submit] { --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.5'/%3E%3Cpath d='m10.5 10.5 4 4'/%3E%3C/svg%3E"); }
+.dms .dms-actions > button[type=submit] { --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 8.5 3.5 3.5L13 4.5'/%3E%3C/svg%3E"); min-width: 132px; }
+.dms button[type=submit]:hover::before { transform: scale(1.18); }
+
+/* ── forms: icon fields, staged entrance, sticky action bar ── */
+.dms .dms-form { position: relative; padding: 32px 30px 30px; gap: 22px 26px; border-radius: 20px; overflow: hidden; box-shadow: 0 1px 2px rgba(12,31,74,.05), 0 22px 48px -28px rgba(12,31,74,.32); }
+.dms .dms-main form > .dms-form:first-of-type::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, var(--dms-primary), #4f86ff 45%, var(--green)); }
+.dms .dms-panel .dms-form::before, .dms .dms-modal .dms-form::before { display: none; }
+.dms .dms-panel .dms-form, .dms .dms-modal .dms-form { overflow: visible; border-radius: 0; }
+.dms .dms-form > div { animation: dmsRow .38s var(--ease) backwards; }
+.dms .dms-form > div:nth-child(2) { animation-delay: .03s } .dms .dms-form > div:nth-child(3) { animation-delay: .06s } .dms .dms-form > div:nth-child(4) { animation-delay: .09s }
+.dms .dms-form > div:nth-child(5) { animation-delay: .12s } .dms .dms-form > div:nth-child(6) { animation-delay: .15s } .dms .dms-form > div:nth-child(7) { animation-delay: .18s } .dms .dms-form > div:nth-child(n+8) { animation-delay: .21s }
+.dms .dms-form .dms-input, .dms .dms-form select, .dms .dms-form textarea { background-color: #f7f9fd; border-color: #dbe2ef; }
+.dms .dms-form .dms-input:not([type=file]), .dms .dms-form select:not([multiple]) { height: 47px; border-radius: 12px; }
+.dms .dms-form textarea { border-radius: 12px; }
+.dms .dms-form .dms-input:focus, .dms .dms-form select:focus, .dms .dms-form textarea:focus { background-color: #fff; border-color: var(--dms-primary); }
+.dms .dms-form label.dms-label { transition: color .2s; }
+.dms .dms-form > div:focus-within > label.dms-label { color: var(--dms-primary); }
+.dms .has-ico { position: relative; }
+.dms .has-ico > .dms-fi { position: absolute; left: 14px; top: 40px; color: #8592ab; pointer-events: none; transition: color .2s, transform .3s var(--ease); }
+.dms .has-ico > .dms-input, .dms .has-ico > select, .dms .has-ico > textarea { padding-left: 43px; }
+.dms .has-ico:focus-within > .dms-fi { color: var(--dms-primary); transform: scale(1.12); }
+.dms .dms-form input[type=file] { width: 100%; padding: 13px; border: 1.5px dashed #b9c6e2; border-radius: 12px; background: #f7f9fd; cursor: pointer; transition: border-color .2s, background .2s; }
+.dms .dms-form input[type=file]:hover { border-color: var(--dms-primary); background: var(--tint); }
+.dms .dms-main form > .dms-actions { position: sticky; bottom: -34px; z-index: 5; max-width: 1080px; align-items: center; margin: 20px 0 0; padding: 13px 16px; background: #fff; border: 1px solid var(--dms-border); border-radius: 16px; box-shadow: 0 14px 36px -14px rgba(12,31,74,.38); }
+.dms .dms-panel form > .dms-actions, .dms .dms-modal form > .dms-actions { position: static; padding: 0; border: 0; box-shadow: none; background: none; }
+.dms .dms-actions[data-done]::after { content: attr(data-done); margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.dms .dms-main form > .dms-actions::before { content: ""; position: absolute; left: 18px; right: 18px; top: -1px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--dms-primary), var(--green)); transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .45s var(--ease); }
+.dms .dms-panel form > .dms-actions::before { display: none; }
+@media (max-width: 900px) { .dms .dms-form { padding: 24px 18px; } .dms .dms-main form > .dms-actions { flex-wrap: wrap; } }
