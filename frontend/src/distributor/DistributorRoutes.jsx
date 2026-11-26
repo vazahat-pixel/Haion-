@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import DmsLayout from './DmsLayout';
 import DmsLogin from './DmsLogin';
+const ServiceRoutes = lazy(() => import('./service/ServiceRoutes'));
 
 /** The Distributor panel has its own sign-in page: anything under /distributor sends signed-out users there. */
 function DmsAuthGuard({ children }) {
@@ -112,6 +113,7 @@ export default function DistributorRoutes() {
   return (
     <Routes>
       <Route path="login" element={<DmsLogin />} />
+      <Route path="service/*" element={<Suspense fallback={null}><ServiceRoutes /></Suspense>} />
       <Route path="*" element={<DmsAuthGuard><GuardedRoutes /></DmsAuthGuard>} />
     </Routes>
   );

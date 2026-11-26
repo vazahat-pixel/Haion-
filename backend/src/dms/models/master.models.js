@@ -77,13 +77,17 @@ export const LOCATION_TYPES = {
   Distributor: 'DS',
   Dealer: 'DL',
   Retailer: 'RT',
+  ASP: 'AS',
+  'Call Center': 'CC',
+  WH: 'WH',
 };
 const locationSchema = new Schema(
   {
     code: { type: String, required: true, unique: true, uppercase: true, trim: true },
     name: { type: String, required: true, trim: true },
     locationType: { type: String, enum: Object.keys(LOCATION_TYPES), required: true },
-    region: { type: String, enum: ['EAST', 'NORTH', 'SOUTH', 'WEST', ''], default: '' },
+    region: { type: String, enum: ['EAST', 'NORTH', 'SOUTH', 'WEST', 'CENTRAL', ''], default: '' },
+    attrs: { type: Schema.Types.Mixed, default: {} }, // Service CRM extras (district, helpline, ERP code …)
     state: { type: String, required: true },
     stateCode: { type: String, required: true }, // 2-letter, e.g. UP
     city: { type: String, required: true },

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, isValidElement, Children } from 'react';
+import { useMemo, useState, useEffect, useId, isValidElement, cloneElement, Children } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, Printer, Pencil, Trash2, X, Plus, ArrowLeft, Upload, Download, User, Phone, Mail, Lock, MapPin, Calendar, Package, Tag, Hash, IndianRupee, Percent, FileText, Building2, Truck, CreditCard, Activity, Globe, Clock, PencilLine } from 'lucide-react';
 import { exportXlsx } from '../excel';
@@ -7,7 +7,7 @@ export function PageTitle({ icon: Icon, children }) {
   useEffect(() => {
     const prev = document.title;
     const text = [].concat(children).filter((c) => typeof c === 'string' || typeof c === 'number').join('');
-    document.title = `${text || 'Distributor'} | DMS`;
+    document.title = window.location.pathname.startsWith('/distributor/service') ? `${text || 'Service'} | Service CRM` : `${text || 'Distributor'} | DMS`;
     return () => { document.title = prev; };
   }, [children]);
   return <h1 className="dms-title">{Icon && <Icon />}{children}</h1>;
@@ -79,10 +79,22 @@ function fieldIcon(label, children) {
 
 export function Field({ label, required, error, children, full }) {
   const Ico = fieldIcon(label, children);
+  // tie the label to its control so screen readers (and getByLabel) find it
+  const autoId = useId();
+  let forId;
+  const kids = Children.map(children, (c) => {
+    if (forId || !isValidElement(c)) return c;
+    const tag = typeof c.type === 'string' ? c.type : null;
+    if ([Input, Select, TextArea].includes(c.type) || ['input', 'select', 'textarea'].includes(tag)) {
+      forId = c.props.id || autoId;
+      return c.props.id ? c : cloneElement(c, { id: forId });
+    }
+    return c;
+  });
   return (
     <div className={[full && 'full', Ico && 'has-ico'].filter(Boolean).join(' ') || undefined}>
-      {label && <label className="dms-label">{label}{required && <span className="req"> *</span>}</label>}
-      {children}
+      {label && <label className="dms-label" htmlFor={forId}>{label}{required && <span className="req"> *</span>}</label>}
+      {kids}
       {error && <div className="dms-field-err">{Array.isArray(error) ? error[0] : error}</div>}
       {Ico && <Ico className="dms-fi" size={17} strokeWidth={1.8} aria-hidden="true" />}
     </div>

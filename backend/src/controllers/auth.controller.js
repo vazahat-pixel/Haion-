@@ -4,6 +4,7 @@ import { env } from '../config/env.js';
 import { getPermissionsForRole } from '../services/permission.service.js';
 import User from '../models/User.model.js';
 import { DmsProfile } from '../dms/models/master.models.js';
+import { CrmUserProfile } from '../crm/models/crm.masters.js';
 import { sendSuccess, sendError, sendCreated } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { logAudit } from '../services/audit.service.js';
@@ -43,9 +44,10 @@ export const login = asyncHandler(async (req, res) => {
     ],
   }).select('+password +refreshTokens +failedLoginAttempts +lockedUntil');
 
-  // Distributor (DMS) users may sign in with their DMS Login ID, e.g. INUSRBRUP141
+  // Distributor (DMS) or Service CRM users may sign in with their Login ID, e.g. INUSRBRUP141 / PY0003
   if (!user && /^[a-z0-9]{3,30}$/i.test(loginInput)) {
-    const profile = await DmsProfile.findOne({ loginId: loginInput.toUpperCase() }).select('user').lean();
+    const profile = (await DmsProfile.findOne({ loginId: loginInput.toUpperCase() }).select('user').lean())
+      || (await CrmUserProfile.findOne({ loginId: loginInput.toUpperCase() }).select('user').lean());
     if (profile) {
       user = await User.findById(profile.user).select('+password +refreshTokens +failedLoginAttempts +lockedUntil');
     }

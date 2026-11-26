@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HAION — Distributor &amp; Service System Guide</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm 18mm; }
+  :root { --ink:#0f1b33; --muted:#5b6782; --blue:#1d4ed8; --green:#16a34a; --line:#dbe2ef; --soft:#f4f7fd; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.55 "Segoe UI", Arial, sans-serif; color: var(--ink); margin: 0; }
+  h1 { font-size: 22pt; margin: 0 0 6px; } h2 { font-size: 15pt; margin: 22px 0 8px; color: var(--blue); page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 16px 0 6px; page-break-after: avoid; } h4 { margin: 10px 0 4px; font-size: 10.5pt; }
+  p { margin: 5px 0; } ul, ol { margin: 4px 0 6px 18px; padding: 0; } li { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); }
+  .cover { height: 250mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .brand { font-size: 34pt; font-weight: 800; font-style: italic; letter-spacing: -.5px; } .brand span { color: var(--green); }
+  .sub { color: var(--muted); font-size: 13pt; margin-top: 6px; }
+  .chapter { page-break-before: always; }
+  .box { border: 1px solid var(--line); background: var(--soft); border-radius: 8px; padding: 10px 12px; margin: 8px 0; page-break-inside: avoid; }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+  .flow span { background: #e8efff; border: 1px solid #c5d5fb; border-radius: 14px; padding: 3px 10px; font-size: 9.5pt; }
+  .flow i { color: var(--muted); font-style: normal; }
+  .shot { width: 100%; border: 1px solid var(--line); border-radius: 6px; margin: 6px 0 2px; }
+  .cap { color: var(--muted); font-size: 8.5pt; margin-bottom: 10px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .toc li { margin: 3px 0; } .muted { color: var(--muted); }
+  code { background: var(--soft); padding: 0 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="brand">HAION<span>DMS</span> &amp; HAION<span>CRM</span></div>
+  <h1 style="margin-top:18px">How the whole system works</h1>
+  <div class="sub">Distributor Management (sales, stock, money) and Service CRM (complaints, repairs, spare parts, claims) — roles, menus, workflows and use cases</div>
+  <p class="muted" style="margin-top:30px">Version: {{DATE}} · Web addresses: <b>/distributor</b> (DMS) and <b>/distributor/service</b> (Service CRM)</p>
+</section>
+
+<section>
+  <h2>Contents</h2>
+  <ol class="toc">
+    <li>The system at a glance</li>
+    <li>Signing in, roles and rights</li>
+    <li>Distributor Management System (DMS)</li>
+    <li>Service CRM — the four panels</li>
+    <li>The life of a complaint (job)</li>
+    <li>Spare parts: from warehouse to engineer and back</li>
+    <li>Money: payments, ledgers, claims and expenses</li>
+    <li>Use cases, step by step</li>
+    <li>Reports and dashboards</li>
+    <li>Prints</li>
+    <li>Setting up a new company / location</li>
+    <li>Glossary and FAQ</li>
+  </ol>
+</section>
+
+<section class="chapter">
+  <h2>1. The system at a glance</h2>
+  <p>HAION is one web application with two connected panels that share the same sign-in and the same master data:</p>
+  <table>
+    <tr><th style="width:24%">Panel</th><th>What it is for</th><th style="width:26%">Who uses it</th></tr>
+    <tr><td><b>Distributor (DMS)</b><br><code>/distributor</code></td><td>Selling the product through the channel: purchase orders, approvals, invoices, dispatch, stock receipt with serial numbers, returns, payments, party ledgers, sales force (beats, leads), HRMS and reports.</td><td>Admin, Head Office, Branches, Distributors / Dealers, sales staff</td></tr>
+    <tr><td><b>Service CRM</b><br><code>/distributor/service</code></td><td>After-sales service: registering customer complaints, warranty check, sending the job to a service centre (ASP), engineer visits and repair, spare-part supply from the warehouse, returning faulty parts, customer confirmation, claims and ledgers.</td><td>Admin, Call Centre, ASP (service centre), WH (warehouse)</td></tr>
+  </table>
+  <h3>How the two panels are connected</h3>
+  <ul>
+    <li><b>One login system.</b> Every user signs in with a Login ID and password. The same account system serves both panels; each panel only opens for the users who have access to it.</li>
+    <li><b>Shared masters.</b> Brand, Product (category), State, City, HSN/tax, Supplier and Location are stored once and used by both panels. A brand added in the Service Admin appears in DMS and the other way round.</li>
+    <li><b>Locations.</b> One location master holds Head Office, Branches, Distributors, Dealers, and also ASPs, Call Centres and Warehouses. Creating an ASP / Call Centre / WH location in Service Admin also creates its panel login.</li>
+    <li><b>Separate business records.</b> DMS invoices/stock and Service CRM jobs/spare stock are kept in separate books, so service spare parts never mix with saleable finished goods.</li>
+  </ul>
+  <div class="box"><b>Technology (for the IT team):</b> React web app; Node.js/Express API; MongoDB. DMS API at <code>/api/dms</code>, Service CRM API at <code>/api/service-crm</code>. Every screen talks only to these APIs; every action is checked on the server for the user's role and location.</div>
+</section>
+
+<section class="chapter">
+  <h2>2. Signing in, roles and rights</h2>
+  <div class="two">
+    <div><img class="shot" src="img/crm-login.png" alt="Service CRM sign in"><div class="cap">Service CRM sign-in (/distributor/service/login)</div></div>
+    <div><img class="shot" src="img/dms-login.png" alt="DMS sign in"><div class="cap">Distributor sign-in (/distributor/login)</div></div>
+  </div>
+  <ul>
+    <li>Users type their <b>Login ID</b> (for example an ASP code) and password. Wrong passwords show an error and the account locks after repeated failures.</li>
+    <li>Sessions expire automatically; the user is sent back to the sign-in page with “Session Expired”.</li>
+    <li>Every user can change their own password from <b>Change Password</b>.</li>
+  </ul>
+  <h3>Service CRM roles</h3>
+  <table>
+    <tr><th style="width:16%">Role</th><th>Sees and does</th><th style="width:26%">Cannot</th></tr>
+    <tr><td><b>Admin</b></td><td>Everything: dashboards, all masters, all reports, approvals (requests, vendor PO, claims, invoice cancel, job status change, PO cancel, stock adjustment).</td><td>—</td></tr>
+    <tr><td><b>Call Centre</b></td><td>Registers customers and complaints, AMC and accessory requests; follows call status; reassigns jobs rejected by an ASP; happy calling (customer feedback); part / product / ASP search; own field users.</td><td>Acknowledge or repair jobs; assign engineers.</td></tr>
+    <tr><td><b>ASP</b> (service centre)</td><td>Only the jobs assigned to its own location: acknowledge, visit schedule, engineer assignment, repair, PNA, estimates, approval requests, call confirmation, pickup/drop; its own spare stock, POs, stock in, engineer stock, faulty returns, retail invoices, expenses, payments, ledgers and reports; its engineers / pickup / delivery users.</td><td>See other ASPs' jobs; create Admin users; reassign a job to another ASP.</td></tr>
+    <tr><td><b>WH</b> (warehouse)</td><td>Vendor purchase (PO, gate entry, GRN), local GRN, dispatch against ASP PNA/MSL POs, STN, direct dispatch, receiving faulty parts and returns, payment receive, CN, account transfer/adjustment, reconciliation, stock adjustment, warehouse reports.</td><td>Touch jobs.</td></tr>
+    <tr><td><b>Field staff</b> (Engineer, Pickup Boy, Delivery boy, Coordinator)</td><td>Created by the ASP. They are assigned to jobs and hold engineer stock.</td><td>Open the web panel (they use the engineer app).</td></tr>
+  </table>
+  <h3>DMS roles</h3>
+  <p>DMS users are tied to a location type — Head Office, Branch, Super Stockist, Distributor, Dealer, Retailer — and to page rights set by the Admin in <b>Admin/Users → Update Rights</b> (view / add / edit / approve per page) plus brand and region scopes. A dealer, for example, can raise POs and receive stock but cannot open Master Management even by typing the address.</p>
+</section>
+
+<section class="chapter">
+  <h2>3. Distributor Management System (DMS)</h2>
+  <p>The DMS home shows sale, purchase, PO, collection, inventory and outstanding tiles with monthly charts; every tile opens its report.</p>
+  <table>
+    <tr><th style="width:22%">Menu</th><th>Main screens</th></tr>
+    <tr><td>Dashboard</td><td>Dashboard 1 &amp; 2, Inventory, Lead, Purchase, Sale, Account</td></tr>
+    <tr><td>Master Management</td><td>Admin/Users (rights, history), Brand, City, Color, Coupon, Courier, Customer, Location, Other Tax, Parameter, Price, Product Category / Sub Category / Master / Delivery / Image, Scheme, Serial No. Activation, Specification, State, Tax, Vendor</td></tr>
+    <tr><td>Report Master</td><td>Beat, Collection, Inventory, Inventory Aging, ISD, Party Ledger, Party Master, Payment, Price Drop, Purchase Order, Return, Sale, Serial No. Activation, Stock Ledger, Vendor Purchase</td></tr>
+    <tr><td>Logistic / Invoicing</td><td>Update Dispatch; Corporate and Retail invoices, serial-number tracking, STN distribution, stock transfer (+ approval, job work)</td></tr>
+    <tr><td>Purchase / Return</td><td>Local Purchase, Opening, PO, PO Approval, Vendor; Customer Return, Purchase Return, Return Approval, Vendor Return</td></tr>
+    <tr><td>Payment / Receive Stock</td><td>Account Adjustment, Payment Approval, Payment Receive; Receive From Location (scan serials against the invoice), Received from Jobwork</td></tr>
+    <tr><td>Sale Force / Query / App</td><td>Beat Scheduler, Deviation Approval, Lead, My Beat Plan, PJP, Quote, Target, Expenses; Query Status; App Feedback, Task, Track Location, Attendance, TA/DA</td></tr>
+    <tr><td>HRMS</td><td>Employees, departments, designations, attendance, leave, claims, salary sheet and slips, policies, notices, resignations</td></tr>
+  </table>
+  <h3>Core DMS flow — a dealer order</h3>
+  <div class="flow"><span>Dealer raises PO</span><i>→</i><span>Branch approves</span><i>→</i><span>Branch makes invoice (serials)</span><i>→</i><span>Dispatch (courier, docket)</span><i>→</i><span>Dealer receives / scans serials</span><i>→</i><span>Stock up, ledger debited</span><i>→</i><span>Payment → approval → ledger credited</span></div>
+  <ul>
+    <li>Stock only increases by exactly what was billed and received; serial numbers are checked against the invoice when scanning.</li>
+    <li>Excel uploads (masters, opening stock, serials) are all-or-nothing: if any row has an error, nothing is saved and every bad row is listed.</li>
+    <li>Every report can be exported to Excel with the same rows as the screen.</li>
+    <li>Prints: Tax Invoice, Delivery Challan, IMEI/serial list, Purchase Order, payment receipt, pay slip.</li>
+  </ul>
+</section>
+
+<section class="chapter">
+  <h2>4. Service CRM — the four panels</h2>
+  <h3>4.1 Admin</h3>
+  <img class="shot" src="img/crm-admin-home.png" alt="Service admin home"><div class="cap">Admin home: total / open / closed / PNA calls and the Top Ranked ASPs by TAT %.</div>
+  <table>
+    <tr><th style="width:20%">Menu</th><th>Screens</th></tr>
+    <tr><td>Dashboard</td><td>Job Status, Pending calls ageing, Closed calls TAT, Brand ASP Mapping, ASP Parts Sales, State Ageing With Model, ASP wise TAT, State wise TAT, Faulty Model Details</td></tr>
+    <tr><td>Masters</td><td>Admin Users, City, Product, Brand, Purchase From, Location, Model, Partcode, State, VOC, Repair Action, HSN Tax, Supplier, Add Software, Notice, Job Search, Claim, Holiday, Create Pincode, Fault, Feedback, Pending Reason, Account Head, Account Section, Voucher, Bank Account</td></tr>
+    <tr><td>Reports</td><td>All Job, Part Consumption, PO/PNA, Sales/Dispatch, Party Account Status, Stock Details, Sales Return, Stock Movement, Profit and Loss, Part Price List, ASC Location, Expense</td></tr>
+    <tr><td>Approvals</td><td>ASP Claim Approval, Labour / Travel / Partner Claim Generate, ASP Claim Invoice, Vendor PO Approval, Request Approval, Invoice cancel, Job status change, Pending PO Cancel, Stock Adjustment</td></tr>
+  </table>
+  <p><b>Important masters and what they drive:</b></p>
+  <ul>
+    <li><b>Model</b> — customer warranty days (decides IN/OUT warranty automatically from the purchase date), repair warranty, DOA, replacement, AMC days/amount, service charge.</li>
+    <li><b>Partcode</b> — prices (purchase, location, customer), category, “part for”, and whether the faulty part must go back to the warehouse.</li>
+    <li><b>VOC / Fault / Repair Action</b> — per brand and product; VOC is chosen when booking, fault and repair codes when closing the job.</li>
+    <li><b>Create Pincode</b> — maps a pincode to an ASP. A complaint booked for that pincode goes to that ASP automatically.</li>
+    <li><b>Claim</b> — what an ASP (and a partner) earns per job: by product, brand, job result (Repair Done, Installation Done, Demo Done, Replacement…), area type (Local/Upcountry/Workshop), with a TAT window and the % paid when TAT is missed.</li>
+    <li><b>Location</b> — ASP / Call Center / Distributor / WH with address, PAN, GST, zone; saving it also creates the location's login.</li>
+  </ul>
+
+  <h3>4.2 Call Centre</h3>
+  <img class="shot" src="img/crm-call-booking.png" alt="Call booking"><div class="cap">Customer Registration / Call Booking: search by mobile, customer ID, email or serial number.</div>
+  <p>Menus: Dashboard (Call Details), Registration (Call Booking, Call Status, Reassign Jobs, AMC Search), Find Price (Part search), Product Search, Find ASP, Happy Calling, Help (Notice), Masters (Users), Change Password.</p>
+  <ul>
+    <li><b>Search first.</b> Typing in one search box disables the others. The result shows the customer, every registered product (serial, model, purchase date, warranty end, IN/OUT) with a <b>Call Log</b> button, and the complaint history.</li>
+    <li><b>New Complaint</b> form: customer details (category, pincode → area and ASP fill automatically, name, address, mobile …), product details (product → brand → model, serial, bill purchase date → warranty end date and IN/OUT are calculated), call type (Repair, Installation, Re-installation, Demo, Stock Repair, Maintenance service), call source, purchase from, accessories, service type (Pick and Drop, DoorStep, Walk in, Walk in Appointment), VOC and remark.</li>
+    <li>Also: <b>New AMC</b> (duration, start/expiry, type, amount and payment details), <b>Add Customer/Product</b>, <b>Accessory Request</b>.</li>
+    <li>Saving creates a <b>Job No.</b> (YYMMDD + running number), a happy code, and the first history line “Complaint Login”.</li>
+  </ul>
+
+  <h3>4.3 ASP (service centre)</h3>
+  <img class="shot" src="img/crm-asp-jobs.png" alt="ASP jobs"><div class="cap">Jobs/Call Status: ageing, status, and one icon per next step (acknowledge, visit, assign, repair / call confirmation, print, view).</div>
+  <p>Menus: Dashboard (Call Details — engineer-wise calls, PO summary), Jobs (Drop, Jobs/Call Status, Pickup/Drop Jobs, Reschedule, OUT Warranty Invoice, Reassign Calls, Job Details Edit), Sales Invoice (Invoice, Invoice Status), Inventory (Stock, Purchase Order, PNA bucket, Stock In, Engineer Stock, Purchase Return, Faulty/P2C Bin, Faulty Spare Dispatched, Stock Issue To Engineer, Engineer Spare Demand, Faulty Return From Engineer), My Account (Expense, Add Payment, Account Status, Party Ledger), Help, Reports, Masters (My Profile, User List, Users Master).</p>
+
+  <h3>4.4 WH (warehouse)</h3>
+  <img class="shot" src="img/crm-wh-po.png" alt="WH dispatch against PO"><div class="cap">Against PNA/MSL PO: the warehouse dispatches the parts an ASP asked for.</div>
+  <p>Menus: GRN/Procurement (Local, PO To Vendor), Stock In (Faulty/Sales Return, Pending for Gate Entry, GRN, GRN Status), Dispatch (Against PNA/MSL PO, Direct Dispatch To ASP, STN, Invoices/Challans, Dispatch Scrap/Fresh Out), Account (Payment Receive, CN Generate, Party Ledger, Transfer to Security A/C, Account Adjustment, Request For Reconciliation, Stock Adjustment), Reports (Stock, Sale, Pending PO/Indents, Sale Return, GRN Details, Tag No Details, Part Price List, Faulty Pending List).</p>
+</section>
+
+<section class="chapter">
+  <h2>5. The life of a complaint (job)</h2>
+  <div class="flow"><span>Complaint Login (Call Centre)</span><i>→</i><span>Acknowledged — Accepted / Rejected (ASP)</span><i>→</i><span>Visit Scheduled</span><i>→</i><span>Assigned to Engineer</span><i>→</i><span>Repair result</span><i>→</i><span>Call Confirmation (rating)</span><i>→</i><span>Set Delivered</span><i>→</i><span>Happy Calling</span><i>→</i><span>Claim</span></div>
+  <table>
+    <tr><th style="width:26%">Repair result chosen by the ASP</th><th>What happens next</th></tr>
+    <tr><td>Repair Done (Installation Done / Demo Done for those call types)</td><td>Fault code, repair code and the parts used are recorded. Parts come from the engineer's stock first, then the ASP stock; the used part becomes a faulty part. The job moves to <b>Call Confirmation</b>.</td></tr>
+    <tr><td>Spare Part Unavailable</td><td>The missing parts go to the ASP's <b>PNA bucket</b>; the job shows “PNA”. When the part arrives (chapter 6) the ASP repairs the job.</td></tr>
+    <tr><td>Estimate Pending For Cost</td><td>For chargeable (OUT warranty) jobs: estimate parts + tax + service charge. The customer's answer is recorded as <b>Estimation Accept</b> (work continues) or <b>Estimation Refused</b> (job closes).</td></tr>
+    <tr><td>Request For Approval</td><td>For Deviation, Part Discount, Replacement, Call cancellation, Warranty Period Relaxation. Admin approves or rejects in <b>Request Approval</b>; an approved Replacement unlocks the “Replacement” result.</td></tr>
+    <tr><td>Pending</td><td>With a pending reason (customer not available, approval from brand …).</td></tr>
+    <tr><td>Closed Without Repair / Cancel</td><td>With a close reason; the job closes.</td></tr>
+  </table>
+  <ul>
+    <li><b>Rejected by the ASP?</b> The job appears in the Call Centre's <b>Reassign Jobs</b>, where it is sent to another ASP.</li>
+    <li><b>Pick and Drop jobs</b> are handled in <b>Pickup/Drop Jobs</b>: assign pickup boy → received at ASP → repair → assign delivery boy → delivered.</li>
+    <li><b>OUT warranty jobs</b> are billed from <b>OUT Warranty Invoice</b> (parts + service charge + GST), printed as a tax invoice.</li>
+    <li>Every step writes a <b>History</b> line (location, activity, outcome, user, remark, priority, time), shown on the job view and used by the TAT reports.</li>
+  </ul>
+  <img class="shot" src="img/crm-job-view.png" alt="Complaint details"><div class="cap">Complaint Details: customer, product, observation and the full history.</div>
+</section>
+
+<section class="chapter">
+  <h2>6. Spare parts: from warehouse to engineer and back</h2>
+  <h3>Buying parts into the warehouse</h3>
+  <div class="flow"><span>WH: PO To Vendor</span><i>→</i><span>Admin: Vendor PO Approval</span><i>→</i><span>WH: Gate Entry</span><i>→</i><span>WH: Receive GRN (OK / Damage / Missing)</span><i>→</i><span>WH fresh stock</span></div>
+  <p>Small purchases can be received directly with <b>Local GRN</b>.</p>
+  <h3>Getting parts to the ASP</h3>
+  <div class="flow"><span>Job: Spare Part Unavailable</span><i>→</i><span>ASP: PNA bucket → SAVE (PNA PO)</span><i>→</i><span>WH: Against PNA/MSL PO → Dispatch (Invoice/Challan, courier)</span><i>→</i><span>ASP: Stock In → Receive</span><i>→</i><span>ASP: Stock Issue To Engineer</span><i>→</i><span>Engineer uses it in the repair</span></div>
+  <ul>
+    <li>ASPs keep a minimum stock with <b>Purchase Order</b> (MSL) the same way.</li>
+    <li>While a dispatch is on the way the parts show as <b>In-transit</b>; on receipt the ASP enters OK / Damage / Missing and the job sub-status becomes “PNA Part Received”.</li>
+    <li>WH can also send stock with <b>Direct Dispatch To ASP</b> or <b>STN</b> (OK or faulty stock, purpose DOA/Faulty/Fresh).</li>
+  </ul>
+  <h3>Faulty parts going back</h3>
+  <div class="flow"><span>Engineer returns faulty part</span><i>→</i><span>ASP: Faulty Return From Engineer → Receive</span><i>→</i><span>ASP: Faulty/P2C Bin → Dispatch to WH</span><i>→</i><span>WH: Faulty/Sales Return → Receive</span><i>→</i><span>WH: CN Generate</span></div>
+  <ul>
+    <li>Damaged or missing quantities found at receipt appear in <b>Request For Reconciliation</b> (move damage to faulty, close missing).</li>
+    <li>Admin/WH <b>Stock Adjustment</b> corrects OK / Damage / Missing quantities with a remark; every change is in <b>Stock Movement</b> / <b>Item Ledger</b>.</li>
+    <li><b>Invoice cancel</b> (Admin) cancels a dispatch that has not been received and puts the stock back; cancelling a PNA PO puts its parts back in the PNA bucket.</li>
+  </ul>
+  <h3>Stock columns explained</h3>
+  <table><tr><th>Fresh</th><td>Good, usable stock</td><th>Defective</th><td>Faulty parts (from repairs or returns)</td></tr>
+    <tr><th>Damage / Missing</th><td>Found at receipt</td><th>In-transit</th><td>Dispatched to this location, not yet received</td></tr>
+    <tr><th>Engineer Fresh / Faulty</th><td>Held by engineers</td><th>MSL</th><td>Minimum stock level</td></tr></table>
+</section>
+
+<section class="chapter">
+  <h2>7. Money: payments, ledgers, claims and expenses</h2>
+  <p>Each ASP / WH location has three accounts: <b>Main A/C</b> (parts bought and paid for), <b>Security A/C</b> (security deposit) and <b>Claim A/C</b> (service income earned). <b>Party Account Status</b> shows the three balances and each ledger can be downloaded.</p>
+  <table>
+    <tr><th style="width:26%">Event</th><th>Effect</th></tr>
+    <tr><td>ASP receives parts from WH</td><td>Main A/C debited with the invoice value.</td></tr>
+    <tr><td>ASP: Add Payment → WH: Payment Receive</td><td>On “Receive”, Main A/C credited (cash, DD, cheque, NEFT, RTGS).</td></tr>
+    <tr><td>WH receives returned parts → CN Generate</td><td>Main A/C credited with the value of the OK parts.</td></tr>
+    <tr><td>Admin: Claim Generate → Claim Approval</td><td>Claim A/C credited. The amount per job comes from the Claim master (product, brand, job result, area type; reduced % when TAT is missed). Travel claims cover Upcountry jobs; Partner claims use the partner price. The same month cannot be claimed twice and a job is never paid twice.</td></tr>
+    <tr><td>WH: Transfer to Security A/C / Claim to Main</td><td>Moves money between the accounts.</td></tr>
+    <tr><td>WH: Account Adjustment</td><td>Manual CR/DR with a remark.</td></tr>
+    <tr><td>ASP: Expense → Admin approves</td><td>Recorded against voucher types (Account Head → Section → Voucher masters) and shown in Profit &amp; Loss.</td></tr>
+  </table>
+  <p><b>ASP Claim Invoice</b> lists approved claims with print and courier (dispatch) details. <b>Profit and Loss</b> shows, per month, retail sales + claims against spare purchases + expenses.</p>
+</section>
+
+<section class="chapter">
+  <h2>8. Use cases, step by step</h2>
+  <h3>A. In-warranty repair at the customer's home</h3>
+  <ol>
+    <li><b>Call Centre</b> → Call Booking → search the mobile number → <i>Call Log</i> on the product (or New Complaint) → fill the form → Save. Note the Job No.</li>
+    <li><b>ASP</b> → Jobs/Call Status → acknowledge icon → <i>Accepted</i> → visit icon → date/time → assign icon → engineer.</li>
+    <li>Engineer visits. <b>ASP</b> → Action (wrench) → Repair Status <i>Repair Done</i> → close type → fault code, repair code, part used → Save.</li>
+    <li><b>ASP</b> → Action (tick) → Call Confirmation → confirm by, contact, remark, rating → Confirm. Status: <i>Set Delivered</i>.</li>
+    <li><b>Call Centre</b> → Happy Calling → Calling → rating/feedback.</li>
+    <li>Month end: <b>Admin</b> → Labour Claim Generate → Claim Approval. ASP sees it in Claim Invoice and in Claim A/C.</li>
+  </ol>
+  <h3>B. Part not available</h3>
+  <ol>
+    <li><b>ASP</b> → repair result <i>Spare Part Unavailable</i> → pending part → Save.</li>
+    <li><b>ASP</b> → PNA bucket → choose the warehouse → tick parts → SAVE (PNA PO).</li>
+    <li><b>WH</b> → Against PNA/MSL PO → Dispatch → quantities, document type, courier, docket → Dispatch.</li>
+    <li><b>ASP</b> → Stock In → Receive (OK/Damage/Missing) → Stock Issue To Engineer (against job) → repair as in A.</li>
+    <li>Faulty part: <b>ASP</b> → Faulty Return From Engineer → Faulty/P2C Bin → Dispatch; <b>WH</b> → Faulty/Sales Return → Receive → CN Generate.</li>
+  </ol>
+  <h3>C. Out of warranty, chargeable</h3>
+  <ol>
+    <li>Booking shows <i>OUT</i> automatically (purchase date + model warranty days).</li>
+    <li><b>ASP</b> → repair result <i>Estimate Pending For Cost</i> → parts and service charge → Save → print the estimate from the job.</li>
+    <li>Customer agrees → <i>Estimation Accept</i> on the job view → repair → <b>OUT Warranty Invoice</b> → Make Invoice → print.</li>
+  </ol>
+  <h3>D. Replacement</h3>
+  <ol><li><b>ASP</b> → <i>Request For Approval</i> → Replacement. <b>Admin</b> → Request Approval → Approved. <b>ASP</b> → repair result <i>Replacement</i> → Call Confirmation.</li></ol>
+  <h3>E. Wrong ASP / out of area</h3>
+  <ol><li><b>ASP</b> acknowledges with <i>Rejected</i> and a remark → <b>Call Centre</b> → Reassign Jobs → pick another ASP. The new ASP sees it as a fresh job.</li></ol>
+  <h3>F. Pick and Drop</h3>
+  <ol><li>Book with service type <i>Pick and Drop</i>. <b>ASP</b> → Pickup/Drop Jobs → Assign To pickup → Received Pickup → repair → Assign To Delivery Boy → Delivered.</li></ol>
+  <h3>G. New service centre joins</h3>
+  <ol><li><b>Admin</b> → Location → Add (party type ASP, address, PAN/GST, zone, User id + password). → Create Pincode for its pincodes. → Claim rates if new products. The ASP signs in with its User id, adds its engineers in Users Master, and raises an MSL PO for opening stock.</li></ol>
+  <h3>H. Dealer order in DMS</h3>
+  <ol><li>Dealer → Purchase → PO. Branch → PO Approval → Invoicing → Retail/Corporate invoice with serials → Logistic → Update Dispatch. Dealer → Receive Stock → scan serials → Payment. Branch → Payment Approval.</li></ol>
+</section>
+
+<section class="chapter">
+  <h2>9. Reports and dashboards</h2>
+  <table>
+    <tr><th style="width:28%">Report</th><th>Answers</th></tr>
+    <tr><td>Job Status / Job Summary</td><td>How many jobs each location has in each status.</td></tr>
+    <tr><td>Pending calls ageing, ASP wise TAT, State wise TAT, Closed calls TAT</td><td>How long jobs wait: 0–24, 25–48, 49–72, 73–96, 96+ hours; TAT % = jobs closed within 48 hours.</td></tr>
+    <tr><td>State Ageing With Model, Faulty Model Details</td><td>Which models are failing, where, and with which defects.</td></tr>
+    <tr><td>All Job</td><td>Every job with 20+ columns, filters for region, state, location, product, brand, model, status, sub-status and “all pending”.</td></tr>
+    <tr><td>Part Consumption</td><td>Which parts were used on which jobs (close or handover date).</td></tr>
+    <tr><td>PO/PNA, Pending PO/Indents</td><td>Requested vs dispatched vs pending quantity, with ageing.</td></tr>
+    <tr><td>Stock Details, Stock Movement / Item Ledger, Spares Daily Log Book</td><td>Current stock by bucket and every movement with opening and closing.</td></tr>
+    <tr><td>Sales/Dispatch, Sales Return, ASP Parts Sales</td><td>Document lines by location, product, brand.</td></tr>
+    <tr><td>Party Account Status, Party Ledger, Profit and Loss, Expense</td><td>Money position per location and month.</td></tr>
+    <tr><td>GRN Details, Tag No Details, Faulty Pending List</td><td>Warehouse receipts, serial/tag history, faulty parts still at ASPs.</td></tr>
+  </table>
+  <p>Every list has search, sorting, paging and <b>Export Excel</b>.</p>
+  <img class="shot" src="img/crm-report.png" alt="ASP wise TAT"><div class="cap">ASP wise TAT dashboard.</div>
+</section>
+
+<section class="chapter">
+  <h2>10. Prints</h2>
+  <div class="two">
+    <div><img class="shot" src="img/crm-jobsheet.png" alt="Job sheet"><div class="cap">Job sheet: Customer Copy and Service Centre Copy with barcode and terms.</div></div>
+    <div><ul>
+      <li><b>Job sheet</b> — customer copy (details, problem, 9 terms and conditions, signatures) and service centre copy (repair status: fault code, repair code, parts, delivery remark, billing).</li>
+      <li><b>Tax Invoice / Delivery Challan</b> — for every dispatch, STN, retail and OUT warranty invoice.</li>
+      <li><b>Purchase Order</b> — ASP PNA/MSL and vendor POs.</li>
+      <li><b>Claim Invoice</b> — job-wise claim amounts.</li>
+      <li>DMS prints: Tax Invoice, Delivery Challan, IMEI list, Purchase Order, payment receipt, pay slip.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2>11. Setting up a new company / location</h2>
+  <ol>
+    <li><b>Shared masters</b>: State, City, Brand, Product, HSN, Supplier (once — both panels use them).</li>
+    <li><b>Service masters</b>: Model (warranty days, service charge), Partcode (prices, HSN, models), VOC, Fault, Repair Action, Pending Reason, Feedback, Purchase From, Claim rates, Holidays, Account Head → Section → Voucher, Bank Account.</li>
+    <li><b>Locations</b>: Warehouse(s), Call Centre, ASPs (each gets its login). Create Pincode to map pincodes to ASPs.</li>
+    <li><b>Users</b>: Admin Users for admins; ASPs add their engineers, pickup and delivery boys.</li>
+    <li><b>Opening stock</b>: WH vendor PO/GRN or Local GRN; ASPs raise MSL POs.</li>
+    <li>DMS: locations (HO, branches, distributors, dealers), products, prices, schemes, users and rights.</li>
+  </ol>
+  <div class="box">Passwords are never printed in this guide. Demo / first logins are handed over separately and must be changed with <b>Change Password</b> on first use.</div>
+</section>
+
+<section class="chapter">
+  <h2>12. Glossary and FAQ</h2>
+  <table>
+    <tr><th style="width:18%">Term</th><th>Meaning</th></tr>
+    <tr><td>ASP / ASC</td><td>Authorised Service Provider / Centre — the service centre that repairs.</td></tr>
+    <tr><td>WH</td><td>Warehouse that buys and supplies spare parts.</td></tr>
+    <tr><td>VOC</td><td>Voice of Customer — the problem as the customer describes it.</td></tr>
+    <tr><td>PNA</td><td>Part Not Available — a job waiting for a spare.</td></tr>
+    <tr><td>MSL</td><td>Minimum Stock Level — routine stock order by an ASP.</td></tr>
+    <tr><td>P2C / Faulty</td><td>Defective parts returned to the warehouse/company.</td></tr>
+    <tr><td>GRN</td><td>Goods Received Note — warehouse receipt against a vendor PO.</td></tr>
+    <tr><td>STN</td><td>Stock Transfer Note — moving stock between locations.</td></tr>
+    <tr><td>CN</td><td>Credit Note — credit given for returned parts.</td></tr>
+    <tr><td>TAT</td><td>Turn-around time — hours from complaint to closure.</td></tr>
+    <tr><td>DOA</td><td>Dead on Arrival — product faulty when first used.</td></tr>
+    <tr><td>AMC</td><td>Annual Maintenance Contract.</td></tr>
+    <tr><td>Happy code</td><td>Code given to the customer to confirm the visit/closure.</td></tr>
+  </table>
+  <h4>Why can't an engineer log in to the website?</h4><p>Field staff accounts are meant for the engineer app; the web panel is for Admin, Call Centre, ASP and WH.</p>
+  <h4>A job went to the wrong service centre.</h4><p>The ASP rejects it at acknowledgement; the Call Centre reassigns it from Reassign Jobs. Map the pincode correctly in Create Pincode to prevent it.</p>
+  <h4>Warranty shows OUT but the customer has a bill.</h4><p>Check the purchase date and the model's Customer Warranty Days. ASPs can correct details in Job Details Edit; brand exceptions go through Request For Approval → Warranty Period Relaxation.</p>
+  <h4>Stock looks wrong.</h4><p>Open Stock Movement / Item Ledger for the part — every change is listed with its document. Use Stock Adjustment (with a remark) only after checking.</p>
+  <h4>Why is a claim smaller than the rate?</h4><p>Jobs closed after the claim master's TAT window are paid at the claim %; jobs without a matching claim rate are not claimable.</p>
+</section>
+
+</body>
+</html>

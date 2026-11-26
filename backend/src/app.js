@@ -64,6 +64,7 @@ import ocrRoutes from './routes/ocr.routes.js';
 import companyLedgerRoutes from './routes/companyLedger.routes.js';
 import hrmsRoutes from './routes/hrms.routes.js';
 import dmsRoutes from './dms/index.js';
+import crmRoutes from './crm/index.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -233,6 +234,7 @@ app.use('/api/ocr', ocrRoutes);
 app.use('/api/company-ledger', companyLedgerRoutes);
 app.use('/api/hrms', hrmsRoutes);
 app.use('/api/dms', dmsRoutes); // Distributor Management System (isolated module)
+app.use('/api/service-crm', crmRoutes); // Service CRM (CANCRM V6) module
 
 app.use(notFoundHandler);
 app.use(errorHandler);
