@@ -6,8 +6,17 @@
  *  - Every business record is created through the real Service CRM API (in-process), so numbering, stock,
  *    ledgers and job history are exactly what the app would produce.
  *
- *  Run:   MONGODB_URI=mongodb://127.0.0.1:27999/ node scripts/crm-demo-seed.js
- *  Logins (password DmsDemo@123, local demo only): CRMADMIN (Admin) · ANJU (Call Center) · PY0003, PA0119 (ASP) · CWH47 (WH)
+ *  LOCAL:  MONGODB_URI=mongodb://127.0.0.1:27999/ node scripts/crm-demo-seed.js
+ *          Logins (password DmsDemo@123, local demo only): CRMADMIN (Admin) · ANJU (Call Center) · PY0003, PA0119 (ASP) · CWH47 (WH)
+ *
+ *  LIVE (server demo):  CRM_SEED_PASSWORD='<strong password>' node scripts/crm-demo-seed.js --live --confirm=<db name>
+ *   - Uses the server's own MONGODB_URI / MONGODB_DB_NAME from backend/.env; --confirm must name that database.
+ *   - Every demo login gets CRM_SEED_PASSWORD (10+ chars with upper, lower, digit and symbol). The public demo password is never used.
+ *   - Refuses if any Service CRM user or job already exists, so real data is never mixed with demo data.
+ *   - Writes crm_* collections, the demo locations/logins, and (only if missing) a minimal set of shared masters.
+ *   - Clean-up later (before entering real Service data):  node scripts/crm-demo-seed.js --live --remove --confirm=<db name>
+ *     Removes every crm_* collection, the demo logins and the demo locations / masters this seed created. It refuses if
+ *     non-demo Service users exist.
  */
 import express from 'express';
 import mongoose from 'mongoose';
@@ -17,15 +26,37 @@ import { env } from '../src/config/env.js';
 import User from '../src/models/User.model.js';
 import crmRoutes from '../src/crm/index.js';
 import { errorHandler } from '../src/middleware/errorHandler.middleware.js';
-import { DmsMaster, DmsHsn, DmsVendor } from '../src/dms/models/master.models.js';
+import { DmsMaster, DmsHsn, DmsVendor, DmsLocation } from '../src/dms/models/master.models.js';
 import { CrmUserProfile } from '../src/crm/models/crm.masters.js';
 import { CrmJob } from '../src/crm/models/crm.job.js';
 
-const URI = process.env.MONGODB_URI || '';
-const DB = process.env.DMS_DEMO_DB || 'dms_demo';
-const PASSWORD = 'DmsDemo@123';
-if (!/^mongodb:\/\/(127\.0\.0\.1|localhost)[:/]/.test(URI)) { console.error('Refusing to seed: MONGODB_URI must point at a local database.'); process.exit(1); }
-if (DB === 'haion_erp') { console.error('Refusing to seed into haion_erp.'); process.exit(1); }
+const LIVE = process.argv.includes('--live');
+const REMOVE = process.argv.includes('--remove');
+const URI = LIVE ? env.mongodbUri : process.env.MONGODB_URI || '';
+const DB = LIVE ? env.mongodbDbName : process.env.DMS_DEMO_DB || 'dms_demo';
+const PASSWORD = LIVE ? process.env.CRM_SEED_PASSWORD || '' : 'DmsDemo@123';
+const DEMO_LOGINS = ['CRMADMIN', 'ANJU', 'PY0003', 'PA0119', 'CWH47', 'PY0003U1', 'PY0003U2', 'PY0003P1', 'PY0003D1', 'PA0119U1'];
+const MANIFEST_ID = 'crm-demo-seed';
+if (LIVE) {
+  const confirm = (process.argv.find((a) => a.startsWith('--confirm=')) || '').slice('--confirm='.length);
+  if (confirm !== DB) { console.error(`Live mode works on the server database "${DB}". Re-run with --confirm=${DB} to proceed.`); process.exit(1); }
+  if (!REMOVE && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,}$/.test(PASSWORD)) {
+    console.error('Set CRM_SEED_PASSWORD: at least 10 characters with upper case, lower case, a digit and a symbol. The public demo password is never used on a server.');
+    process.exit(1);
+  }
+} else {
+  if (!/^mongodb:\/\/(127\.0\.0\.1|localhost)[:/]/.test(URI)) { console.error('Refusing to seed: MONGODB_URI must point at a local database (use --live on the server).'); process.exit(1); }
+  if (DB === 'haion_erp') { console.error('Refusing to seed into haion_erp.'); process.exit(1); }
+}
+const created = { users: [], masters: [], hsns: [], vendors: [], locations: [] };
+/** Remembers the non-crm_* records this seed created, so --remove can take exactly those away. */
+async function saveManifest() {
+  if (mongoose.connection.readyState !== 1) return;
+  const col = mongoose.connection.collection('crm_demo_manifest');
+  const cur = (await col.findOne({ _id: MANIFEST_ID })) || {};
+  const merge = (k) => [...new Set([...(cur[k] || []), ...created[k]].map(String))].map((x) => new mongoose.Types.ObjectId(x));
+  await col.updateOne({ _id: MANIFEST_ID }, { $set: { users: merge('users'), masters: merge('masters'), hsns: merge('hsns'), vendors: merge('vendors'), locations: merge('locations'), at: new Date() } }, { upsert: true });
+}
 
 const app = express();
 app.use(express.json({ limit: '5mb' }));
@@ -46,18 +77,47 @@ const tokenFor = async (loginId) => {
   return jwt.sign({ userId: p.user }, env.jwtAccessSecret, { expiresIn: '2h' });
 };
 
+async function removeDemo() {
+  const others = await CrmUserProfile.find({ loginId: { $nin: DEMO_LOGINS } }).select('loginId').lean();
+  if (others.length) { console.error(`Refusing to remove: ${others.length} non-demo Service users exist (e.g. ${others[0].loginId}). Remove them first or keep the demo data.`); process.exit(1); }
+  const man = (await mongoose.connection.collection('crm_demo_manifest').findOne({ _id: MANIFEST_ID })) || {};
+  const profiles = await CrmUserProfile.find({}).select('user').lean();
+  const userIds = [...profiles.map((p) => p.user), ...(man.users || [])];
+  const r = { users: (await User.deleteMany({ _id: { $in: userIds } })).deletedCount };
+  r.locations = (await DmsLocation.deleteMany({ _id: { $in: man.locations || [] } })).deletedCount;
+  r.masters = (await DmsMaster.deleteMany({ _id: { $in: man.masters || [] } })).deletedCount;
+  r.hsns = (await DmsHsn.deleteMany({ _id: { $in: man.hsns || [] } })).deletedCount;
+  r.vendors = (await DmsVendor.deleteMany({ _id: { $in: man.vendors || [] } })).deletedCount;
+  const cols = (await mongoose.connection.db.listCollections().toArray()).map((c) => c.name).filter((n) => n.startsWith('crm_'));
+  for (const c of cols) await mongoose.connection.db.dropCollection(c);
+  console.log(`Service CRM demo data removed: ${cols.length} crm_* collections, ${r.users} users, ${r.locations} locations, ${r.masters} masters, ${r.hsns} HSN, ${r.vendors} suppliers.`);
+}
+
 async function main() {
   await mongoose.connect(URI, { dbName: DB });
+  if (REMOVE) { await removeDemo(); await mongoose.disconnect(); return; }
   if (await CrmUserProfile.findOne({ loginId: 'CRMADMIN' })) { console.log('Service CRM demo data already exists — nothing to do.'); await mongoose.disconnect(); return; }
+  if (LIVE && ((await CrmUserProfile.countDocuments()) || (await CrmJob.countDocuments()))) {
+    console.error('Refusing to seed: this database already has Service CRM users or jobs. The demo seed only runs on an empty Service panel.');
+    process.exit(1);
+  }
+  if (await User.findOne({ email: 'crmadmin@demo.haion.local' })) { console.error('A crmadmin@demo.haion.local user already exists without its Service profile. Run --remove first.'); process.exit(1); }
 
   // admin
-  const admin = await User.create({ email: 'crmadmin@demo.haion.local', phone: '9000000201', password: await User.hashPassword(PASSWORD), firstName: 'Service', lastName: 'Admin', role: 'SERVICE_CENTER', isActive: true });
+  const admin = await User.create({ email: 'crmadmin@demo.haion.local', phone: `9${String(Date.now()).slice(-5)}${Math.floor(1000 + Math.random() * 9000)}`, password: await User.hashPassword(PASSWORD), firstName: 'Service', lastName: 'Admin', role: 'SERVICE_CENTER', isActive: true });
+  created.users.push(admin._id);
   await CrmUserProfile.create({ user: admin._id, loginId: 'CRMADMIN', displayName: 'Service Admin', crmRole: 'Admin', userType: 'Admin', email: 'crmadmin@demo.haion.local' });
   tokens.admin = jwt.sign({ userId: admin._id }, env.jwtAccessSecret, { expiresIn: '2h' });
 
   // shared masters already present from the DMS demo
   // shared masters: reuse the DMS demo ones, or create a minimal set so this seed also runs on its own
-  const ensure = async (type, name, extra = {}) => (await DmsMaster.findOne({ type, name })) || DmsMaster.create({ type, name, status: 'Active', ...extra });
+  const ensure = async (type, name, extra = {}) => {
+    const found = await DmsMaster.findOne({ type, name });
+    if (found) return found;
+    const doc = await DmsMaster.create({ type, name, status: 'Active', ...extra });
+    created.masters.push(doc._id);
+    return doc;
+  };
   if (!(await DmsMaster.countDocuments({ type: 'brand' }))) for (const n of ['LAZER', 'CELLO']) await ensure('brand', n);
   if (!(await DmsMaster.countDocuments({ type: 'category' }))) for (const n of ['CEILING FANS', 'MIXER GRINDER', 'WATER HEATER']) await ensure('category', n);
   if (!(await DmsMaster.countDocuments({ type: 'state' }))) {
@@ -65,7 +125,7 @@ async function main() {
     const dl = await ensure('state', 'Delhi', { code: 'DL', attrs: { circle: 'NORTH' } });
     await ensure('city', 'Noida', { parent: up._id }); await ensure('city', 'Lucknow', { parent: up._id }); await ensure('city', 'New Delhi', { parent: dl._id });
   }
-  if (!(await DmsHsn.countDocuments())) await DmsHsn.create({ hsnCode: '8509', chapterNo: '85', description: 'Electro-mechanical domestic appliances', cgst: 9, sgst: 9, igst: 18 });
+  if (!(await DmsHsn.countDocuments())) created.hsns.push((await DmsHsn.create({ hsnCode: '8509', chapterNo: '85', description: 'Electro-mechanical domestic appliances', cgst: 9, sgst: 9, igst: 18 }))._id);
   const brands = await DmsMaster.find({ type: 'brand', status: 'Active' }).sort('name').limit(2).lean();
   const cats = await DmsMaster.find({ type: 'category', status: 'Active' }).sort('name').limit(3).lean();
   const states = await DmsMaster.find({ type: 'state', status: 'Active' }).lean();
@@ -87,7 +147,9 @@ async function main() {
       ...b, city: cityOf(b.state), contactPerson: b.name, email: `${b.loginId.toLowerCase()}@demo.haion.local`, phone: `98${String(1e8 + Object.keys(loc).length * 1111).slice(0, 8)}`,
       billingAddress: `${b.name}, Main Road`, proprietorType: 'OWNED', panNo: 'ABCDE1234F', password: PASSWORD, country: 'India',
     }, 201);
+    created.locations.push(loc[key]._id);
   }
+  await saveManifest();
   for (const k of ['ANJU', 'PY0003', 'PA0119', 'CWH47']) tokens[k] = await tokenFor(k);
 
   // engineers / pickup / delivery (created by the ASP, as in the reference)
@@ -146,7 +208,11 @@ async function main() {
   }
 
   // stock: vendor PO → approval → gate entry → GRN, plus a local GRN
-  const vendor = (await DmsVendor.findOne().lean()) || (await call('admin', 'post', '/shared/supplier', { name: 'Motor Parts Pvt Ltd', phone: '9811100000', email: 'v@demo.haion.local', city: 'Delhi', state: 'Delhi', country: 'India', address: 'Okhla', billingAddress: 'Okhla' }, 201));
+  let vendor = await DmsVendor.findOne().lean();
+  if (!vendor) {
+    vendor = await call('admin', 'post', '/shared/supplier', { name: 'Motor Parts Pvt Ltd', phone: '9811100000', email: 'v@demo.haion.local', city: 'Delhi', state: 'Delhi', country: 'India', address: 'Okhla', billingAddress: 'Okhla' }, 201);
+    created.vendors.push(vendor._id);
+  }
   const vpo = await call('CWH47', 'post', '/po', { poType: 'VENDOR', supplier: vendor._id, fromLocation: loc.wh._id, toLocation: loc.wh._id, vendorType: 'Local', items: parts.map((p) => ({ part: p._id, reqQty: 40, price: p.purchasePrice })) }, 201);
   await call('admin', 'post', `/po/${vpo._id}/approve`, { decision: 'Approved' });
   await call('CWH47', 'post', '/grn/gate-entry', { poNo: vpo.poNo, vehicleNo: 'UP16AB1234', transportName: 'Safe Express' }, 201);
@@ -231,8 +297,17 @@ async function main() {
 
   const total = await CrmJob.countDocuments();
   console.log(`Service CRM demo ready: ${total} jobs, ${parts.length} parts, ${models.length} models.`);
-  console.log('Logins (password DmsDemo@123, local only): CRMADMIN · ANJU · PY0003 · PA0119 · CWH47');
+  await saveManifest();
+  console.log(LIVE
+    ? 'Logins (password = CRM_SEED_PASSWORD): CRMADMIN · ANJU · PY0003 · PA0119 · CWH47. Remove later with --live --remove --confirm=<db>.'
+    : 'Logins (password DmsDemo@123, local only): CRMADMIN · ANJU · PY0003 · PA0119 · CWH47');
   await mongoose.disconnect();
 }
 
-main().catch(async (e) => { console.error(e.message); await mongoose.disconnect(); process.exit(1); });
+main().catch(async (e) => {
+  console.error(e.message);
+  await saveManifest().catch(() => {});
+  if (created.locations.length) console.error('Partial demo data was written. Clean it with --remove (add --live --confirm=<db> on the server).');
+  await mongoose.disconnect();
+  process.exit(1);
+});
